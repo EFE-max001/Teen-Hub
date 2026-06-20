@@ -1,0 +1,388 @@
+Landing Page
+
+Style:
+
+D. All mixed
+
+QuestHub should feel like:
+
+* a startup (serious)
+* a game (fun/addictive)
+* military (discipline/ranks)
+* futuristic sci-fi (elite)
+
+First impression should feel:
+
+“This is powerful.”
+
+Sections:
+
+1. Hero Section
+2. What QuestHub is
+3. How the Guild Works
+4. Rank System Preview
+5. Live Quest Preview
+6. Trust/Protection System
+7. Business Section
+8. Teen Success Stories
+9. Join Trial CTA
+
+Main CTA:
+
+* Enter the Guild
+* Apply for Trial
+* Hire Through QuestHub
+
+⸻
+
+Signup Page
+
+Required fields:
+
+* Username
+* Real Name
+* Age
+* Country
+* Email
+* Password
+* Skills
+* Strengths
+* Availability
+* Portfolio Links
+* Social Links
+* Timezone
+
+Optional:
+
+* Profile Picture
+
+System checks:
+
+* duplicate accounts
+* age eligibility
+* device fingerprint
+
+⸻
+
+Teen Dashboard
+
+First thing visible:
+
+Top Section:
+
+* Rank Badge
+* XP Progress Bar
+* Trust Score
+* Reliability Score
+* Current Status
+
+Main Feed:
+
+* Recommended Quests
+* Active Quests
+* Pending Reviews
+* Guild Announcements
+* Fun Arena Challenges
+
+Side Panel:
+
+* Messages
+* Warnings
+* Daily Streak
+* Activity Score
+
+Purpose:
+The dashboard should feel like:
+
+“I have progress to chase.”
+
+⸻
+
+Trial Page
+
+Show:
+
+* Trial Countdown
+* Assigned Tasks
+* Trial Rules
+* Submission Box
+* AI Review Preview
+* Founder Notes
+* Trial Score Progress
+
+Live systems:
+AI updates:
+
+* quality
+* reliability
+* completion
+
+Founder can override everything.
+
+⸻
+
+Quest Board
+
+Card-based layout.
+
+Every card shows:
+
+* Title
+* Category
+* Difficulty
+* Rank Requirement
+* Trust Requirement
+* Deadline
+* Reward
+* Worker Slots
+* Urgency Level
+
+AI tags:
+
+* Recommended
+* High Chance
+* Risky For You
+
+Founder can post/edit all quests.
+
+⸻
+
+Quest Details Page
+
+Shows:
+
+* Full task breakdown
+* Hidden client identity
+* Deliverables
+* Instructions
+* Deadline
+* Reward
+* Revision count
+* Founder notes
+* Risk level
+
+Buttons:
+
+* Apply
+* Save
+* Report issue
+
+⸻
+
+Submission Page
+
+Required:
+
+* File Upload
+* Work Explanation
+* Optional Notes
+* Originality Confirmation
+
+AI immediately checks:
+
+* plagiarism
+* quality
+* task fit
+* professionalism
+* completeness
+
+Founder gets notified.
+
+⸻
+
+Messages Page
+
+WhatsApp style.
+
+Features:
+
+* Online status
+* Typing status
+* Media sending
+* Voice notes
+* File sending
+* Message reactions
+* Reports
+* AI moderation
+
+Blocked automatically:
+contact leaks.
+
+⸻
+
+Fun Arena
+
+Founder controls it.
+
+Founder can:
+
+* post challenges
+* create tournaments
+* edit events
+* create polls
+* launch mini games
+
+Features:
+
+* Daily challenge
+* Weekly guild war
+* Streak system
+* Polls
+* XP rewards
+* Cash rewards (rare)
+
+Purpose:
+retention.
+
+⸻
+
+Profile Page
+
+Shows:
+
+Public:
+
+* Rank
+* XP
+* Trust
+* Skills
+* Badges
+* Quest history
+* Success rate
+
+Private:
+
+* Earnings
+* Warnings
+* Strike history
+* Internal trust breakdown
+
+Founder sees everything.
+
+⸻
+
+Founder Dashboard
+
+The war room.
+
+Tabs:
+
+Users
+
+* all users
+* trust changes
+* risk alerts
+* activity logs
+
+Quests
+
+* all quests
+* pending quests
+* failed quests
+
+Earnings
+
+* total profit
+* commissions
+* pending payouts
+
+AI Alerts
+
+* suspicious users
+* suspicious clients
+* plagiarism
+* ghosting
+
+Promotions
+
+* rank up requests
+* elite candidate recommendations
+
+Punishments
+
+* warnings
+* suspensions
+* bans
+
+Fun Arena
+
+* create/edit events
+* create rewards
+
+Business Clients
+
+* client list
+* trust level
+* payment history
+
+Payouts
+
+* pending
+* approved
+* disputed
+
+Founder can override every system.
+
+⸻
+
+Admin Dashboard
+
+Smaller founder dashboard.
+
+Admins only see what founder allows.
+
+Example:
+Trial Judge cannot touch payouts.
+
+Quest Manager cannot touch bans.
+
+⸻
+
+Notifications
+
+Default style:
+
+B. Elite sci-fi
+
+Examples:
+
+Rank up:
+
+“Advancement recognized. Rank elevated.”
+
+Violation:
+
+“Behavior anomaly detected.”
+
+Quest approved:
+
+“Submission accepted. XP recalculating.”
+
+Ban:
+
+“Guild access terminated.”
+
+Trial:
+
+“Evaluation cycle active.”
+
+⸻
+
+This is the exact page logic I’ll use for V3.
+
+And the important founder addition:
+
+Founder owns Fun Arena + Quest Engine
+
+Meaning:
+Founder is the source of:
+
+* challenges
+* events
+* quests
+* rare tasks
+* bonus rewards
+* seasonal wars
+
+This makes the app feel alive.
+Ok clean th dashboard pages and link the pages properly, clean the founder and admin dashboard and how it can be accessed also certain pages should not show until user have access to it as stated before (e.g no quest page before being able to past the trial no message page before a certain rank ) also design the founder page or dashboard with the full power explained and a method for the founder to add trial 

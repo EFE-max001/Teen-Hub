@@ -1,0 +1,281 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  GUEST
+  TRIAL_MEMBER
+  ACCEPTED_MEMBER
+  ACTIVE_WORKER
+  MODERATOR
+  COORDINATOR
+  ADMIN
+  FOUNDER
+}
+
+enum Rank {
+  F
+  E
+  D
+  C
+  B
+  A
+  S
+  SS
+  SSS
+}
+
+enum QuestStatus {
+  OPEN
+  CLAIMED
+  IN_PROGRESS
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum TrialStatus {
+  PENDING
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+}
+
+enum MemberStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  INACTIVE
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  nickname      String?   @unique
+  passwordHash  String?
+  image         String?
+  role          Role      @default(GUEST)
+  rank          Rank      @default(F)
+  xp            Int       @default(0)
+  status        MemberStatus @default(ACTIVE)
+  skills        String[]
+  bio           String?
+  portfolioUrl  String?
+  socialLinks   Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  trial         Trial?
+  questsClaimed Quest[]   @relation("ClaimedBy")
+  messagesFrom  Message[] @relation("MessageFrom")
+  messagesTo    Message[] @relation("MessageTo")
+  chatMessages  ChatMessage[]
+  xpLogs        XpLog[]
+  adminNotes    AdminNote[] @relation("NotesAbout")
+  notesWritten  AdminNote[] @relation("NotesByAdmin")
+  reportsFrom   Report[]  @relation("ReportsBy")
+  reportsAbout  Report[]  @relation("ReportsAbout")
+  warnings      Warning[]
+  activityLogs     ActivityLog[]
+  arenaEntries     ArenaEntry[]
+  adminPermission  AdminPermission?
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+
+model Trial {
+  id           String      @id @default(cuid())
+  userId       String      @unique
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  age          Int
+  skills       String[]
+  strengths    String
+  whyJoin      String
+  availability String
+  contactInfo  String
+  portfolioUrl String?
+  status       TrialStatus @default(PENDING)
+  score        Int?
+  judgeNotes   String?
+  submittedAt  DateTime    @default(now())
+  reviewedAt   DateTime?
+}
+
+model Quest {
+  id           String      @id @default(cuid())
+  title        String
+  category     String
+  difficulty   String
+  rankRequired Rank        @default(F)
+  deadline     DateTime?
+  rewardXp     Int         @default(50)
+  instructions String
+  status       QuestStatus @default(OPEN)
+  claimedById  String?
+  claimedBy    User?       @relation("ClaimedBy", fields: [claimedById], references: [id])
+  claimedAt    DateTime?
+  submittedAt  DateTime?
+  submissionUrl String?
+  submissionNote String?
+  reviewedAt   DateTime?
+  reviewNote   String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  fromId     String
+  toId       String
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  from       User     @relation("MessageFrom", fields: [fromId], references: [id])
+  to         User     @relation("MessageTo", fields: [toId], references: [id])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  channel   String   @default("general")
+  content   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model XpLog {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model AdminNote {
+  id        String   @id @default(cuid())
+  aboutId   String
+  byId      String
+  note      String
+  createdAt DateTime @default(now())
+  about     User     @relation("NotesAbout", fields: [aboutId], references: [id])
+  by        User     @relation("NotesByAdmin", fields: [byId], references: [id])
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  reportedById String
+  reportedAboutId String
+  reason     String
+  details    String?
+  resolved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  reportedBy    User  @relation("ReportsBy", fields: [reportedById], references: [id])
+  reportedAbout User  @relation("ReportsAbout", fields: [reportedAboutId], references: [id])
+}
+
+model Warning {
+  id        String   @id @default(cuid())
+  userId    String
+  reason    String
+  issuedBy  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model ArenaChallenge {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  type        String
+  xpReward    Int      @default(50)
+  cashReward  Float?
+  endsAt      DateTime
+  createdAt   DateTime @default(now())
+  entries     ArenaEntry[]
+}
+
+model ArenaEntry {
+  id          String   @id @default(cuid())
+  userId      String
+  challengeId String
+  response    String?
+  score       Int?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  challenge   ArenaChallenge @relation(fields: [challengeId], references: [id])
+}
+
+model TrialTask {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  category      String
+  difficulty    String
+  instructions  String
+  deadlineHours Int      @default(24)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}
+
+model AdminPermission {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  role        String
+  canTrials   Boolean  @default(false)
+  canQuests   Boolean  @default(false)
+  canUsers    Boolean  @default(false)
+  canPayouts  Boolean  @default(false)
+  canReports  Boolean  @default(false)
+  canArena    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

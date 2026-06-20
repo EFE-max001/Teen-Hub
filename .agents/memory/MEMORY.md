@@ -1,0 +1,2 @@
+- [Next.js auth middleware pattern](auth-middleware.md) — requireAuth returns null (ok) or redirect object; avoids TypeScript narrowing quirks with discriminated unions
+- [NextAuth route filename](nextauth-filename.md) — must be [...nextauth].ts with ASCII dots, not […nextauth].ts with ellipsis character
