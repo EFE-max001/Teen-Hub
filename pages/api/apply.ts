@@ -12,15 +12,59 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'All required fields must be filled.' })
   }
 
-  const existing = await prisma.user.findFirst({
-    where: { OR: [{ email }, { nickname }] },
-  })
+  // ── APPLICATION LINKING SYSTEM ──────────────────────────────────────────
+  // Option A: User applies first → system links by email if account exists later
+  // Option B: User already has account → merge trial into existing profile
+  // This closes the duplicate-identity loophole.
 
-  if (existing) {
-    return res.status(400).json({ error: 'An account with this email or nickname already exists.' })
+  const existingByEmail = await prisma.user.findUnique({ where: { email } })
+  const existingByNick  = await prisma.user.findFirst({ where: { nickname } })
+
+  // Block if nickname conflicts with a DIFFERENT account
+  if (existingByNick && existingByNick.email !== email) {
+    return res.status(400).json({ error: 'Nickname is already taken by another user.' })
   }
 
-  // Create user as TRIAL_MEMBER with temp password
+  // If email already has an account → link trial to it (Option B)
+  if (existingByEmail) {
+    const alreadyHasTrial = await prisma.trial.findUnique({ where: { userId: existingByEmail.id } })
+    if (alreadyHasTrial) {
+      return res.status(409).json({ error: 'You already have a trial application on file.' })
+    }
+
+    // Merge: upgrade role to TRIAL_MEMBER, attach trial
+    await prisma.user.update({
+      where: { id: existingByEmail.id },
+      data: {
+        role: 'TRIAL_MEMBER',
+        skills,
+        ...(name ? { name } : {}),
+        ...(nickname && !existingByEmail.nickname ? { nickname } : {}),
+      },
+    })
+
+    await prisma.trial.create({
+      data: {
+        userId: existingByEmail.id,
+        age: parseInt(ageValue),
+        skills,
+        strengths,
+        whyJoin,
+        availability,
+        contactInfo,
+        portfolioUrl: portfolioUrl || null,
+        status: 'PENDING',
+      },
+    })
+
+    await prisma.activityLog.create({
+      data: { userId: existingByEmail.id, action: 'APPLIED', details: 'Trial linked to existing account' },
+    })
+
+    return res.status(201).json({ success: true, linked: true })
+  }
+
+  // Option A: No account yet → create one with temp password
   const tempPassword = await bcrypt.hash(Math.random().toString(36).slice(-10), 10)
 
   const user = await prisma.user.create({

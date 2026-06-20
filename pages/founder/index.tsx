@@ -8,7 +8,7 @@ import StatusChip from '@/components/ui/StatusChip'
 import { GlowInput, GlowTextarea } from '@/components/ui/GlowInput'
 import GlowButton from '@/components/ui/GlowButton'
 
-const TABS = ['Users','Quests','Trials','Admins','Arena','AI Alerts','Payouts','Settings']
+const TABS = ['Users','Quests','Trials','Admins','Arena','Achievements','Titles','Trust','Posts','AI Alerts','Payouts','Settings']
 
 const RANK_COLORS: Record<string, string> = {
   F:'text-slate-400',E:'text-green-400',D:'text-blue-400',C:'text-yellow-400',
@@ -24,27 +24,49 @@ export default function FounderDashboard() {
   const [trialTasks, setTrialTasks] = useState<any[]>([])
   const [admins, setAdmins] = useState<any[]>([])
   const [arena, setArena] = useState<any[]>([])
+  const [achievements, setAchievements] = useState<any[]>([])
+  const [titles, setTitles] = useState<any[]>([])
+  const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [actionMsg, setActionMsg] = useState('')
+  const [aiEvalId, setAiEvalId] = useState('')
+  const [aiEvalResult, setAiEvalResult] = useState<any>(null)
+  const [aiEvalLoading, setAiEvalLoading] = useState(false)
+
+  // Trust award
+  const [trustUserId, setTrustUserId] = useState('')
+  const [trustAction, setTrustAction] = useState('QUEST_COMPLETED')
+  const [trustReason, setTrustReason] = useState('')
+
+  // Award forms
+  const [awardAchId, setAwardAchId] = useState('')
+  const [awardAchUserId, setAwardAchUserId] = useState('')
+  const [awardTitleId, setAwardTitleId] = useState('')
+  const [awardTitleUserId, setAwardTitleUserId] = useState('')
 
   // Forms
   const [questForm, setQuestForm] = useState({ title:'',category:'Design',difficulty:'Medium',rankRequired:'F',rewardXp:'100',instructions:'',deadline:'' })
   const [taskForm, setTaskForm] = useState({ title:'',description:'',category:'Design',difficulty:'Medium',instructions:'',deadlineHours:'24' })
   const [adminForm, setAdminForm] = useState({ name:'',email:'',password:'',role:'MODERATOR',canTrials:false,canQuests:false,canUsers:false,canReports:false,canArena:false })
   const [arenaForm, setArenaForm] = useState({ title:'',description:'',type:'challenge',xpReward:'50',cashReward:'',endsAt:'' })
+  const [achForm, setAchForm] = useState({ name:'',description:'',type:'PERMANENT',icon:'🏆',condition:'',xpBonus:'0' })
+  const [titleForm, setTitleForm] = useState({ name:'',description:'',condition:'',icon:'⚔️',canExpire:false })
   const [saving, setSaving] = useState(false)
 
   useEffect(() => { loadAll() }, [])
 
   async function loadAll() {
     setLoading(true)
-    const [s,u,q,t,a,ar] = await Promise.all([
+    const [s,u,q,t,a,ar,ach,ti,po] = await Promise.all([
       fetch('/api/founder/stats').then(r=>r.json()).catch(()=>({})),
       fetch('/api/founder/users').then(r=>r.json()).catch(()=>({users:[]})),
       fetch('/api/founder/quests').then(r=>r.json()).catch(()=>({quests:[]})),
       fetch('/api/founder/trials').then(r=>r.json()).catch(()=>({trials:[],tasks:[]})),
       fetch('/api/founder/admins').then(r=>r.json()).catch(()=>({admins:[]})),
       fetch('/api/founder/arena').then(r=>r.json()).catch(()=>({challenges:[]})),
+      fetch('/api/achievements').then(r=>r.json()).catch(()=>({achievements:[]})),
+      fetch('/api/titles').then(r=>r.json()).catch(()=>({titles:[]})),
+      fetch('/api/posts').then(r=>r.json()).catch(()=>({posts:[]})),
     ])
     setStats(s)
     setUsers(u.users || [])
@@ -53,6 +75,9 @@ export default function FounderDashboard() {
     setTrialTasks(t.tasks || [])
     setAdmins(a.admins || [])
     setArena(ar.challenges || [])
+    setAchievements(ach.achievements || [])
+    setTitles(ti.titles || [])
+    setPosts(po.posts || [])
     setLoading(false)
   }
 
@@ -586,6 +611,330 @@ export default function FounderDashboard() {
                               {new Date(e.endsAt)>new Date()?'LIVE':'ENDED'}
                             </span>
                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── ACHIEVEMENTS TAB ── */}
+              {tab === 'Achievements' && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Create Achievement */}
+                  <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+                    <h3 className="font-orbitron text-xs text-white tracking-widest uppercase mb-4 pb-3 border-b border-purple-500/15">
+                      Create Achievement
+                    </h3>
+                    <div className="flex flex-col gap-3">
+                      <GlowInput label="Name" placeholder="e.g. Trial Beast" value={achForm.name} onChange={e=>setAchForm(p=>({...p,name:e.target.value}))} />
+                      <GlowTextarea label="Description" placeholder="What this achievement means..." value={achForm.description} onChange={e=>setAchForm(p=>({...p,description:e.target.value}))} rows={2} />
+                      <GlowTextarea label="Condition (AI prompt or rule)" placeholder="e.g. Complete 5 quests at rank D or above" value={achForm.condition} onChange={e=>setAchForm(p=>({...p,condition:e.target.value}))} rows={2} />
+                      <div className="grid grid-cols-2 gap-3">
+                        <GlowInput label="Icon (emoji)" placeholder="🏆" value={achForm.icon} onChange={e=>setAchForm(p=>({...p,icon:e.target.value}))} />
+                        <GlowInput label="XP Bonus" type="number" placeholder="0" value={achForm.xpBonus} onChange={e=>setAchForm(p=>({...p,xpBonus:e.target.value}))} />
+                      </div>
+                      <div>
+                        <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Type</label>
+                        <select value={achForm.type} onChange={e=>setAchForm(p=>({...p,type:e.target.value}))}
+                          className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70">
+                          <option value="PERMANENT">Permanent</option>
+                          <option value="COMPETITIVE">Competitive</option>
+                          <option value="TEMPORARY">Temporary</option>
+                        </select>
+                      </div>
+                      <GlowButton variant="primary" size="md" loading={saving} onClick={async()=>{
+                        setSaving(true)
+                        const r=await fetch('/api/achievements',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(achForm)})
+                        setSaving(false)
+                        if(r.ok){setAchForm({name:'',description:'',type:'PERMANENT',icon:'🏆',condition:'',xpBonus:'0'});msg('Achievement created.');loadAll()}
+                        else{const d=await r.json();msg('Error: '+d.error)}
+                      }}>Create Achievement</GlowButton>
+                    </div>
+                  </div>
+
+                  {/* Award + List */}
+                  <div className="flex flex-col gap-4">
+                    <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+                      <h3 className="font-orbitron text-xs text-white tracking-widest uppercase mb-4 pb-3 border-b border-purple-500/15">Award to Member</h3>
+                      <div className="flex flex-col gap-3">
+                        <div>
+                          <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Achievement</label>
+                          <select value={awardAchId} onChange={e=>setAwardAchId(e.target.value)}
+                            className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70">
+                            <option value="">Select achievement</option>
+                            {achievements.map((a:any)=><option key={a.id} value={a.id}>{a.icon} {a.name}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Member</label>
+                          <select value={awardAchUserId} onChange={e=>setAwardAchUserId(e.target.value)}
+                            className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70">
+                            <option value="">Select member</option>
+                            {users.map((u:any)=><option key={u.id} value={u.id}>{u.nickname||u.name} ({u.rank})</option>)}
+                          </select>
+                        </div>
+                        <GlowButton variant="primary" size="sm" onClick={async()=>{
+                          if(!awardAchId||!awardAchUserId)return msg('Select both')
+                          const r=await fetch('/api/achievements/award',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:awardAchUserId,achievementId:awardAchId})})
+                          const d=await r.json()
+                          r.ok?msg('Achievement awarded!'):msg('Error: '+d.error)
+                        }}>Award Achievement</GlowButton>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+                      <h3 className="font-orbitron text-xs text-white tracking-widest uppercase mb-3">All Achievements ({achievements.length})</h3>
+                      <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+                        {achievements.length===0?<p className="font-rajdhani text-slate-600 text-sm text-center py-4">None created yet.</p>:
+                        achievements.map((a:any)=>(
+                          <div key={a.id} className="border border-purple-500/10 p-3 flex items-center gap-3">
+                            <span className="text-lg">{a.icon}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-orbitron text-[10px] text-white">{a.name}</div>
+                              <div className="font-rajdhani text-[10px] text-slate-600">{a.type} · {a.awardedTo?.length||0} earned</div>
+                            </div>
+                            {a.xpBonus>0&&<span className="font-orbitron text-[10px] text-purple-400">+{a.xpBonus}XP</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── TITLES TAB ── */}
+              {tab === 'Titles' && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+                    <h3 className="font-orbitron text-xs text-white tracking-widest uppercase mb-4 pb-3 border-b border-purple-500/15">Create Title</h3>
+                    <div className="flex flex-col gap-3">
+                      <GlowInput label="Title Name" placeholder="e.g. Shadow Worker" value={titleForm.name} onChange={e=>setTitleForm(p=>({...p,name:e.target.value}))} />
+                      <GlowTextarea label="Description" placeholder="What this title represents..." value={titleForm.description} onChange={e=>setTitleForm(p=>({...p,description:e.target.value}))} rows={2} />
+                      <GlowTextarea label="Condition" placeholder="When this title is awarded..." value={titleForm.condition} onChange={e=>setTitleForm(p=>({...p,condition:e.target.value}))} rows={2} />
+                      <div className="grid grid-cols-2 gap-3">
+                        <GlowInput label="Icon (emoji)" placeholder="⚔️" value={titleForm.icon} onChange={e=>setTitleForm(p=>({...p,icon:e.target.value}))} />
+                        <label className="flex items-center gap-2 cursor-pointer mt-5">
+                          <input type="checkbox" checked={titleForm.canExpire} onChange={e=>setTitleForm(p=>({...p,canExpire:e.target.checked}))} className="w-4 h-4 accent-purple-500" />
+                          <span className="font-rajdhani text-sm text-slate-400">Can expire</span>
+                        </label>
+                      </div>
+                      <GlowButton variant="primary" size="md" loading={saving} onClick={async()=>{
+                        setSaving(true)
+                        const r=await fetch('/api/titles',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(titleForm)})
+                        setSaving(false)
+                        if(r.ok){setTitleForm({name:'',description:'',condition:'',icon:'⚔️',canExpire:false});msg('Title created.');loadAll()}
+                        else{const d=await r.json();msg('Error: '+d.error)}
+                      }}>Create Title</GlowButton>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+                      <h3 className="font-orbitron text-xs text-white tracking-widest uppercase mb-4 pb-3 border-b border-purple-500/15">Award Title</h3>
+                      <div className="flex flex-col gap-3">
+                        <div>
+                          <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Title</label>
+                          <select value={awardTitleId} onChange={e=>setAwardTitleId(e.target.value)}
+                            className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5">
+                            <option value="">Select title</option>
+                            {titles.map((t:any)=><option key={t.id} value={t.id}>{t.icon} {t.name}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Member</label>
+                          <select value={awardTitleUserId} onChange={e=>setAwardTitleUserId(e.target.value)}
+                            className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5">
+                            <option value="">Select member</option>
+                            {users.map((u:any)=><option key={u.id} value={u.id}>{u.nickname||u.name} ({u.rank})</option>)}
+                          </select>
+                        </div>
+                        <GlowButton variant="primary" size="sm" onClick={async()=>{
+                          if(!awardTitleId||!awardTitleUserId)return msg('Select both')
+                          const r=await fetch('/api/titles/award',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:awardTitleUserId,titleId:awardTitleId,setActive:true})})
+                          const d=await r.json()
+                          r.ok?msg('Title awarded!'):msg('Error: '+d.error)
+                        }}>Award Title</GlowButton>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+                      <h3 className="font-orbitron text-xs text-white tracking-widest uppercase mb-3">All Titles ({titles.length})</h3>
+                      <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
+                        {titles.length===0?<p className="font-rajdhani text-slate-600 text-sm text-center py-4">None created yet.</p>:
+                        titles.map((t:any)=>(
+                          <div key={t.id} className="border border-purple-500/10 p-3 flex items-center gap-3">
+                            <span className="text-lg">{t.icon}</span>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-orbitron text-[10px] text-white">{t.name}</div>
+                              <div className="font-rajdhani text-[10px] text-slate-600">{t.awardedTo?.length||0} holders{t.canExpire?' · can expire':''}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── TRUST TAB ── */}
+              {tab === 'Trust' && (
+                <div className="flex flex-col gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { label:'Avg Trust', value: users.length?Math.round(users.reduce((s:number,u:any)=>s+(u.trustScore||50),0)/users.length):'—', color:'text-purple-400' },
+                      { label:'Elite (90+)', value: users.filter((u:any)=>(u.trustScore||50)>=90).length, color:'text-amber-300' },
+                      { label:'Watch (<35)', value: users.filter((u:any)=>(u.trustScore||50)<35).length, color:'text-orange-400' },
+                      { label:'Risk (<15)',  value: users.filter((u:any)=>(u.trustScore||50)<15).length, color:'text-red-400' },
+                    ].map(({label,value,color})=>(
+                      <div key={label} className="bg-[#0d0017] border border-purple-500/20 p-4 text-center">
+                        <div className={`font-orbitron font-black text-2xl ${color}`}>{value}</div>
+                        <div className="font-rajdhani text-xs text-slate-600 tracking-widest uppercase">{label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Manual trust event */}
+                    <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+                      <h3 className="font-orbitron text-xs text-white tracking-widest uppercase mb-4 pb-3 border-b border-purple-500/15">Apply Trust Event</h3>
+                      <div className="flex flex-col gap-3">
+                        <div>
+                          <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Member</label>
+                          <select value={trustUserId} onChange={e=>setTrustUserId(e.target.value)}
+                            className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5">
+                            <option value="">Select member</option>
+                            {users.map((u:any)=><option key={u.id} value={u.id}>{u.nickname||u.name} (Trust: {u.trustScore||50})</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Event Type</label>
+                          <select value={trustAction} onChange={e=>setTrustAction(e.target.value)}
+                            className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5">
+                            {['QUEST_COMPLETED','QUEST_APPROVED','QUEST_LATE','QUEST_ABANDONED','MESSAGE_FLAGGED','WARNING_ISSUED','RANK_UP','REPORT_MADE','VERIFICATION_SOCIAL','VERIFICATION_LOCATION','VERIFICATION_FACE','VERIFICATION_ID'].map(a=><option key={a} value={a}>{a.replace(/_/g,' ')}</option>)}
+                          </select>
+                        </div>
+                        <GlowInput label="Reason (optional)" placeholder="Brief note..." value={trustReason} onChange={e=>setTrustReason(e.target.value)} />
+                        <GlowButton variant="primary" size="sm" onClick={async()=>{
+                          if(!trustUserId)return msg('Select a member')
+                          const r=await fetch('/api/trust',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:trustUserId,action:trustAction,reason:trustReason,source:'FOUNDER'})})
+                          const d=await r.json()
+                          r.ok?msg(`Trust event applied. New score: ${d.trustScore} (${d.trustLevel})`):msg('Error: '+d.error)
+                          loadAll()
+                        }}>Apply Event</GlowButton>
+                      </div>
+                    </div>
+
+                    {/* AI Trial Evaluation */}
+                    <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+                      <h3 className="font-orbitron text-xs text-white tracking-widest uppercase mb-4 pb-3 border-b border-purple-500/15">AI Trial Evaluation</h3>
+                      <div className="flex flex-col gap-3">
+                        <div>
+                          <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Trial</label>
+                          <select value={aiEvalId} onChange={e=>setAiEvalId(e.target.value)}
+                            className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5">
+                            <option value="">Select trial</option>
+                            {trials.map((t:any)=><option key={t.id} value={t.id}>{t.user?.nickname||t.user?.name} — {t.status}</option>)}
+                          </select>
+                        </div>
+                        <GlowButton variant="primary" size="sm" loading={aiEvalLoading} onClick={async()=>{
+                          if(!aiEvalId)return msg('Select a trial')
+                          setAiEvalLoading(true)
+                          const r=await fetch('/api/ai/evaluate-trial',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({trialId:aiEvalId})})
+                          const d=await r.json()
+                          setAiEvalLoading(false)
+                          if(r.ok){setAiEvalResult(d.result);msg('AI evaluation complete.')}
+                          else msg('Error: '+d.error)
+                        }}>Run AI Evaluation</GlowButton>
+                        {aiEvalResult&&(
+                          <div className="bg-black/40 border border-purple-500/20 p-3 flex flex-col gap-2">
+                            <div className="flex items-center gap-3">
+                              <span className="font-orbitron font-black text-2xl text-white">{aiEvalResult.score}</span>
+                              <span className={`font-orbitron text-xs px-2 py-1 border ${aiEvalResult.recommendation==='ACCEPT'?'text-green-400 border-green-500/40':aiEvalResult.recommendation==='REJECT'?'text-red-400 border-red-500/40':'text-yellow-400 border-yellow-500/40'}`}>{aiEvalResult.recommendation}</span>
+                            </div>
+                            <p className="font-rajdhani text-slate-400 text-xs">{aiEvalResult.summary}</p>
+                            {aiEvalResult.concerns?.length>0&&<p className="font-rajdhani text-red-400 text-xs">⚠ {aiEvalResult.concerns.join(', ')}</p>}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Trust leaderboard */}
+                  <div className="bg-[#0d0017] border border-purple-500/20 overflow-hidden">
+                    <div className="px-5 py-3 border-b border-purple-500/15">
+                      <h3 className="font-orbitron text-xs text-white tracking-widest uppercase">Trust Scores</h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead><tr className="border-b border-purple-500/10">
+                          {['Member','Trust Score','Level','Rank','Status'].map(h=><th key={h} className="px-4 py-3 text-left font-orbitron text-[9px] text-slate-600 tracking-widest uppercase">{h}</th>)}
+                        </tr></thead>
+                        <tbody>
+                          {[...users].sort((a:any,b:any)=>(b.trustScore||50)-(a.trustScore||50)).map((u:any)=>{
+                            const ts=u.trustScore||50
+                            const color=ts>=90?'text-amber-300':ts>=75?'text-green-400':ts>=55?'text-blue-400':ts>=35?'text-slate-400':ts>=15?'text-orange-400':'text-red-400'
+                            const level=ts>=90?'ELITE':ts>=75?'TRUSTED':ts>=55?'RISING':ts>=35?'NEW':ts>=15?'WATCH':'RISK'
+                            return(
+                              <tr key={u.id} className="border-b border-purple-500/10 hover:bg-purple-900/5">
+                                <td className="px-4 py-3"><div className="font-orbitron text-xs text-white">{u.nickname||u.name}</div></td>
+                                <td className="px-4 py-3"><span className={`font-orbitron font-black text-sm ${color}`}>{ts}</span></td>
+                                <td className="px-4 py-3"><span className={`font-orbitron text-[10px] ${color}`}>{level}</span></td>
+                                <td className="px-4 py-3"><span className={`font-orbitron font-black text-sm ${RANK_COLORS[u.rank]||'text-slate-400'}`}>{u.rank}</span></td>
+                                <td className="px-4 py-3"><span className="font-rajdhani text-xs text-slate-500">{u.status}</span></td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── POSTS TAB ── */}
+              {tab === 'Posts' && (
+                <div className="flex flex-col gap-4">
+                  <div className="bg-[#0d0017] border border-purple-500/20 overflow-hidden">
+                    <div className="px-5 py-3 border-b border-purple-500/15 flex items-center justify-between">
+                      <h3 className="font-orbitron text-xs text-white tracking-widest uppercase">Community Posts ({posts.length})</h3>
+                      <p className="font-rajdhani text-xs text-slate-600">Post, pin, flag, or remove</p>
+                    </div>
+                    <div className="flex flex-col gap-2 p-4 max-h-[600px] overflow-y-auto">
+                      {posts.length===0?<p className="font-rajdhani text-slate-600 text-sm text-center py-6">No posts yet.</p>:
+                      posts.map((p:any)=>(
+                        <div key={p.id} className={`border p-4 flex flex-col gap-2 ${p.isPinned?'border-amber-500/30':'border-purple-500/10'} ${p.flagged?'opacity-50':''}`}>
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <span className="font-orbitron text-[10px] text-white">{p.isAnonymous?'[Anonymous]':p.author?.nickname||'Unknown'}</span>
+                              <span className="font-rajdhani text-[10px] text-slate-600 ml-2">{new Date(p.createdAt).toLocaleDateString()}</span>
+                              {p.isPinned&&<span className="font-orbitron text-[9px] text-amber-400 ml-2">📌 PINNED</span>}
+                              {p.flagged&&<span className="font-orbitron text-[9px] text-red-400 ml-2">🚩 FLAGGED</span>}
+                            </div>
+                            <div className="flex gap-2">
+                              <button onClick={async()=>{
+                                await fetch(`/api/posts/${p.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({isPinned:!p.isPinned})})
+                                msg(p.isPinned?'Unpinned.':'Pinned.');loadAll()
+                              }} className="font-orbitron text-[9px] px-2 py-1 border border-amber-500/30 text-amber-400 hover:bg-amber-900/10">
+                                {p.isPinned?'UNPIN':'PIN'}
+                              </button>
+                              <button onClick={async()=>{
+                                await fetch(`/api/posts/${p.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({flagged:!p.flagged})})
+                                msg(p.flagged?'Unflagged.':'Flagged.');loadAll()
+                              }} className="font-orbitron text-[9px] px-2 py-1 border border-red-500/30 text-red-400 hover:bg-red-900/10">
+                                {p.flagged?'UNFLAG':'FLAG'}
+                              </button>
+                              <button onClick={async()=>{
+                                if(!confirm('Delete this post?'))return
+                                await fetch(`/api/posts/${p.id}`,{method:'DELETE'})
+                                msg('Post deleted.');loadAll()
+                              }} className="font-orbitron text-[9px] px-2 py-1 border border-slate-700 text-slate-500 hover:border-red-500/40 hover:text-red-400">
+                                DEL
+                              </button>
+                            </div>
+                          </div>
+                          {p.title&&<p className="font-orbitron text-sm text-white">{p.title}</p>}
+                          <p className="font-rajdhani text-slate-400 text-xs leading-relaxed">{p.content}</p>
                         </div>
                       ))}
                     </div>

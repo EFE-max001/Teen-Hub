@@ -63,6 +63,20 @@ const NAV_ITEMS: NavItem[] = [
     minRole: 'ACCEPTED_MEMBER',
     lockReason: 'Pass your trial to unlock',
   },
+  {
+    href: '/dashboard/posts',
+    label: 'Guild Board',
+    icon: '◈',
+    minRole: 'TRIAL_MEMBER',
+    lockReason: 'Apply to the guild to access the board',
+  },
+  {
+    href: '/dashboard/achievements',
+    label: 'Honours',
+    icon: '◆',
+    minRole: 'TRIAL_MEMBER',
+    lockReason: 'Apply to the guild to view honours',
+  },
 ]
 
 const ADMIN_NAV: NavItem[] = [

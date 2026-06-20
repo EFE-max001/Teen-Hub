@@ -1,2 +1,4 @@
 - [Next.js auth middleware pattern](auth-middleware.md) — requireAuth returns null (ok) or redirect object; avoids TypeScript narrowing quirks with discriminated unions
 - [NextAuth route filename](nextauth-filename.md) — must be [...nextauth].ts with ASCII dots, not […nextauth].ts with ellipsis character
+- [AI Provider Map](ai-providers.md) — Grok replaced with OpenRouter+Mistral fallback; Gemini replaced same way; HF confirmed working on router.huggingface.co
+- [Application Linking System](app-linking.md) — apply.ts/register.ts do email-based merging; apply-first creates account with no password, register later sets it

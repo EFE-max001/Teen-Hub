@@ -53,40 +53,82 @@ enum MemberStatus {
   INACTIVE
 }
 
-model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  nickname      String?   @unique
-  passwordHash  String?
-  image         String?
-  role          Role      @default(GUEST)
-  rank          Rank      @default(F)
-  xp            Int       @default(0)
-  status        MemberStatus @default(ACTIVE)
-  skills        String[]
-  bio           String?
-  portfolioUrl  String?
-  socialLinks   Json?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+enum AchievementType {
+  PERMANENT
+  COMPETITIVE
+  TEMPORARY
+}
 
-  accounts      Account[]
-  sessions      Session[]
-  trial         Trial?
-  questsClaimed Quest[]   @relation("ClaimedBy")
-  messagesFrom  Message[] @relation("MessageFrom")
-  messagesTo    Message[] @relation("MessageTo")
-  chatMessages  ChatMessage[]
-  xpLogs        XpLog[]
-  adminNotes    AdminNote[] @relation("NotesAbout")
-  notesWritten  AdminNote[] @relation("NotesByAdmin")
-  reportsFrom   Report[]  @relation("ReportsBy")
-  reportsAbout  Report[]  @relation("ReportsAbout")
-  warnings      Warning[]
-  activityLogs     ActivityLog[]
-  arenaEntries     ArenaEntry[]
-  adminPermission  AdminPermission?
+enum PostVisibility {
+  PUBLIC
+  MEMBERS_ONLY
+  ACCEPTED_ONLY
+}
+
+model User {
+  id                 String       @id @default(cuid())
+  email              String       @unique
+  name               String?
+  nickname           String?      @unique
+  passwordHash       String?
+  image              String?
+  profilePicUrl      String?
+  role               Role         @default(GUEST)
+  rank               Rank         @default(F)
+  xp                 Int          @default(0)
+  status             MemberStatus @default(ACTIVE)
+  skills             String[]
+  bio                String?
+  portfolioUrl       String?
+  socialLinks        Json?
+
+  // Extended profile
+  timezone           String?
+  country            String?
+  workStyle          String?
+  preferredTaskType  String?
+  experience         String?
+  availabilityText   String?
+  portfolioVault     Json?
+
+  // Trust system
+  trustScore         Int          @default(50)
+  trustLevel         String       @default("NEW")
+
+  // Identity / verification flags
+  emailVerified      DateTime?
+  socialVerified     Boolean      @default(false)
+  locationVerified   Boolean      @default(false)
+  faceVerified       Boolean      @default(false)
+  identityVerified   Boolean      @default(false)
+
+  // Active title
+  activeTitle        String?
+
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  accounts           Account[]
+  sessions           Session[]
+  trial              Trial?
+  questsClaimed      Quest[]      @relation("ClaimedBy")
+  messagesFrom       Message[]    @relation("MessageFrom")
+  messagesTo         Message[]    @relation("MessageTo")
+  chatMessages       ChatMessage[]
+  xpLogs             XpLog[]
+  adminNotes         AdminNote[]  @relation("NotesAbout")
+  notesWritten       AdminNote[]  @relation("NotesByAdmin")
+  reportsFrom        Report[]     @relation("ReportsBy")
+  reportsAbout       Report[]     @relation("ReportsAbout")
+  warnings           Warning[]
+  activityLogs       ActivityLog[]
+  arenaEntries       ArenaEntry[]
+  adminPermission    AdminPermission?
+  achievements       UserAchievement[]
+  titles             UserTitle[]
+  trustEvents        TrustEvent[]
+  postsAuthored      CommunityPost[]
+  verifications      ProfileVerification[]
 }
 
 model Account {
@@ -134,42 +176,47 @@ model Trial {
   portfolioUrl String?
   status       TrialStatus @default(PENDING)
   score        Int?
+  aiScore      Int?
+  aiSummary    String?
+  aiRecommendation String?
   judgeNotes   String?
   submittedAt  DateTime    @default(now())
   reviewedAt   DateTime?
 }
 
 model Quest {
-  id           String      @id @default(cuid())
-  title        String
-  category     String
-  difficulty   String
-  rankRequired Rank        @default(F)
-  deadline     DateTime?
-  rewardXp     Int         @default(50)
-  instructions String
-  status       QuestStatus @default(OPEN)
-  claimedById  String?
-  claimedBy    User?       @relation("ClaimedBy", fields: [claimedById], references: [id])
-  claimedAt    DateTime?
-  submittedAt  DateTime?
-  submissionUrl String?
+  id             String      @id @default(cuid())
+  title          String
+  category       String
+  difficulty     String
+  rankRequired   Rank        @default(F)
+  deadline       DateTime?
+  rewardXp       Int         @default(50)
+  instructions   String
+  status         QuestStatus @default(OPEN)
+  claimedById    String?
+  claimedBy      User?       @relation("ClaimedBy", fields: [claimedById], references: [id])
+  claimedAt      DateTime?
+  submittedAt    DateTime?
+  submissionUrl  String?
   submissionNote String?
-  reviewedAt   DateTime?
-  reviewNote   String?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  reviewedAt     DateTime?
+  reviewNote     String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 }
 
 model Message {
-  id         String   @id @default(cuid())
-  fromId     String
-  toId       String
-  content    String
-  read       Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  from       User     @relation("MessageFrom", fields: [fromId], references: [id])
-  to         User     @relation("MessageTo", fields: [toId], references: [id])
+  id        String   @id @default(cuid())
+  fromId    String
+  toId      String
+  content   String
+  read      Boolean  @default(false)
+  flagged   Boolean  @default(false)
+  flagReason String?
+  createdAt DateTime @default(now())
+  from      User     @relation("MessageFrom", fields: [fromId], references: [id])
+  to        User     @relation("MessageTo", fields: [toId], references: [id])
 }
 
 model ChatMessage {
@@ -177,6 +224,8 @@ model ChatMessage {
   userId    String
   channel   String   @default("general")
   content   String
+  flagged   Boolean  @default(false)
+  flagReason String?
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
 }
@@ -201,15 +250,15 @@ model AdminNote {
 }
 
 model Report {
-  id         String   @id @default(cuid())
-  reportedById String
+  id              String   @id @default(cuid())
+  reportedById    String
   reportedAboutId String
-  reason     String
-  details    String?
-  resolved   Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  reportedBy    User  @relation("ReportsBy", fields: [reportedById], references: [id])
-  reportedAbout User  @relation("ReportsAbout", fields: [reportedAboutId], references: [id])
+  reason          String
+  details         String?
+  resolved        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  reportedBy      User     @relation("ReportsBy", fields: [reportedById], references: [id])
+  reportedAbout   User     @relation("ReportsAbout", fields: [reportedAboutId], references: [id])
 }
 
 model Warning {
@@ -231,25 +280,25 @@ model ActivityLog {
 }
 
 model ArenaChallenge {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   title       String
   description String
   type        String
-  xpReward    Int      @default(50)
+  xpReward    Int          @default(50)
   cashReward  Float?
   endsAt      DateTime
-  createdAt   DateTime @default(now())
+  createdAt   DateTime     @default(now())
   entries     ArenaEntry[]
 }
 
 model ArenaEntry {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   userId      String
   challengeId String
   response    String?
   score       Int?
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime       @default(now())
+  user        User           @relation(fields: [userId], references: [id])
   challenge   ArenaChallenge @relation(fields: [challengeId], references: [id])
 }
 
@@ -277,5 +326,106 @@ model AdminPermission {
   canArena    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Achievement Engine ────────────────────────────────────────────────────
+
+model Achievement {
+  id          String          @id @default(cuid())
+  name        String          @unique
+  description String
+  type        AchievementType @default(PERMANENT)
+  icon        String          @default("🏆")
+  condition   String
+  xpBonus     Int             @default(0)
+  isActive    Boolean         @default(true)
+  createdById String?
+  expiresAt   DateTime?
+  createdAt   DateTime        @default(now())
+  awardedTo   UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  awardedById   String?
+  awardedByAI   Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  @@unique([userId, achievementId])
+}
+
+// ─── Titles Engine ─────────────────────────────────────────────────────────
+
+model Title {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String
+  condition   String
+  icon        String    @default("⚔️")
+  canExpire   Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  createdById String?
+  createdAt   DateTime  @default(now())
+  awardedTo   UserTitle[]
+}
+
+model UserTitle {
+  id          String    @id @default(cuid())
+  userId      String
+  titleId     String
+  active      Boolean   @default(false)
+  awardedById String?
+  awardedByAI Boolean   @default(false)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       Title     @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  @@unique([userId, titleId])
+}
+
+// ─── Trust Engine ──────────────────────────────────────────────────────────
+
+model TrustEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  delta     Int
+  reason    String
+  source    String   @default("SYSTEM")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Community Posts ───────────────────────────────────────────────────────
+
+model CommunityPost {
+  id          String         @id @default(cuid())
+  authorId    String
+  content     String
+  title       String?
+  isAnonymous Boolean        @default(false)
+  isPinned    Boolean        @default(false)
+  visibility  PostVisibility @default(MEMBERS_ONLY)
+  flagged     Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+// ─── Profile Verification ──────────────────────────────────────────────────
+
+model ProfileVerification {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  status      String   @default("PENDING")
+  evidence    String?
+  reviewedBy  String?
+  submittedAt DateTime @default(now())
+  reviewedAt  DateTime?
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
