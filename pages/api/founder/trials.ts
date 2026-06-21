@@ -18,6 +18,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.json({ trials, tasks })
   }
 
+  if (req.method === 'PUT') {
+    // Assign a trial task to a specific user's trial
+    const { userId, trialTaskId } = req.body
+    if (!userId || !trialTaskId) return res.status(400).json({ error: 'userId and trialTaskId required' })
+
+    const trial = await prisma.trial.update({
+      where: { userId },
+      data: { assignedTaskId: trialTaskId },
+      include: { user: { select: { id: true, name: true, nickname: true, email: true } }, assignedTask: true },
+    })
+
+    await prisma.activityLog.create({
+      data: {
+        userId,
+        action: 'TRIAL_TASK_ASSIGNED',
+        details: `Trial task assigned by Founder`,
+      },
+    })
+
+    return res.json({ trial })
+  }
+
   if (req.method === 'PATCH') {
     const { id, status, score, judgeNotes } = req.body
     const trial = await prisma.trial.update({

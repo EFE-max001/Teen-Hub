@@ -1,0 +1,119 @@
+11. FUTURE DEVELOPMENT RESPONSIVENESS RULE (VERY IMPORTANT)
+
+From now on, ALL future pages, components, features, and UI sections must be built mobile-first and fully responsive by default.
+
+This rule applies to:
+- New pages
+- Marketplace features
+- XP system
+- Quests
+- Chat system
+- Profile pages
+- Admin dashboard
+- Messaging
+- Modals
+- Cards
+- Forms
+- Navigation
+- Any future feature added
+
+MANDATORY RESPONSIVE DEVELOPMENT RULES
+
+1. MOBILE-FIRST APPROACH
+Always design for mobile first, then scale upward.
+
+Preferred responsive structure:
+- Mobile → Tablet → Desktop
+
+Never build desktop-only layouts first.
+
+2. NO FIXED WIDTHS
+Avoid hardcoded widths/heights that break smaller screens.
+
+DO NOT USE:
+- width: 900px
+- width: 1200px
+- fixed containers
+- oversized margins
+
+USE:
+- w-full
+- max-w-*
+- minmax()
+- percentages
+- rem
+- clamp()
+
+3. RESPONSIVE TYPOGRAPHY BY DEFAULT
+All text must scale automatically.
+
+Examples:
+
+BAD:
+text-6xl
+
+GOOD:
+text-2xl md:text-4xl lg:text-6xl
+
+Ensure:
+- No giant mobile headings
+- Text wraps correctly
+- No text clipping
+- No viewport overflow
+
+4. RESPONSIVE LAYOUTS ONLY
+Never use desktop-only layouts.
+
+Instead of:
+flex-row
+
+Use:
+flex-col md:flex-row
+
+Instead of:
+grid-cols-4
+
+Use:
+grid-cols-1 sm:grid-cols-2 lg:grid-cols-4
+
+Requirements:
+- Mobile stacking
+- Wrapped buttons
+- Adaptive spacing
+- No overflow
+
+5. SAFE SPACING SYSTEM
+Use responsive spacing.
+
+Preferred:
+px-4 sm:px-6 lg:px-10
+py-4 md:py-8
+
+Avoid oversized spacing on phones.
+
+6. RESPONSIVE MEDIA
+Images, cards, videos, and icons must scale properly.
+
+Use:
+max-w-full
+h-auto
+object-cover
+
+Never allow media overflow.
+
+7. RESPONSIVENESS CHECK BEFORE COMPLETION
+Before any page or feature is considered complete:
+
+Verify:
+✓ No horizontal scrolling
+✓ No text leaves screen
+✓ No clipped buttons
+✓ No broken layouts
+✓ Works on phone, tablet, desktop
+✓ Maintains current visual style
+
+8. GLOBAL RULE
+Every future feature must inherit the existing responsive system automatically.
+
+Responsiveness is not optional.
+Treat mobile responsiveness as a core requirement, not a later fix.

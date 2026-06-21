@@ -1,8 +1,11 @@
-import { ReactNode, useState } from 'react'
+import { ReactNode, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useSession, signOut } from 'next-auth/react'
 import RankBadge from '@/components/ui/RankBadge'
+import dynamic from 'next/dynamic'
+
+const AIChatWidget = dynamic(() => import('@/components/ui/AIChatWidget'), { ssr: false })
 
 const RANK_LEVEL: Record<string, number> = {
   F: 0, E: 1, D: 2, C: 3, B: 4, A: 5, S: 6, SS: 7, SSS: 8,
@@ -25,8 +28,8 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/dashboard',          label: 'Command Center', icon: '⬡' },
-  { href: '/dashboard/profile',  label: 'My Profile',     icon: '◉' },
+  { href: '/dashboard',              label: 'Command Center', icon: '⬡' },
+  { href: '/dashboard/profile',      label: 'My Profile',     icon: '◉' },
   {
     href: '/dashboard/trial',
     label: 'My Trial',
@@ -77,20 +80,34 @@ const NAV_ITEMS: NavItem[] = [
     minRole: 'TRIAL_MEMBER',
     lockReason: 'Apply to the guild to view honours',
   },
+  { href: '/dashboard/feedback', label: 'Feedback', icon: '◍' },
 ]
 
 const ADMIN_NAV: NavItem[] = [
-  { href: '/admin',   label: 'Admin Panel',   icon: '⬛', adminOnly: true },
-  { href: '/founder', label: 'Founder War Room', icon: '★', founderOnly: true },
+  { href: '/admin',   label: 'Admin Panel',      icon: '⬛', adminOnly: true },
+  { href: '/founder', label: 'Founder War Room',  icon: '★', founderOnly: true },
 ]
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+interface DashboardLayoutProps {
+  children: ReactNode
+  title?: string
+}
+
+export default function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const { data: session } = useSession()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [hasTrial, setHasTrial] = useState<boolean | null>(null)
 
   const userRole = session?.user?.role || 'GUEST'
   const userRank = session?.user?.rank || 'F'
+
+  useEffect(() => {
+    if (!session) return
+    fetch('/api/user/me').then(r => r.json()).then(d => {
+      setHasTrial(!!d.trial)
+    }).catch(() => setHasTrial(null))
+  }, [session])
 
   function isLocked(item: NavItem): boolean {
     if (item.minRole && ROLE_LEVEL[userRole] < ROLE_LEVEL[item.minRole]) return true
@@ -103,6 +120,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     if (item.adminOnly) return ROLE_LEVEL[userRole] >= ROLE_LEVEL['ADMIN']
     return true
   })
+
+  const noApplication = hasTrial === false && ROLE_LEVEL[userRole] < ROLE_LEVEL['ACCEPTED_MEMBER']
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -140,7 +159,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               userRole === 'TRIAL_MEMBER' ? 'text-yellow-300 border-yellow-500/50 bg-yellow-900/20' :
               'text-slate-400 border-slate-700'
             }`}>
-              {userRole.replace('_', ' ')}
+              {userRole.replace(/_/g, ' ')}
             </span>
           </div>
         </div>
@@ -162,9 +181,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 title={item.lockReason}
                 className="flex items-center gap-3 px-3 py-2.5 border border-transparent text-slate-700 cursor-not-allowed relative group"
               >
-                <span className="text-base flex-shrink-0 text-slate-800">
-                  {item.icon}
-                </span>
+                <span className="text-base flex-shrink-0 text-slate-800">{item.icon}</span>
                 <span className="font-rajdhani font-semibold text-sm tracking-wide line-through decoration-slate-800">
                   {item.label}
                 </span>
@@ -293,12 +310,15 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <div className="hidden sm:flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
               <span className="font-rajdhani text-xs text-slate-600 tracking-widest uppercase">
-                Guild Network Online
+                {title || 'Guild Network Online'}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
+            <Link href="/dashboard/feedback" className="text-slate-600 hover:text-purple-300 transition-colors" title="Feedback">
+              <span className="text-base">◍</span>
+            </Link>
             {ROLE_LEVEL[userRole] >= ROLE_LEVEL['ACCEPTED_MEMBER'] && (
               <Link href="/dashboard/messages" className="text-slate-500 hover:text-purple-300 transition-colors" title="Messages">
                 <span className="text-lg">◎</span>
@@ -315,10 +335,30 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
+        {/* Apply banner — shown to users who have no application */}
+        {noApplication && (
+          <div className="bg-amber-950/40 border-b border-amber-500/30 px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
+              <p className="font-rajdhani text-amber-300 text-sm">
+                <span className="font-orbitron text-xs text-amber-400 mr-2">ACTION REQUIRED</span>
+                You have an account but no guild application. Submit one to begin your trial.
+              </p>
+            </div>
+            <Link href="/apply">
+              <span className="font-orbitron text-[10px] text-amber-300 border border-amber-500/40 bg-amber-900/30 px-3 py-1.5 hover:bg-amber-900/50 transition-all whitespace-nowrap cursor-pointer">
+                APPLY NOW →
+              </span>
+            </Link>
+          </div>
+        )}
+
         <main className="flex-1 p-4 sm:p-6 grid-bg">
           {children}
         </main>
       </div>
+
+      <AIChatWidget />
     </div>
   )
 }

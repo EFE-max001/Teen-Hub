@@ -8,7 +8,7 @@ import StatusChip from '@/components/ui/StatusChip'
 import { GlowInput, GlowTextarea } from '@/components/ui/GlowInput'
 import GlowButton from '@/components/ui/GlowButton'
 
-const TABS = ['Users','Quests','Trials','Admins','Arena','Achievements','Titles','Trust','Posts','AI Alerts','Payouts','Settings']
+const TABS = ['Users','Quests','Trials','Admins','Arena','Achievements','Titles','Trust','Posts','AI Alerts','Feedback','Feature Unlock','Payouts','Settings']
 
 const RANK_COLORS: Record<string, string> = {
   F:'text-slate-400',E:'text-green-400',D:'text-blue-400',C:'text-yellow-400',
@@ -27,11 +27,27 @@ export default function FounderDashboard() {
   const [achievements, setAchievements] = useState<any[]>([])
   const [titles, setTitles] = useState<any[]>([])
   const [posts, setPosts] = useState<any[]>([])
+  const [feedbacks, setFeedbacks] = useState<any[]>([])
+  const [unlocks, setUnlocks] = useState<any[]>([])
+  const [features, setFeatures] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [actionMsg, setActionMsg] = useState('')
   const [aiEvalId, setAiEvalId] = useState('')
   const [aiEvalResult, setAiEvalResult] = useState<any>(null)
   const [aiEvalLoading, setAiEvalLoading] = useState(false)
+
+  // Trial task assignment
+  const [assignUserId, setAssignUserId] = useState('')
+  const [assignTaskId, setAssignTaskId] = useState('')
+
+  // Feature unlock
+  const [unlockUserId, setUnlockUserId] = useState('')
+  const [unlockFeature, setUnlockFeature] = useState('')
+  const [unlockNote, setUnlockNote] = useState('')
+
+  // Feedback reply
+  const [replyFbId, setReplyFbId] = useState('')
+  const [replyContent, setReplyContent] = useState('')
 
   // Trust award
   const [trustUserId, setTrustUserId] = useState('')
@@ -45,7 +61,7 @@ export default function FounderDashboard() {
   const [awardTitleUserId, setAwardTitleUserId] = useState('')
 
   // Forms
-  const [questForm, setQuestForm] = useState({ title:'',category:'Design',difficulty:'Medium',rankRequired:'F',rewardXp:'100',instructions:'',deadline:'' })
+  const [questForm, setQuestForm] = useState({ title:'',category:'Design',difficulty:'Medium',rankRequired:'F',rewardXp:'100',cashReward:'',instructions:'',deadline:'' })
   const [taskForm, setTaskForm] = useState({ title:'',description:'',category:'Design',difficulty:'Medium',instructions:'',deadlineHours:'24' })
   const [adminForm, setAdminForm] = useState({ name:'',email:'',password:'',role:'MODERATOR',canTrials:false,canQuests:false,canUsers:false,canReports:false,canArena:false })
   const [arenaForm, setArenaForm] = useState({ title:'',description:'',type:'challenge',xpReward:'50',cashReward:'',endsAt:'' })
@@ -57,7 +73,7 @@ export default function FounderDashboard() {
 
   async function loadAll() {
     setLoading(true)
-    const [s,u,q,t,a,ar,ach,ti,po] = await Promise.all([
+    const [s,u,q,t,a,ar,ach,ti,po,fb,fu] = await Promise.all([
       fetch('/api/founder/stats').then(r=>r.json()).catch(()=>({})),
       fetch('/api/founder/users').then(r=>r.json()).catch(()=>({users:[]})),
       fetch('/api/founder/quests').then(r=>r.json()).catch(()=>({quests:[]})),
@@ -67,6 +83,8 @@ export default function FounderDashboard() {
       fetch('/api/achievements').then(r=>r.json()).catch(()=>({achievements:[]})),
       fetch('/api/titles').then(r=>r.json()).catch(()=>({titles:[]})),
       fetch('/api/posts').then(r=>r.json()).catch(()=>({posts:[]})),
+      fetch('/api/feedback').then(r=>r.json()).catch(()=>({feedbacks:[]})),
+      fetch('/api/founder/feature-unlock').then(r=>r.json()).catch(()=>({unlocks:[],features:[]})),
     ])
     setStats(s)
     setUsers(u.users || [])
@@ -78,6 +96,9 @@ export default function FounderDashboard() {
     setAchievements(ach.achievements || [])
     setTitles(ti.titles || [])
     setPosts(po.posts || [])
+    setFeedbacks(fb.feedbacks || [])
+    setUnlocks(fu.unlocks || [])
+    setFeatures(fu.features || [])
     setLoading(false)
   }
 
@@ -114,8 +135,72 @@ export default function FounderDashboard() {
       body: JSON.stringify(questForm),
     })
     setSaving(false)
-    setQuestForm({ title:'',category:'Design',difficulty:'Medium',rankRequired:'F',rewardXp:'100',instructions:'',deadline:'' })
+    setQuestForm({ title:'',category:'Design',difficulty:'Medium',rankRequired:'F',rewardXp:'100',cashReward:'',instructions:'',deadline:'' })
     msg('Quest posted.')
+    loadAll()
+  }
+
+  async function assignTrialTask() {
+    if (!assignUserId || !assignTaskId) return
+    setSaving(true)
+    await fetch('/api/founder/trials', {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ userId: assignUserId, trialTaskId: assignTaskId }),
+    })
+    setSaving(false)
+    setAssignUserId('')
+    setAssignTaskId('')
+    msg('Trial task assigned to user.')
+    loadAll()
+  }
+
+  async function unlockFeatureForUser() {
+    if (!unlockUserId || !unlockFeature) return
+    setSaving(true)
+    await fetch('/api/founder/feature-unlock', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ userId: unlockUserId, feature: unlockFeature, note: unlockNote }),
+    })
+    setSaving(false)
+    setUnlockUserId('')
+    setUnlockFeature('')
+    setUnlockNote('')
+    msg('Feature unlocked for user.')
+    loadAll()
+  }
+
+  async function revokeUnlock(userId: string, feature: string) {
+    await fetch('/api/founder/feature-unlock', {
+      method:'DELETE',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ userId, feature }),
+    })
+    msg('Feature unlock revoked.')
+    loadAll()
+  }
+
+  async function replyFeedback(fbId: string) {
+    if (!replyContent.trim()) return
+    await fetch(`/api/feedback/${fbId}`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ content: replyContent.trim() }),
+    })
+    setReplyFbId('')
+    setReplyContent('')
+    msg('Reply sent.')
+    loadAll()
+  }
+
+  async function closeFeedback(fbId: string) {
+    await fetch(`/api/feedback/${fbId}`, {
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ status: 'CLOSED', isRead: true }),
+    })
+    msg('Feedback closed.')
     loadAll()
   }
 
@@ -361,6 +446,9 @@ export default function FounderDashboard() {
                         <div>
                           <GlowInput label="XP Reward" type="number" placeholder="100" value={questForm.rewardXp} onChange={e=>setQuestForm(p=>({...p,rewardXp:e.target.value}))} />
                         </div>
+                        <div>
+                          <GlowInput label="Cash Reward ($, optional)" type="number" placeholder="0.00" value={questForm.cashReward} onChange={e=>setQuestForm(p=>({...p,cashReward:e.target.value}))} />
+                        </div>
                       </div>
                       <div>
                         <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Deadline (optional)</label>
@@ -461,6 +549,44 @@ export default function FounderDashboard() {
                           </div>
                         ))}
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Assign trial task to specific user */}
+                  <div className="bg-[#0d0017] border border-amber-500/20 p-5">
+                    <h3 className="font-orbitron text-xs text-amber-400 tracking-widest uppercase mb-4 pb-3 border-b border-amber-500/20">
+                      Assign Trial Task to Specific User
+                    </h3>
+                    <div className="flex flex-col gap-3">
+                      <div>
+                        <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Select User (with application)</label>
+                        <select value={assignUserId} onChange={e=>setAssignUserId(e.target.value)}
+                          className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70 transition-all">
+                          <option value="">-- Select user --</option>
+                          {trials.map((t:any) => (
+                            <option key={t.userId} value={t.userId}>
+                              {t.user?.nickname || t.user?.name} ({t.user?.email})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Select Task</label>
+                        <select value={assignTaskId} onChange={e=>setAssignTaskId(e.target.value)}
+                          className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70 transition-all">
+                          <option value="">-- Select task --</option>
+                          {trialTasks.filter((t:any)=>t.isActive).map((t:any) => (
+                            <option key={t.id} value={t.id}>{t.title} ({t.category} · {t.difficulty})</option>
+                          ))}
+                        </select>
+                      </div>
+                      <GlowButton variant="primary" size="sm" loading={saving} onClick={assignTrialTask}
+                        disabled={!assignUserId || !assignTaskId}>
+                        Assign Task
+                      </GlowButton>
+                      <p className="font-rajdhani text-xs text-slate-600">
+                        The user will see the assigned task on their Trial page.
+                      </p>
                     </div>
                   </div>
 
@@ -965,6 +1091,184 @@ export default function FounderDashboard() {
                   </div>
                   <div className="mt-6 border border-purple-500/10 p-4">
                     <p className="font-rajdhani text-slate-600 text-sm">Full AI moderation system is operational. All messages, submissions and behavior patterns are being monitored by Sentinel.</p>
+                  </div>
+                </div>
+              )}
+
+              {/* ── FEEDBACK TAB ── */}
+              {tab === 'Feedback' && (
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-orbitron text-xs text-white tracking-widest uppercase">
+                      Member Feedback ({feedbacks.length})
+                    </h3>
+                    <div className="flex gap-2">
+                      {[
+                        { label:'Open', count: feedbacks.filter((f:any)=>f.status==='OPEN').length, color:'text-yellow-400' },
+                        { label:'Replied', count: feedbacks.filter((f:any)=>f.status==='REPLIED').length, color:'text-green-400' },
+                      ].map(({label,count,color}) => (
+                        <span key={label} className={`font-orbitron text-[9px] ${color} border border-current/30 px-2 py-1`}>
+                          {count} {label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  {feedbacks.length === 0 ? (
+                    <div className="bg-[#0d0017] border border-purple-500/20 p-8 text-center">
+                      <p className="font-rajdhani text-slate-600">No feedback submitted yet.</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      {feedbacks.map((fb:any) => (
+                        <div key={fb.id} className={`bg-[#0d0017] border p-5 ${
+                          fb.status === 'OPEN' ? 'border-yellow-500/25' :
+                          fb.status === 'REPLIED' ? 'border-green-500/20' : 'border-purple-500/15'
+                        }`}>
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-orbitron text-[9px] text-purple-400 tracking-widest">{fb.type}</span>
+                              <span className={`font-orbitron text-[8px] border px-1.5 py-0.5 ${
+                                fb.status === 'OPEN' ? 'text-yellow-400 border-yellow-500/30' :
+                                fb.status === 'REPLIED' ? 'text-green-400 border-green-500/30' :
+                                'text-slate-500 border-slate-700'
+                              }`}>{fb.status}</span>
+                              <span className="font-orbitron text-[9px] text-white">
+                                {fb.user?.nickname || fb.user?.name || fb.email || 'Anonymous'}
+                              </span>
+                              {fb.user?.role && (
+                                <span className="font-orbitron text-[8px] text-slate-600">{fb.user.role.replace(/_/g,' ')}</span>
+                              )}
+                            </div>
+                            <span className="font-rajdhani text-[10px] text-slate-600 flex-shrink-0">
+                              {new Date(fb.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+
+                          <p className="font-rajdhani text-slate-300 text-sm leading-relaxed mb-3">{fb.content}</p>
+
+                          {/* Existing replies */}
+                          {fb.replies?.length > 0 && (
+                            <div className="mb-3 space-y-2">
+                              {fb.replies.map((r:any) => (
+                                <div key={r.id} className="bg-purple-950/20 border border-purple-500/20 p-3">
+                                  <div className="font-orbitron text-[8px] text-amber-400 mb-1">
+                                    [Founder] {new Date(r.createdAt).toLocaleDateString()}
+                                  </div>
+                                  <p className="font-rajdhani text-slate-300 text-xs">{r.content}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Reply section */}
+                          {fb.status !== 'CLOSED' && (
+                            replyFbId === fb.id ? (
+                              <div className="flex gap-2 mt-2">
+                                <input
+                                  value={replyContent}
+                                  onChange={e=>setReplyContent(e.target.value)}
+                                  placeholder="Your reply..."
+                                  className="flex-1 bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2 focus:outline-none focus:border-amber-400/50"
+                                />
+                                <button onClick={()=>replyFeedback(fb.id)}
+                                  className="font-orbitron text-[9px] px-3 py-2 border border-amber-500/40 text-amber-400 hover:bg-amber-900/20 transition-all flex-shrink-0">
+                                  SEND
+                                </button>
+                                <button onClick={()=>{setReplyFbId('');setReplyContent('')}}
+                                  className="font-orbitron text-[9px] px-2 py-2 border border-slate-700 text-slate-600 hover:text-slate-400 transition-all">
+                                  ✕
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex gap-2">
+                                <button onClick={()=>setReplyFbId(fb.id)}
+                                  className="font-orbitron text-[9px] px-2 py-1.5 border border-amber-500/30 text-amber-400 hover:bg-amber-900/10 transition-all">
+                                  REPLY
+                                </button>
+                                <button onClick={()=>closeFeedback(fb.id)}
+                                  className="font-orbitron text-[9px] px-2 py-1.5 border border-slate-700 text-slate-600 hover:text-slate-400 transition-all">
+                                  CLOSE
+                                </button>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── FEATURE UNLOCK TAB ── */}
+              {tab === 'Feature Unlock' && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Unlock form */}
+                  <div className="bg-[#0d0017] border border-amber-500/20 p-5">
+                    <h3 className="font-orbitron text-xs text-amber-400 tracking-widest uppercase mb-4 pb-3 border-b border-amber-500/20">
+                      Unlock Feature for User
+                    </h3>
+                    <div className="flex flex-col gap-4">
+                      <div>
+                        <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">User</label>
+                        <select value={unlockUserId} onChange={e=>setUnlockUserId(e.target.value)}
+                          className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70 transition-all">
+                          <option value="">-- Select user --</option>
+                          {users.map((u:any) => (
+                            <option key={u.id} value={u.id}>
+                              {u.nickname || u.name} ({u.role.replace(/_/g,' ')})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Feature to Unlock</label>
+                        <select value={unlockFeature} onChange={e=>setUnlockFeature(e.target.value)}
+                          className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70 transition-all">
+                          <option value="">-- Select feature --</option>
+                          {features.map((f:any) => (
+                            <option key={f.key} value={f.key}>{f.label} — {f.desc}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Note (optional)</label>
+                        <input value={unlockNote} onChange={e=>setUnlockNote(e.target.value)} placeholder="Reason for unlock..."
+                          className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70 transition-all" />
+                      </div>
+                      <GlowButton variant="primary" size="sm" loading={saving} onClick={unlockFeatureForUser}
+                        disabled={!unlockUserId || !unlockFeature}>
+                        Unlock Feature
+                      </GlowButton>
+                    </div>
+                  </div>
+
+                  {/* Active unlocks */}
+                  <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+                    <h3 className="font-orbitron text-xs text-white tracking-widest uppercase mb-4 pb-3 border-b border-purple-500/15">
+                      Active Unlocks ({unlocks.length})
+                    </h3>
+                    <div className="flex flex-col gap-2 max-h-[500px] overflow-y-auto">
+                      {unlocks.length === 0 ? (
+                        <p className="font-rajdhani text-slate-600 text-sm text-center py-6">No feature unlocks active.</p>
+                      ) : unlocks.map((u:any) => (
+                        <div key={u.id} className="border border-purple-500/10 p-3 flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-orbitron text-xs text-purple-400">{u.feature}</div>
+                            <div className="font-rajdhani text-xs text-white mt-0.5">
+                              {u.user?.nickname || u.user?.name} <span className="text-slate-600">({u.user?.email})</span>
+                            </div>
+                            {u.note && <div className="font-rajdhani text-[10px] text-slate-600 mt-0.5">{u.note}</div>}
+                            <div className="font-rajdhani text-[10px] text-slate-700 mt-0.5">
+                              {new Date(u.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <button onClick={()=>revokeUnlock(u.userId, u.feature)}
+                            className="font-orbitron text-[8px] px-2 py-1 border border-red-500/30 text-red-400 hover:bg-red-900/20 transition-all flex-shrink-0">
+                            REVOKE
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}

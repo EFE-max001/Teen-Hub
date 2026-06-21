@@ -16,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (req.method === 'POST') {
-    const { title, category, difficulty, rankRequired, rewardXp, instructions, deadline } = req.body
+    const { title, category, difficulty, rankRequired, rewardXp, cashReward, instructions, deadline } = req.body
     if (!title || !instructions) return res.status(400).json({ error: 'Title and instructions required' })
 
     const quest = await prisma.quest.create({
@@ -26,6 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         difficulty: difficulty || 'Medium',
         rankRequired: rankRequired || 'F',
         rewardXp: parseInt(rewardXp) || 100,
+        cashReward: cashReward ? parseFloat(cashReward) : null,
         instructions,
         deadline: deadline ? new Date(deadline) : null,
         status: 'OPEN',

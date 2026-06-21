@@ -129,6 +129,9 @@ model User {
   trustEvents        TrustEvent[]
   postsAuthored      CommunityPost[]
   verifications      ProfileVerification[]
+  feedbacks          Feedback[]
+  feedbackReplies    FeedbackReply[]
+  featureUnlocks     UserFeatureUnlock[]
 }
 
 model Account {
@@ -164,24 +167,26 @@ model VerificationToken {
 }
 
 model Trial {
-  id           String      @id @default(cuid())
-  userId       String      @unique
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  age          Int
-  skills       String[]
-  strengths    String
-  whyJoin      String
-  availability String
-  contactInfo  String
-  portfolioUrl String?
-  status       TrialStatus @default(PENDING)
-  score        Int?
-  aiScore      Int?
-  aiSummary    String?
+  id               String      @id @default(cuid())
+  userId           String      @unique
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  age              Int
+  skills           String[]
+  strengths        String
+  whyJoin          String
+  availability     String
+  contactInfo      String
+  portfolioUrl     String?
+  status           TrialStatus @default(PENDING)
+  score            Int?
+  aiScore          Int?
+  aiSummary        String?
   aiRecommendation String?
-  judgeNotes   String?
-  submittedAt  DateTime    @default(now())
-  reviewedAt   DateTime?
+  judgeNotes       String?
+  assignedTaskId   String?
+  assignedTask     TrialTask?  @relation(fields: [assignedTaskId], references: [id])
+  submittedAt      DateTime    @default(now())
+  reviewedAt       DateTime?
 }
 
 model Quest {
@@ -192,6 +197,7 @@ model Quest {
   rankRequired   Rank        @default(F)
   deadline       DateTime?
   rewardXp       Int         @default(50)
+  cashReward     Float?
   instructions   String
   status         QuestStatus @default(OPEN)
   claimedById    String?
@@ -312,6 +318,7 @@ model TrialTask {
   deadlineHours Int      @default(24)
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
+  assignments   Trial[]
 }
 
 model AdminPermission {
@@ -414,6 +421,44 @@ model CommunityPost {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
   author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+// ─── Feedback System ───────────────────────────────────────────────────────
+
+model Feedback {
+  id        String          @id @default(cuid())
+  userId    String?
+  email     String?
+  type      String          @default("GENERAL")
+  content   String
+  status    String          @default("OPEN")
+  isRead    Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  replies   FeedbackReply[]
+}
+
+model FeedbackReply {
+  id         String   @id @default(cuid())
+  feedbackId String
+  authorId   String
+  content    String
+  createdAt  DateTime @default(now())
+  feedback   Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+// ─── Feature Unlock ────────────────────────────────────────────────────────
+
+model UserFeatureUnlock {
+  id           String   @id @default(cuid())
+  userId       String
+  feature      String
+  unlockedById String
+  note         String?
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, feature])
 }
 
 // ─── Profile Verification ──────────────────────────────────────────────────

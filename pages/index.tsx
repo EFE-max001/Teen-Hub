@@ -1,35 +1,45 @@
-
 import Head from 'next/head'
 import Link from 'next/link'
-import Layout from '@/components/layout/Layout'
+import { GetServerSideProps } from 'next'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import GlowButton from '@/components/ui/GlowButton'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 
 const RANKS = [
-  { rank: 'F',   label: 'Initiate',  color: 'text-slate-400',  border: 'border-slate-600/40',  desc: 'New & untested'        },
-  { rank: 'E',   label: 'Operative', color: 'text-green-400',  border: 'border-green-600/40',  desc: 'Basic active member'   },
-  { rank: 'D',   label: 'Specialist',color: 'text-blue-400',   border: 'border-blue-600/40',   desc: 'Starter worker'        },
-  { rank: 'C',   label: 'Vanguard',  color: 'text-yellow-400', border: 'border-yellow-600/40', desc: 'Dependable contributor'},
-  { rank: 'B',   label: 'Commander', color: 'text-orange-400', border: 'border-orange-600/40', desc: 'Strong performer'      },
-  { rank: 'A',   label: 'Elite',     color: 'text-purple-400', border: 'border-purple-500/60', desc: 'Highly trusted'        },
-  { rank: 'S',   label: 'Sovereign', color: 'text-pink-400',   border: 'border-pink-500/60',   desc: 'Guild legend'          },
-  { rank: 'SS',  label: 'Warlord',   color: 'text-red-400',    border: 'border-red-500/60',    desc: 'Legendary status'      },
-  { rank: 'SSS', label: 'Mythic',    color: 'text-amber-300',  border: 'border-amber-400/60',  desc: 'Ultra-rare. Chosen.'   },
+  { rank: 'F',   label: 'Initiate',   color: 'text-slate-400',  border: 'border-slate-600/40',  glow: '',                                  desc: 'Unproven. The starting point for every operative.' },
+  { rank: 'E',   label: 'Operative',  color: 'text-green-400',  border: 'border-green-600/40',  glow: 'shadow-[0_0_15px_rgba(74,222,128,0.15)]',  desc: 'Proven active. Basic member rights unlocked.' },
+  { rank: 'D',   label: 'Specialist', color: 'text-blue-400',   border: 'border-blue-600/40',   glow: 'shadow-[0_0_15px_rgba(96,165,250,0.15)]',  desc: 'Skilled contributor. Quest access widens.' },
+  { rank: 'C',   label: 'Vanguard',   color: 'text-yellow-400', border: 'border-yellow-600/40', glow: 'shadow-[0_0_15px_rgba(250,204,21,0.15)]',  desc: 'Dependable force. High-value tasks open.' },
+  { rank: 'B',   label: 'Commander',  color: 'text-orange-400', border: 'border-orange-500/50', glow: 'shadow-[0_0_15px_rgba(251,146,60,0.2)]',   desc: 'Strong track record. Leadership adjacent.' },
+  { rank: 'A',   label: 'Elite',      color: 'text-purple-400', border: 'border-purple-500/60', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.25)]',  desc: 'Top performer. Guild\'s most trusted operatives.' },
+  { rank: 'S',   label: 'Sovereign',  color: 'text-pink-400',   border: 'border-pink-500/60',   glow: 'shadow-[0_0_20px_rgba(236,72,153,0.25)]',  desc: 'Living legend. Rare. Chosen by the council.' },
+  { rank: 'SS',  label: 'Warlord',    color: 'text-red-400',    border: 'border-red-500/60',    glow: 'shadow-[0_0_25px_rgba(239,68,68,0.3)]',    desc: 'Mythic performer. One of the guild\'s pillars.' },
+  { rank: 'SSS', label: 'Mythic',     color: 'text-amber-300',  border: 'border-amber-400/70',  glow: 'shadow-[0_0_30px_rgba(252,211,77,0.35)]',  desc: 'Ultra-rare. The absolute pinnacle. Unchallengeable.' },
+]
+
+const STEPS = [
+  { step: '01', title: 'Create Account',    icon: '◈', desc: 'Register your operative profile. Your identity in the guild network starts here.' },
+  { step: '02', title: 'Submit Application', icon: '◉', desc: 'Fill out the guild application. The Council reviews every submission personally.' },
+  { step: '03', title: 'Complete Trial',     icon: '◍', desc: 'Assigned a real task. Scored on quality, speed, reliability, and attitude.' },
+  { step: '04', title: 'Rise Through Ranks', icon: '◎', desc: 'Accepted into the guild. Earn XP, complete quests, and climb from F to SSS.' },
 ]
 
 const QUEST_TYPES = [
-  { icon: '🎨', label: 'Graphic Design',  desc: 'Flyers, banners, brand visuals'   },
-  { icon: '✍️', label: 'Writing',          desc: 'Captions, copy, articles'         },
-  { icon: '🎬', label: 'Video Editing',   desc: 'Reels, clips, promos'             },
-  { icon: '🔬', label: 'Research',        desc: 'Data gathering, reports'          },
-  { icon: '🌐', label: 'Web Tasks',       desc: 'Site updates, testing'            },
-  { icon: '📱', label: 'Social Media',    desc: 'Content, scheduling, growth'      },
+  { icon: '◈', label: 'Graphic Design',  color: 'text-purple-400', desc: 'Logos, banners, social visuals, brand identity work'  },
+  { icon: '◉', label: 'Writing & Copy',  color: 'text-blue-400',   desc: 'Captions, articles, scripts, ad copy, blog posts'      },
+  { icon: '◍', label: 'Video Editing',   color: 'text-pink-400',   desc: 'Reels, short-form promos, YouTube edits, transitions'  },
+  { icon: '◎', label: 'Research Ops',    color: 'text-yellow-400', desc: 'Market data, competitor analysis, sourcing, reports'   },
+  { icon: '◆', label: 'Web Operations',  color: 'text-green-400',  desc: 'Site updates, QA testing, CMS management, bug reports' },
+  { icon: '◇', label: 'Social Media',    color: 'text-orange-400', desc: 'Content planning, scheduling, community growth'        },
 ]
 
-const HOW_IT_WORKS = [
-  { step: '01', title: 'Register',        desc: 'Create your operative account. This gives you access to the guild network.' },
-  { step: '02', title: 'Apply',           desc: 'Submit your guild application from your dashboard. Show the Council what you are made of.' },
-  { step: '03', title: 'Complete Trial',  desc: 'Prove your skills. Scored on quality, speed, reliability, and attitude.' },
-  { step: '04', title: 'Rise Through Ranks', desc: 'Get accepted, earn XP, complete quests, and climb from F all the way to SSS.' },
+const AI_FEATURES = [
+  { title: 'Trial Evaluation',  desc: 'SENTINEL AI scores every trial submission — quality, reliability, attitude — and generates a recommendation for the council.' },
+  { title: 'Trust Scoring',     desc: 'Every action is logged. Quest completions, abandonments, warnings. Your trust score is calculated in real-time.' },
+  { title: 'Risk Detection',    desc: 'Anomaly detection flags ghosting patterns, quality drops, and suspicious behavior before it becomes a problem.' },
+  { title: 'Achievement Engine',desc: 'AI monitors member progress and auto-awards achievements the moment you hit a qualifying milestone.' },
 ]
 
 export default function LandingPage() {
@@ -37,222 +47,368 @@ export default function LandingPage() {
     <>
       <Head>
         <title>QuestHub Guild — Elite Teen Talent Platform</title>
-        <meta name="description" content="An elite guild for talented teens. Apply, rank up, complete quests, and rise through the ranks." />
+        <meta name="description" content="An elite guild for talented teens. Apply, survive the trial, rank up, and complete real quests that build a reputation that matters." />
       </Head>
 
-      <Layout>
+      <div className="min-h-screen bg-deep-black flex flex-col">
+        <Navbar />
+        <main className="flex-1 pt-16">
 
-        {/* ── HERO ── */}
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden grid-bg px-4">
-          {/* Glow orbs */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-1/4 left-1/4 w-64 h-64 bg-purple-800/10 rounded-full blur-3xl pointer-events-none" />
+          {/* ── HERO ──────────────────────────────────────────── */}
+          <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4 py-20">
+            {/* Grid bg */}
+            <div className="absolute inset-0 grid-bg opacity-60 pointer-events-none" />
 
-          {/* Accent lines */}
-          <div className="absolute top-0 right-0 w-px h-64 bg-gradient-to-b from-transparent via-purple-500/40 to-transparent" />
-          <div className="absolute bottom-0 left-0 w-px h-64 bg-gradient-to-t from-transparent via-purple-500/40 to-transparent" />
+            {/* Orbs */}
+            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-700/6 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute bottom-1/4 left-1/4 w-72 h-72 bg-purple-900/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-1/4 right-1/4 w-48 h-48 bg-fuchsia-900/8 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 text-center max-w-4xl mx-auto">
-            {/* Tag */}
-            <div className="inline-flex items-center gap-3 mb-8">
-              <div className="w-12 h-px bg-purple-500/60" />
-              <span className="font-orbitron text-xs text-purple-400 tracking-[0.4em] uppercase">
-                Elite Guild Platform
-              </span>
-              <div className="w-12 h-px bg-purple-500/60" />
-            </div>
+            {/* Accent lines */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-b from-purple-500/40 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-t from-purple-500/40 to-transparent pointer-events-none" />
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-px w-32 bg-gradient-to-r from-transparent to-purple-500/30 pointer-events-none" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 h-px w-32 bg-gradient-to-l from-transparent to-purple-500/30 pointer-events-none" />
 
-            {/* Headline */}
-            <h1 className="font-orbitron font-black text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-tight mb-6">
-              PROVE YOUR
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-purple-300 to-pink-400 glow-text">
-                WORTH.
-              </span>
-              CLAIM YOUR
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-purple-300 to-pink-400 glow-text">
-                RANK.
-              </span>
-            </h1>
+            <div className="relative z-10 text-center max-w-5xl mx-auto w-full">
 
-            {/* Subtitle */}
-            <p className="font-rajdhani text-base sm:text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-              QuestHub Guild is an elite platform for talented teens. Complete quests, earn XP, rise through ranks — and build a real reputation that matters.
-            </p>
+              {/* Status badge */}
+              <div className="inline-flex items-center gap-3 mb-8 border border-purple-500/25 bg-purple-950/30 px-4 py-2 backdrop-blur-sm">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="font-orbitron text-[9px] sm:text-[10px] text-slate-400 tracking-[0.35em] uppercase">Guild Network Online</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" style={{ animationDelay: '0.5s' }} />
+              </div>
 
-            {/* CTAs — Register only, no apply */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/auth/register">
-                <GlowButton size="lg" variant="primary">
-                  Join the Guild
-                </GlowButton>
-              </Link>
-              <Link href="/#how-it-works">
-                <GlowButton size="lg" variant="secondary">
-                  How It Works
-                </GlowButton>
-              </Link>
-            </div>
+              {/* Main heading */}
+              <div className="mb-4">
+                <h1 className="font-orbitron font-black leading-none tracking-tight">
+                  <span className="block text-4xl sm:text-6xl md:text-8xl lg:text-9xl text-white">
+                    QUEST<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500">HUB</span>
+                  </span>
+                  <span className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-slate-500 tracking-[0.25em] mt-1">
+                    G U I L D
+                  </span>
+                </h1>
+              </div>
 
-            {/* Stats */}
-            <div className="mt-16 grid grid-cols-3 gap-4 sm:gap-8 max-w-lg mx-auto">
-              {[['9', 'Rank Tiers'], ['∞', 'Quests'], ['0', 'BS Tolerated']].map(([val, label]) => (
-                <div key={label} className="text-center">
-                  <div className="font-orbitron font-black text-2xl sm:text-3xl text-purple-300 glow-text">{val}</div>
-                  <div className="font-rajdhani text-xs text-slate-500 tracking-widest uppercase mt-1">{label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+              {/* Divider line */}
+              <div className="flex items-center justify-center gap-4 mb-8">
+                <div className="flex-1 max-w-24 h-px bg-gradient-to-r from-transparent to-purple-500/50" />
+                <span className="font-orbitron text-[9px] text-purple-400/70 tracking-[0.4em] uppercase">Elite Talent Platform</span>
+                <div className="flex-1 max-w-24 h-px bg-gradient-to-l from-transparent to-purple-500/50" />
+              </div>
 
-          {/* Scroll indicator */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce">
-            <div className="w-px h-8 bg-gradient-to-b from-purple-500/60 to-transparent" />
-            <div className="w-1.5 h-1.5 bg-purple-400 rotate-45" />
-          </div>
-        </section>
-
-        {/* ── HOW IT WORKS ── */}
-        <section id="how-it-works" className="py-20 px-4 relative">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-14">
-              <span className="font-orbitron text-xs text-purple-400 tracking-[0.4em] uppercase">Protocol</span>
-              <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3">
-                HOW IT WORKS
-              </h2>
-              <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto mt-4" />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {HOW_IT_WORKS.map((item, i) => (
-                <div
-                  key={i}
-                  className="relative bg-card-bg border border-purple-500/20 p-6 group hover:border-purple-500/50 transition-all duration-300"
-                >
-                  <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/50 group-hover:border-purple-400 transition-colors" />
-                  <span className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-purple-500/50 group-hover:border-purple-400 transition-colors" />
-                  <div className="font-orbitron font-black text-4xl text-purple-500/20 group-hover:text-purple-500/40 transition-colors mb-4">
-                    {item.step}
-                  </div>
-                  <h3 className="font-orbitron font-bold text-base text-white mb-2">{item.title}</h3>
-                  <p className="font-rajdhani text-slate-400 text-sm leading-relaxed">{item.desc}</p>
-                  {i < HOW_IT_WORKS.length - 1 && (
-                    <div className="hidden lg:block absolute top-1/2 -right-3 w-6 h-px bg-purple-500/40 z-10" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── RANKS ── */}
-        <section id="ranks" className="py-20 px-4 relative bg-black/30">
-          <div className="absolute inset-0 bg-purple-glow opacity-30 pointer-events-none" />
-          <div className="max-w-6xl mx-auto relative z-10">
-            <div className="text-center mb-14">
-              <span className="font-orbitron text-xs text-purple-400 tracking-[0.4em] uppercase">Hierarchy</span>
-              <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3">
-                RANK SYSTEM
-              </h2>
-              <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto mt-4" />
-              <p className="font-rajdhani text-slate-400 mt-4 max-w-xl mx-auto">
-                Every operative starts at F. Rise through discipline, consistency, and excellence. SS and SSS are reserved for the legendary few.
+              {/* Subtitle */}
+              <p className="font-rajdhani text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed px-2">
+                An elite guild for talented teens. Not everyone gets in — you have to earn it.
+                Apply, survive the trial, rank up from{' '}
+                <span className="text-slate-300 font-semibold">F to SSS</span>, and complete real operations
+                that build a reputation that actually matters.
               </p>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-14">
+                <Link href="/apply">
+                  <GlowButton size="lg" variant="primary" className="w-48 sm:w-auto animate-pulse-glow">
+                    Apply to Join
+                  </GlowButton>
+                </Link>
+                <Link href="/auth/register">
+                  <GlowButton size="lg" variant="secondary" className="w-48 sm:w-auto">
+                    Create Account
+                  </GlowButton>
+                </Link>
+                <Link href="/auth/login">
+                  <GlowButton size="lg" variant="ghost" className="w-48 sm:w-auto">
+                    Sign In
+                  </GlowButton>
+                </Link>
+              </div>
+
+              {/* Stats bar */}
+              <div className="inline-flex flex-col sm:flex-row items-center gap-0 sm:gap-px border border-purple-500/20 overflow-hidden">
+                {[
+                  ['9', 'Rank Tiers'],
+                  ['∞', 'Operations'],
+                  ['AI', 'Powered'],
+                  ['0', 'BS Tolerated'],
+                ].map(([val, label], i) => (
+                  <div
+                    key={label}
+                    className="flex flex-row sm:flex-col items-center sm:items-center gap-3 sm:gap-0.5 px-6 sm:px-8 py-3 sm:py-4 border-b sm:border-b-0 sm:border-r border-purple-500/15 last:border-0 w-full sm:w-auto"
+                  >
+                    <span className="font-orbitron font-black text-lg sm:text-2xl text-purple-300 glow-text">{val}</span>
+                    <span className="font-rajdhani text-[10px] text-slate-600 tracking-[0.25em] uppercase">{label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              {RANKS.map((r) => (
-                <div
-                  key={r.rank}
-                  className={`relative bg-card-bg border ${r.border} p-4 text-center group hover:scale-105 transition-all duration-300`}
-                >
-                  <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-current opacity-30" />
-                  <div className={`font-orbitron font-black text-3xl ${r.color} mb-1`}>{r.rank}</div>
-                  <div className={`font-orbitron text-xs ${r.color} opacity-70 tracking-widest mb-2`}>{r.label}</div>
-                  <div className="font-rajdhani text-slate-500 text-xs">{r.desc}</div>
-                </div>
+            {/* Scroll indicator */}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce">
+              <div className="w-px h-8 bg-gradient-to-b from-purple-500/60 to-transparent" />
+              <div className="w-1.5 h-1.5 bg-purple-400 rotate-45" />
+            </div>
+          </section>
+
+          {/* ── TICKER ──────────────────────────────────────────── */}
+          <div className="border-y border-purple-500/20 bg-purple-950/20 overflow-hidden py-2.5">
+            <div className="flex items-center gap-8 whitespace-nowrap animate-marquee">
+              {Array.from({ length: 3 }).flatMap(() => [
+                '◈ GRAPHIC DESIGN OPS AVAILABLE',
+                '◉ AI TRIAL EVALUATION ACTIVE',
+                '◍ TRUST ENGINE MONITORING',
+                '◎ QUEST BOARD LIVE',
+                '◆ NEW RANK TIERS: SS AND SSS',
+                '◇ SENTINEL AI ONLINE',
+                '◈ ZERO TOLERANCE FOR GHOSTING',
+                '◉ MERIT-BASED PROMOTIONS ONLY',
+              ]).map((text, i) => (
+                <span key={i} className="font-orbitron text-[9px] text-purple-400/60 tracking-[0.3em] uppercase flex-shrink-0">
+                  {text}
+                </span>
               ))}
             </div>
           </div>
-        </section>
 
-        {/* ── QUEST TYPES ── */}
-        <section id="quests" className="py-20 px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-14">
-              <span className="font-orbitron text-xs text-purple-400 tracking-[0.4em] uppercase">Operations</span>
-              <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3">
-                QUEST TYPES
+          {/* ── HOW IT WORKS ──────────────────────────────────────── */}
+          <section id="how-it-works" className="py-20 sm:py-28 px-4 sm:px-6 relative">
+            <div className="max-w-6xl mx-auto">
+              <div className="text-center mb-12 sm:mb-16">
+                <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase">Initiation Protocol</span>
+                <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
+                  THE PATH FORWARD
+                </h2>
+                <div className="w-20 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                {STEPS.map((item, i) => (
+                  <div key={i} className="relative">
+                    {/* Connector line */}
+                    {i < STEPS.length - 1 && (
+                      <div className="hidden lg:block absolute top-10 left-full w-full h-px bg-gradient-to-r from-purple-500/30 to-transparent z-10 translate-x-[-50%]" style={{ width: 'calc(100% - 2.5rem)', left: '100%', transform: 'none', right: '-50%' }} />
+                    )}
+                    <div className="relative bg-black/60 border border-purple-500/20 p-5 sm:p-6 group hover:border-purple-500/50 hover:bg-purple-950/20 transition-all duration-300">
+                      <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-purple-500/50 group-hover:border-purple-400 transition-colors" />
+                      <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-purple-500/50 group-hover:border-purple-400 transition-colors" />
+
+                      <div className="font-orbitron font-black text-5xl sm:text-6xl text-purple-500/15 group-hover:text-purple-500/30 transition-colors mb-3 leading-none">
+                        {item.step}
+                      </div>
+                      <div className="font-orbitron text-purple-400/60 text-xl mb-2">{item.icon}</div>
+                      <h3 className="font-orbitron font-bold text-sm sm:text-base text-white mb-2">{item.title}</h3>
+                      <p className="font-rajdhani text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ── RANK SYSTEM ──────────────────────────────────────── */}
+          <section id="ranks" className="py-20 sm:py-28 px-4 sm:px-6 bg-black/40 relative overflow-hidden">
+            <div className="absolute inset-0 bg-purple-glow opacity-20 pointer-events-none" />
+            <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
+
+            <div className="max-w-7xl mx-auto relative z-10">
+              <div className="text-center mb-12 sm:mb-16">
+                <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase">Power Structure</span>
+                <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
+                  THE HIERARCHY
+                </h2>
+                <div className="w-20 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto mb-4" />
+                <p className="font-rajdhani text-slate-500 text-sm sm:text-base max-w-lg mx-auto">
+                  Nine tiers of power. F to SSS. Every rank is earned — never given.
+                  SS and SSS are reserved for the legends.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2 sm:gap-3">
+                {RANKS.map((r, i) => (
+                  <div
+                    key={r.rank}
+                    className={`relative bg-black/80 border ${r.border} ${r.glow} p-3 sm:p-4 text-center group hover:scale-105 transition-all duration-300 cursor-default`}
+                    title={`${r.label}: ${r.desc}`}
+                  >
+                    <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-current opacity-20" />
+                    <span className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-current opacity-20" />
+                    <div className={`font-orbitron font-black text-xl sm:text-2xl md:text-3xl ${r.color} mb-0.5 group-hover:glow-text transition-all`}>
+                      {r.rank}
+                    </div>
+                    <div className={`font-orbitron text-[7px] sm:text-[8px] ${r.color} opacity-60 tracking-widest hidden sm:block`}>
+                      {r.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Rank descriptions on hover — shown below on mobile */}
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {RANKS.slice(6).map((r) => (
+                  <div key={r.rank} className={`border ${r.border} bg-black/60 p-3 flex items-start gap-3`}>
+                    <span className={`font-orbitron font-black text-lg ${r.color} flex-shrink-0`}>{r.rank}</span>
+                    <div>
+                      <div className={`font-orbitron text-xs ${r.color} mb-0.5`}>{r.label}</div>
+                      <div className="font-rajdhani text-slate-500 text-xs">{r.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ── SENTINEL AI ──────────────────────────────────────── */}
+          <section className="py-20 sm:py-28 px-4 sm:px-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent pointer-events-none" />
+
+            <div className="max-w-6xl mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                {/* Left */}
+                <div>
+                  <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase">AI Automation Layer</span>
+                  <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
+                    SENTINEL AI
+                  </h2>
+                  <div className="w-20 h-px bg-gradient-to-r from-purple-500 to-transparent mb-6" />
+                  <p className="font-rajdhani text-slate-400 text-base sm:text-lg leading-relaxed mb-6">
+                    Every operative is watched by SENTINEL — our AI layer that scores trials,
+                    tracks trust, detects risk, and awards achievements in real-time.
+                    You cannot fake your way to the top.
+                  </p>
+                  <div className="bg-black/60 border border-purple-500/20 p-4 font-mono text-xs">
+                    <div className="text-green-400/80 mb-1">{'>'} SENTINEL.evaluate(trial_submission)</div>
+                    <div className="text-slate-500 mb-1">{'>'} Scoring quality... reliability... attitude...</div>
+                    <div className="text-purple-400 mb-1">{'>'} Trust delta: <span className="text-green-400">+12pts</span></div>
+                    <div className="text-slate-500">{'>'} Recommendation: <span className="text-green-400">ACCEPT</span></div>
+                  </div>
+                </div>
+
+                {/* Right */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {AI_FEATURES.map((f, i) => (
+                    <div key={i} className="relative bg-black/60 border border-purple-500/20 p-4 sm:p-5 group hover:border-purple-400/50 transition-all duration-300">
+                      <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/40 group-hover:border-purple-400 transition-colors" />
+                      <div className="font-orbitron font-bold text-xs sm:text-sm text-purple-400 mb-2">{f.title}</div>
+                      <p className="font-rajdhani text-slate-500 text-xs sm:text-sm leading-relaxed">{f.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ── QUEST TYPES ──────────────────────────────────────── */}
+          <section id="quests" className="py-20 sm:py-28 px-4 sm:px-6 bg-black/30 relative">
+            <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
+            <div className="max-w-6xl mx-auto relative z-10">
+              <div className="text-center mb-12 sm:mb-16">
+                <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase">Active Operations</span>
+                <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
+                  QUEST TYPES
+                </h2>
+                <div className="w-20 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto mb-4" />
+                <p className="font-rajdhani text-slate-500 text-sm sm:text-base max-w-xl mx-auto">
+                  Real work. Real skills. Some quests pay cash. All quests pay XP.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                {QUEST_TYPES.map((q, i) => (
+                  <div
+                    key={i}
+                    className="relative bg-black/60 border border-purple-500/15 p-5 sm:p-6 group hover:border-purple-400/40 hover:bg-purple-950/10 transition-all duration-300"
+                  >
+                    <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-purple-500/30 group-hover:border-purple-400 transition-colors" />
+                    <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-purple-500/30 group-hover:border-purple-400 transition-colors" />
+                    <div className={`font-orbitron text-3xl ${q.color} mb-3 group-hover:glow-text transition-all`}>{q.icon}</div>
+                    <h3 className={`font-orbitron font-bold text-sm sm:text-base ${q.color} mb-2`}>{q.label}</h3>
+                    <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">{q.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ── LEGITIMACY ──────────────────────────────────────── */}
+          <section className="py-20 sm:py-28 px-4 sm:px-6 relative overflow-hidden">
+            <div className="absolute inset-0 bg-purple-glow opacity-10 pointer-events-none" />
+            <div className="max-w-5xl mx-auto relative z-10">
+              <div className="text-center mb-10">
+                <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase">Legitimacy</span>
+                <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
+                  THIS IS REAL.
+                </h2>
+                <div className="w-20 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto mb-4" />
+                <p className="font-rajdhani text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+                  QuestHub Guild is not a game. Quests are real work with real consequences.
+                  Every action is logged. Every rank is earned. The council is always watching.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+                {[
+                  { icon: '🛡️', title: 'Admin Moderated',    desc: 'Every trial, quest, and submission reviewed by real admins — not automated bots.' },
+                  { icon: '⚡',  title: 'Merit-Only Ranking', desc: 'No shortcuts. No exceptions. Every rank is earned through consistent, quality output.' },
+                  { icon: '🔒', title: 'Zero Tolerance',      desc: 'Ghosting, dishonesty, and low quality are actioned instantly. Warnings stack. Bans happen.' },
+                ].map((item, i) => (
+                  <div key={i} className="relative bg-black/60 border border-purple-500/20 p-5 sm:p-6 group hover:border-purple-400/40 transition-all duration-300">
+                    <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/30" />
+                    <div className="text-2xl sm:text-3xl mb-3">{item.icon}</div>
+                    <h3 className="font-orbitron font-bold text-sm text-white mb-2">{item.title}</h3>
+                    <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ── FINAL CTA ──────────────────────────────────────── */}
+          <section className="py-24 sm:py-32 px-4 sm:px-6 relative overflow-hidden bg-black/50">
+            <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
+            <div className="absolute inset-0 bg-purple-glow opacity-20 pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent pointer-events-none" />
+
+            <div className="max-w-3xl mx-auto text-center relative z-10">
+              <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase block mb-4">The Question Is Simple</span>
+              <h2 className="font-orbitron font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-4 leading-none">
+                DO YOU HAVE
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 mt-1">
+                  WHAT IT TAKES?
+                </span>
               </h2>
-              <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto mt-4" />
+              <div className="w-24 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto my-6" />
+              <p className="font-rajdhani text-slate-400 text-sm sm:text-base md:text-lg mb-10 leading-relaxed">
+                Create your account, submit your application, and let the Guild Council decide.
+                Most applicants don't make it. The ones who do don't forget it.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link href="/apply">
+                  <GlowButton size="lg" variant="primary" className="w-52 sm:w-auto animate-pulse-glow">
+                    Apply to the Guild
+                  </GlowButton>
+                </Link>
+                <Link href="/auth/register">
+                  <GlowButton size="lg" variant="secondary" className="w-52 sm:w-auto">
+                    Create Account First
+                  </GlowButton>
+                </Link>
+              </div>
             </div>
+          </section>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {QUEST_TYPES.map((q, i) => (
-                <div
-                  key={i}
-                  className="relative bg-card-bg border border-purple-500/20 p-6 group hover:border-purple-400/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.1)] transition-all duration-300"
-                >
-                  <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/40 group-hover:border-purple-400 transition-colors" />
-                  <span className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-purple-500/40 group-hover:border-purple-400 transition-colors" />
-                  <div className="text-3xl mb-3">{q.icon}</div>
-                  <h3 className="font-orbitron font-bold text-sm text-white mb-2">{q.label}</h3>
-                  <p className="font-rajdhani text-slate-400 text-sm">{q.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── TRUST ── */}
-        <section className="py-20 px-4 bg-black/30 relative overflow-hidden">
-          <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
-          <div className="max-w-4xl mx-auto text-center relative z-10">
-            <span className="font-orbitron text-xs text-purple-400 tracking-[0.4em] uppercase">Legitimacy</span>
-            <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-6">
-              THIS IS REAL.
-            </h2>
-            <p className="font-rajdhani text-slate-400 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto mb-12">
-              QuestHub Guild is not a game. It is a structured, moderated platform with real quests, real admin oversight, real rank requirements, and real consequences for rule-breaking.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {[
-                { icon: '🛡️', title: 'Admin Moderated',   desc: 'Every quest, member, and submission is reviewed by trained admins.'         },
-                { icon: '⚡',  title: 'Merit-Based',       desc: 'No shortcuts. Every rank is earned through consistent, quality work.'       },
-                { icon: '🔒', title: 'Anti-Abuse System', desc: 'Strict rules, claim limits, moderation logs, and instant ban tools.'        },
-              ].map((item, i) => (
-                <div key={i} className="bg-card-bg border border-purple-500/20 p-6 text-left">
-                  <div className="text-2xl mb-3">{item.icon}</div>
-                  <h3 className="font-orbitron font-bold text-sm text-white mb-2">{item.title}</h3>
-                  <p className="font-rajdhani text-slate-400 text-sm leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── FINAL CTA ── */}
-        <section className="py-24 px-4 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent pointer-events-none" />
-          <div className="max-w-3xl mx-auto text-center relative z-10">
-            <h2 className="font-orbitron font-black text-3xl sm:text-4xl md:text-5xl text-white mb-4 leading-tight">
-              READY TO PROVE
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-                YOUR WORTH?
-              </span>
-            </h2>
-            <p className="font-rajdhani text-slate-400 text-base sm:text-lg mb-10">
-              Create your account, submit your application, and let the Guild Council decide if you have what it takes.
-            </p>
-            <Link href="/auth/register">
-              <GlowButton size="lg" variant="primary" className="animate-pulse-glow">
-                Create Your Account
-              </GlowButton>
-            </Link>
-          </div>
-        </section>
-
-      </Layout>
+        </main>
+        <Footer />
+      </div>
     </>
   )
+}
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const session = await getServerSession(ctx.req, ctx.res, authOptions)
+  if (session) {
+    return { redirect: { destination: '/dashboard', permanent: false } }
+  }
+  return { props: {} }
 }
