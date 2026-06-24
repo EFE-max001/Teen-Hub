@@ -71,6 +71,25 @@ export default function FounderDashboard() {
 
   // Forms
   const [questForm, setQuestForm] = useState({ title:'',category:'Design',difficulty:'Medium',rankRequired:'F',rewardXp:'100',cashReward:'',instructions:'',deadline:'' })
+  const [reviewDrafts, setReviewDrafts] = useState<Record<string, { rating: number; feedback: string; note: string }>>({})
+  const [aiPreScreens, setAiPreScreens] = useState<Record<string, any>>({})
+  const [reviewLoading, setReviewLoading] = useState<string | null>(null)
+  const [userDetail, setUserDetail] = useState<any>(null)
+  const [userDetailLoading, setUserDetailLoading] = useState(false)
+
+  async function openUserDetail(id: string) {
+    setUserDetail({ loading: true })
+    setUserDetailLoading(true)
+    try {
+      const res = await fetch(`/api/founder/user/${id}/detail`)
+      const data = await res.json()
+      setUserDetail(data)
+    } catch {
+      setUserDetail(null)
+    } finally {
+      setUserDetailLoading(false)
+    }
+  }
   const [taskForm, setTaskForm] = useState({ title:'',description:'',category:'Design',difficulty:'Medium',instructions:'',deadlineHours:'24' })
   const [adminForm, setAdminForm] = useState({ name:'',email:'',password:'',role:'MODERATOR',canTrials:false,canQuests:false,canUsers:false,canReports:false,canArena:false })
   const [arenaForm, setArenaForm] = useState({ title:'',description:'',type:'challenge',xpReward:'50',cashReward:'',endsAt:'' })
@@ -169,6 +188,45 @@ export default function FounderDashboard() {
       body: JSON.stringify({ id, status }),
     })
     msg(status === 'PAID' ? 'Marked as paid.' : 'Reverted to pending.')
+    loadAll()
+  }
+
+  function draftFor(id: string) {
+    return reviewDrafts[id] || { rating: 0, feedback: '', note: '' }
+  }
+  function setDraft(id: string, patch: Partial<{ rating: number; feedback: string; note: string }>) {
+    setReviewDrafts(prev => ({ ...prev, [id]: { ...draftFor(id), ...patch } }))
+  }
+
+  async function runAiPreScreen(id: string) {
+    setReviewLoading(id + ':ai')
+    try {
+      const res = await fetch(`/api/quests/${id}/review`)
+      const data = await res.json()
+      setAiPreScreens(prev => ({ ...prev, [id]: data.aiReview || data.error }))
+    } finally {
+      setReviewLoading(null)
+    }
+  }
+
+  async function submitQuestReview(id: string, decision: 'APPROVE' | 'REJECT') {
+    const draft = draftFor(id)
+    setReviewLoading(id + ':' + decision)
+    const res = await fetch(`/api/quests/${id}/review`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        decision,
+        reviewNote: draft.note || undefined,
+        clientRating: decision === 'APPROVE' && draft.rating > 0 ? draft.rating : undefined,
+        clientFeedback: decision === 'APPROVE' ? draft.feedback || undefined : undefined,
+      }),
+    })
+    const data = await res.json().catch(() => ({}))
+    setReviewLoading(null)
+    if (!res.ok) { msg(`Error: ${data.error || 'Failed to submit review.'}`); return }
+    msg(decision === 'APPROVE' ? 'Quest approved — member notified.' : 'Quest rejected and reopened to the board.')
+    setReviewDrafts(prev => { const next = { ...prev }; delete next[id]; return next })
     loadAll()
   }
 
@@ -572,6 +630,10 @@ export default function FounderDashboard() {
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex flex-wrap gap-1">
+                                  <button onClick={() => openUserDetail(u.id)}
+                                    className="font-orbitron text-[8px] px-2 py-0.5 border border-blue-500/40 text-blue-400 hover:bg-blue-900/20 transition-all">
+                                    DETAILS
+                                  </button>
                                   {['F','E','D','C','B','A','S','SS','SSS'].map(rank => (
                                     <button key={rank} onClick={() => updateUser(u.id,'setRank',rank)}
                                       className={`font-orbitron text-[8px] px-1.5 py-0.5 border transition-all ${u.rank===rank ? 'border-purple-400/60 text-purple-300' : 'border-slate-800 text-slate-700 hover:border-purple-500/30 hover:text-slate-400'}`}>
@@ -586,6 +648,12 @@ export default function FounderDashboard() {
                                     <button onClick={() => updateUser(u.id,'suspend')}
                                       className="font-orbitron text-[8px] px-2 py-0.5 border border-yellow-500/30 text-yellow-400 hover:bg-yellow-900/20 transition-all">
                                       SUSPEND
+                                    </button>
+                                  )}
+                                  {u.status==='SUSPENDED' && (
+                                    <button onClick={() => updateUser(u.id,'unsuspend')}
+                                      className="font-orbitron text-[8px] px-2 py-0.5 border border-green-500/40 text-green-400 hover:bg-green-900/20 transition-all">
+                                      REINSTATE
                                     </button>
                                   )}
                                   <button onClick={() => updateUser(u.id,'warn')}
@@ -655,6 +723,96 @@ export default function FounderDashboard() {
                       <GlowButton variant="primary" size="md" loading={saving} onClick={postQuest}>Post Quest</GlowButton>
                     </div>
                   </div>
+
+                  {/* Submissions awaiting review */}
+                  {quests.filter((q: any) => q.status === 'SUBMITTED').length > 0 && (
+                    <div className="lg:col-span-2 bg-[#0d0017] border border-blue-500/25 p-5">
+                      <h3 className="font-orbitron text-xs text-blue-400 tracking-widest uppercase mb-5 pb-3 border-b border-blue-500/20">
+                        Submissions Awaiting Review ({quests.filter((q: any) => q.status === 'SUBMITTED').length})
+                      </h3>
+                      <div className="flex flex-col gap-4">
+                        {quests.filter((q: any) => q.status === 'SUBMITTED').map((q: any) => {
+                          const draft = draftFor(q.id)
+                          const ai = aiPreScreens[q.id]
+                          return (
+                            <div key={q.id} className="border border-blue-500/15 p-4">
+                              <div className="flex items-start justify-between gap-3 mb-3">
+                                <div className="min-w-0">
+                                  <div className="font-orbitron text-sm text-white">{q.title}</div>
+                                  <div className="font-rajdhani text-xs text-slate-500 mt-0.5">
+                                    Submitted by {q.claimedBy?.nickname || q.claimedBy?.name || 'Unknown'} · {q.submittedAt ? new Date(q.submittedAt).toLocaleString() : ''}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => runAiPreScreen(q.id)}
+                                  disabled={reviewLoading === q.id + ':ai'}
+                                  className="font-orbitron text-[9px] px-3 py-1.5 border border-purple-500/40 text-purple-300 hover:bg-purple-900/20 transition-all whitespace-nowrap disabled:opacity-50">
+                                  {reviewLoading === q.id + ':ai' ? 'SCANNING…' : 'AI PRE-SCREEN'}
+                                </button>
+                              </div>
+
+                              <div className="bg-black/30 border border-blue-500/10 p-3 mb-3">
+                                <div className="font-orbitron text-[9px] text-slate-600 tracking-widest uppercase mb-1">Submission Note</div>
+                                <p className="font-rajdhani text-sm text-slate-300 whitespace-pre-wrap">{q.submissionNote}</p>
+                                {q.submissionUrl && (
+                                  <a href={q.submissionUrl} target="_blank" rel="noopener noreferrer" className="font-rajdhani text-sm text-purple-400 hover:text-purple-300 underline mt-1.5 inline-block break-all">
+                                    {q.submissionUrl}
+                                  </a>
+                                )}
+                              </div>
+
+                              {ai && (
+                                <div className="bg-purple-950/20 border border-purple-500/20 p-3 mb-3">
+                                  <div className="font-orbitron text-[9px] text-purple-400 tracking-widest uppercase mb-1">AI Advisory (not a decision)</div>
+                                  {typeof ai === 'string' ? (
+                                    <p className="font-rajdhani text-sm text-slate-400">{ai}</p>
+                                  ) : (
+                                    <>
+                                      <span className={`font-orbitron text-[10px] px-2 py-0.5 border ${ai.recommendation === 'ACCEPT' ? 'text-green-400 border-green-500/40' : ai.recommendation === 'REJECT' ? 'text-red-400 border-red-500/40' : 'text-yellow-400 border-yellow-500/40'}`}>
+                                        {ai.recommendation || 'REVIEW'}
+                                      </span>
+                                      {ai.summary && <p className="font-rajdhani text-sm text-slate-400 mt-2">{ai.summary}</p>}
+                                    </>
+                                  )}
+                                </div>
+                              )}
+
+                              <div className="grid sm:grid-cols-2 gap-3 mb-3">
+                                <div>
+                                  <label className="font-orbitron text-[9px] text-amber-400/70 tracking-widest uppercase block mb-1.5">Client Rating (optional)</label>
+                                  <div className="flex items-center gap-1">
+                                    {[1,2,3,4,5].map(n => (
+                                      <button key={n} onClick={() => setDraft(q.id, { rating: draft.rating === n ? 0 : n })}
+                                        className={`text-2xl leading-none transition-all ${n <= draft.rating ? 'text-amber-400' : 'text-slate-700 hover:text-slate-500'}`}>
+                                        ★
+                                      </button>
+                                    ))}
+                                    {draft.rating > 0 && <span className="font-rajdhani text-xs text-slate-500 ml-2">{draft.rating}/5</span>}
+                                  </div>
+                                </div>
+                                <div>
+                                  <GlowInput label="What the client said (optional)" placeholder="e.g. Loved the design, fast turnaround" value={draft.feedback} onChange={(e: any) => setDraft(q.id, { feedback: e.target.value })} />
+                                </div>
+                              </div>
+
+                              <GlowTextarea label="Review Note (shown to member)" placeholder="Reason for approval/rejection..." rows={2} value={draft.note} onChange={(e: any) => setDraft(q.id, { note: e.target.value })} />
+
+                              <div className="flex gap-2 mt-3">
+                                <button onClick={() => submitQuestReview(q.id, 'APPROVE')} disabled={!!reviewLoading}
+                                  className="font-orbitron text-[10px] px-4 py-2 border border-green-500/40 text-green-400 hover:bg-green-900/20 transition-all disabled:opacity-50">
+                                  {reviewLoading === q.id + ':APPROVE' ? 'APPROVING…' : 'APPROVE'}
+                                </button>
+                                <button onClick={() => submitQuestReview(q.id, 'REJECT')} disabled={!!reviewLoading}
+                                  className="font-orbitron text-[10px] px-4 py-2 border border-red-500/40 text-red-400 hover:bg-red-900/20 transition-all disabled:opacity-50">
+                                  {reviewLoading === q.id + ':REJECT' ? 'REJECTING…' : 'REJECT'}
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Existing quests */}
                   <div className="bg-[#0d0017] border border-purple-500/20 p-5">
@@ -1648,6 +1806,150 @@ export default function FounderDashboard() {
           </div>
         </div>
       </DashboardLayout>
+
+      {/* User Detail Modal */}
+      {userDetail && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setUserDetail(null)}>
+          <div className="bg-[#0d0017] border border-purple-500/30 max-w-2xl w-full max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            {userDetailLoading || userDetail.loading ? (
+              <div className="p-10 flex justify-center">
+                <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-400 rounded-full animate-spin" />
+              </div>
+            ) : userDetail.error ? (
+              <div className="p-6 text-red-400 font-rajdhani">{userDetail.error}</div>
+            ) : (
+              <div className="flex flex-col">
+                <div className="flex items-start justify-between px-5 py-4 border-b border-purple-500/15 sticky top-0 bg-[#0d0017]">
+                  <div>
+                    <div className="font-orbitron text-sm text-white">{userDetail.user.nickname || userDetail.user.name}</div>
+                    <div className="font-rajdhani text-xs text-slate-500">{userDetail.user.email}</div>
+                  </div>
+                  <button onClick={() => setUserDetail(null)} className="text-slate-500 hover:text-white text-xl">✕</button>
+                </div>
+
+                <div className="p-5 flex flex-col gap-5">
+                  {/* Stats row */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[
+                      { label: 'Completion Rate', value: userDetail.stats.completionRate != null ? `${userDetail.stats.completionRate}%` : '—' },
+                      { label: 'Quests Claimed', value: userDetail.stats.totalClaimed },
+                      { label: 'Avg Client Rating', value: userDetail.stats.avgRating != null ? `${userDetail.stats.avgRating}★` : '—' },
+                      { label: 'Trust Score', value: `${userDetail.user.trustScore} (${userDetail.user.trustLevel})` },
+                    ].map(s => (
+                      <div key={s.label} className="bg-black/30 border border-purple-500/10 p-3 text-center">
+                        <div className="font-orbitron font-black text-amber-300">{s.value}</div>
+                        <div className="font-rajdhani text-[10px] text-slate-600 uppercase tracking-wide mt-1">{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Contact & profile */}
+                  <div>
+                    <h4 className="font-orbitron text-[10px] text-purple-400 tracking-widest uppercase mb-2">Contact & Profile</h4>
+                    <div className="grid sm:grid-cols-2 gap-2 text-sm">
+                      {[
+                        ['Email', userDetail.user.email],
+                        ['Name', userDetail.user.name],
+                        ['Country', userDetail.user.country],
+                        ['Timezone', userDetail.user.timezone],
+                        ['Work Style', userDetail.user.workStyle],
+                        ['Preferred Task Type', userDetail.user.preferredTaskType],
+                        ['Experience', userDetail.user.experience],
+                        ['Availability', userDetail.user.availabilityText],
+                        ['Portfolio', userDetail.user.portfolioUrl],
+                        ['Skills', (userDetail.user.skills || []).join(', ')],
+                      ].filter(([, v]) => v).map(([k, v]) => (
+                        <div key={k} className="flex justify-between gap-2 border-b border-purple-500/5 py-1">
+                          <span className="font-rajdhani text-slate-500">{k}</span>
+                          <span className="font-rajdhani text-slate-300 text-right break-all">{v}</span>
+                        </div>
+                      ))}
+                      {userDetail.user.bio && (
+                        <div className="sm:col-span-2 mt-1">
+                          <span className="font-rajdhani text-slate-500 text-xs">Bio:</span>
+                          <p className="font-rajdhani text-slate-300 mt-0.5">{userDetail.user.bio}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Application / Trial */}
+                  {userDetail.trial && (
+                    <div>
+                      <h4 className="font-orbitron text-[10px] text-purple-400 tracking-widest uppercase mb-2">Guild Application</h4>
+                      <div className="flex flex-col gap-2 text-sm">
+                        <div className="flex justify-between border-b border-purple-500/5 py-1">
+                          <span className="font-rajdhani text-slate-500">Status</span>
+                          <span className="font-rajdhani text-slate-300">{userDetail.trial.status}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-purple-500/5 py-1">
+                          <span className="font-rajdhani text-slate-500">Age</span>
+                          <span className="font-rajdhani text-slate-300">{userDetail.trial.age}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-purple-500/5 py-1">
+                          <span className="font-rajdhani text-slate-500">Contact Info</span>
+                          <span className="font-rajdhani text-slate-300">{userDetail.trial.contactInfo}</span>
+                        </div>
+                        <div>
+                          <span className="font-rajdhani text-slate-500 text-xs">Why they want to join:</span>
+                          <p className="font-rajdhani text-slate-300 mt-0.5">{userDetail.trial.whyJoin}</p>
+                        </div>
+                        <div>
+                          <span className="font-rajdhani text-slate-500 text-xs">Strengths:</span>
+                          <p className="font-rajdhani text-slate-300 mt-0.5">{userDetail.trial.strengths}</p>
+                        </div>
+                        <div>
+                          <span className="font-rajdhani text-slate-500 text-xs">Availability:</span>
+                          <p className="font-rajdhani text-slate-300 mt-0.5">{userDetail.trial.availability}</p>
+                        </div>
+                        {userDetail.trial.aiSummary && (
+                          <div className="bg-purple-950/20 border border-purple-500/15 p-2.5 mt-1">
+                            <span className="font-orbitron text-[9px] text-purple-400 tracking-wider">AI SUMMARY</span>
+                            <p className="font-rajdhani text-slate-300 mt-1">{userDetail.trial.aiSummary}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recent quests */}
+                  {userDetail.quests?.length > 0 && (
+                    <div>
+                      <h4 className="font-orbitron text-[10px] text-purple-400 tracking-widest uppercase mb-2">Quest History ({userDetail.quests.length})</h4>
+                      <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
+                        {userDetail.quests.map((q: any) => (
+                          <div key={q.id} className="flex items-center justify-between text-sm border-b border-purple-500/5 py-1.5">
+                            <span className="font-rajdhani text-slate-300 truncate">{q.title}</span>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {q.clientRating && <span className="font-orbitron text-[9px] text-amber-400">{q.clientRating}★</span>}
+                              <span className={`font-orbitron text-[9px] ${q.status === 'APPROVED' ? 'text-green-400' : q.status === 'REJECTED' ? 'text-red-400' : 'text-slate-500'}`}>{q.status}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Warnings */}
+                  {userDetail.warnings?.length > 0 && (
+                    <div>
+                      <h4 className="font-orbitron text-[10px] text-red-400 tracking-widest uppercase mb-2">Warnings ({userDetail.warnings.length})</h4>
+                      <div className="flex flex-col gap-1.5">
+                        {userDetail.warnings.map((w: any) => (
+                          <div key={w.id} className="text-sm border-b border-red-500/5 py-1.5">
+                            <span className="font-rajdhani text-slate-300">{w.reason}</span>
+                            <span className="font-orbitron text-[9px] text-slate-600 ml-2">{new Date(w.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   )
 }

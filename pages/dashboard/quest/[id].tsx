@@ -3,10 +3,12 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { GetServerSideProps } from 'next'
-import { requireAuth } from '@/lib/middleware'
+import { getAuthSession, requireAuth } from '@/lib/middleware'
 import { prisma } from '@/lib/prisma'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
 import GlowButton from '@/components/ui/GlowButton'
+import GlowTextarea from '@/components/ui/GlowTextarea'
+import GlowInput from '@/components/ui/GlowInput'
 
 const DIFFICULTY_COLOR: Record<string, string> = {
   Easy:   'text-green-400 border-green-500/40',
@@ -15,11 +17,14 @@ const DIFFICULTY_COLOR: Record<string, string> = {
   Expert: 'text-red-400 border-red-500/40',
 }
 
-export default function QuestDetailPage({ quest }: { quest: any }) {
+export default function QuestDetailPage({ quest, isClaimant }: { quest: any; isClaimant: boolean }) {
   const router = useRouter()
   const [claiming, setClaiming] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [submissionUrl, setSubmissionUrl] = useState('')
+  const [submissionNote, setSubmissionNote] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   async function handleClaim() {
     setClaiming(true)
@@ -30,6 +35,27 @@ export default function QuestDetailPage({ quest }: { quest: any }) {
     if (!res.ok) setError(data.error || 'Failed to claim quest')
     else { setSuccess('Quest claimed. Report for duty.'); setTimeout(() => router.push('/dashboard/quests'), 1500) }
   }
+
+  async function handleSubmit() {
+    if (!submissionNote.trim()) { setError('Describe what you completed before submitting.'); return }
+    setSubmitting(true)
+    setError('')
+    const res = await fetch(`/api/quests/${quest.id}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ submissionUrl: submissionUrl.trim() || undefined, submissionNote: submissionNote.trim() }),
+    })
+    const data = await res.json().catch(() => ({}))
+    setSubmitting(false)
+    if (!res.ok) { setError(data.error || 'Failed to submit'); return }
+    setSuccess('Submitted for review. The Founder will review your work soon.')
+    setTimeout(() => router.reload(), 1200)
+  }
+
+  const canClaim = quest.status === 'OPEN'
+  const canSubmit = isClaimant && ['CLAIMED', 'IN_PROGRESS'].includes(quest.status)
+  const isSubmitted = isClaimant && quest.status === 'SUBMITTED'
+  const isApproved = isClaimant && quest.status === 'APPROVED'
 
   return (
     <>
@@ -60,7 +86,10 @@ export default function QuestDetailPage({ quest }: { quest: any }) {
                 Rank {quest.rankRequired}+
               </span>
               <span className={`font-orbitron text-[9px] px-2 py-0.5 tracking-widest border ${
-                quest.status === 'OPEN' ? 'text-green-400 border-green-500/40' : 'text-slate-500 border-slate-700'
+                quest.status === 'OPEN' ? 'text-green-400 border-green-500/40' :
+                quest.status === 'APPROVED' ? 'text-blue-400 border-blue-500/40' :
+                quest.status === 'SUBMITTED' ? 'text-purple-400 border-purple-500/40' :
+                'text-slate-500 border-slate-700'
               }`}>
                 {quest.status.replace('_', ' ')}
               </span>
@@ -73,6 +102,12 @@ export default function QuestDetailPage({ quest }: { quest: any }) {
                 <div className="font-orbitron text-[9px] text-slate-600 tracking-widest uppercase">XP Reward</div>
                 <div className="font-orbitron font-black text-lg text-purple-400 mt-1">+{quest.rewardXp}</div>
               </div>
+              {quest.cashReward != null && (
+                <div>
+                  <div className="font-orbitron text-[9px] text-slate-600 tracking-widest uppercase">Cash Reward</div>
+                  <div className="font-orbitron font-black text-lg text-amber-300 mt-1">${quest.cashReward.toFixed(2)}</div>
+                </div>
+              )}
               {quest.deadline && (
                 <div>
                   <div className="font-orbitron text-[9px] text-slate-600 tracking-widest uppercase">Deadline</div>
@@ -103,8 +138,55 @@ export default function QuestDetailPage({ quest }: { quest: any }) {
               </div>
             )}
 
+            {/* ── Submission form — this is what was missing entirely ── */}
+            {canSubmit && (
+              <div className="mb-6 p-4 border border-blue-500/20 bg-blue-950/10">
+                <h3 className="font-orbitron text-xs text-blue-400 tracking-widest uppercase mb-3">Submit Your Results</h3>
+                <div className="flex flex-col gap-3">
+                  <GlowInput label="Link to your work (optional)" placeholder="https://..." value={submissionUrl} onChange={(e: any) => setSubmissionUrl(e.target.value)} />
+                  <GlowTextarea label="What did you complete? *" placeholder="Describe what you did, any notes for the reviewer..." rows={4} value={submissionNote} onChange={(e: any) => setSubmissionNote(e.target.value)} />
+                  <GlowButton variant="primary" size="md" loading={submitting} onClick={handleSubmit}>
+                    Submit for Review
+                  </GlowButton>
+                </div>
+              </div>
+            )}
+
+            {isSubmitted && (
+              <div className="mb-6 p-4 border border-purple-500/20 bg-purple-950/10">
+                <h3 className="font-orbitron text-xs text-purple-400 tracking-widest uppercase mb-2">Awaiting Review</h3>
+                <p className="font-rajdhani text-sm text-slate-400">
+                  Your submission was sent on {quest.submittedAt ? new Date(quest.submittedAt).toLocaleString() : 'recently'}. You'll be notified once it's reviewed.
+                </p>
+                {quest.submissionNote && (
+                  <p className="font-rajdhani text-sm text-slate-500 mt-2 italic">"{quest.submissionNote}"</p>
+                )}
+              </div>
+            )}
+
+            {isApproved && (
+              <div className="mb-6 p-4 border border-green-500/20 bg-green-950/10">
+                <h3 className="font-orbitron text-xs text-green-400 tracking-widest uppercase mb-2">Approved ✓</h3>
+                <p className="font-rajdhani text-sm text-slate-400">+{quest.rewardXp} XP awarded.</p>
+                {quest.clientRating != null && (
+                  <div className="flex items-center gap-1 mt-2">
+                    {[1,2,3,4,5].map(n => (
+                      <span key={n} className={n <= quest.clientRating ? 'text-amber-400' : 'text-slate-700'}>★</span>
+                    ))}
+                    <span className="font-rajdhani text-xs text-slate-500 ml-1">Client rating</span>
+                  </div>
+                )}
+                {quest.clientFeedback && (
+                  <p className="font-rajdhani text-sm text-slate-400 mt-2 italic">"{quest.clientFeedback}"</p>
+                )}
+                {quest.reviewNote && (
+                  <p className="font-rajdhani text-sm text-slate-500 mt-2">{quest.reviewNote}</p>
+                )}
+              </div>
+            )}
+
             <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-purple-500/10">
-              {quest.status === 'OPEN' && (
+              {canClaim && (
                 <GlowButton variant="primary" size="md" loading={claiming} onClick={handleClaim}>
                   Apply for Quest
                 </GlowButton>
@@ -124,6 +206,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const redirect = await requireAuth(context, 'ACCEPTED_MEMBER')
   if (redirect) return redirect
 
+  const session = await getAuthSession(context)
   const { id } = context.params as { id: string }
   const quest = await prisma.quest.findUnique({ where: { id } })
   if (!quest) return { notFound: true }
@@ -131,6 +214,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   return {
     props: {
       quest: JSON.parse(JSON.stringify(quest)),
+      isClaimant: !!session?.user && quest.claimedById === session.user.id,
     },
   }
 }

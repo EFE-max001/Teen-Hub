@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, ChangeEvent } from 'react'
 import Head from 'next/head'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
@@ -45,6 +45,8 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [verifying, setVerifying] = useState<string | null>(null)
   const [verifyMsg, setVerifyMsg] = useState('')
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [avatarError, setAvatarError] = useState('')
 
   const [form, setForm] = useState({
     bio: '', portfolioUrl: '',
@@ -97,6 +99,54 @@ export default function ProfilePage() {
     await loadAll()
   }
 
+  function handleAvatarSelect(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    if (!file.type.startsWith('image/')) { setAvatarError('Please choose an image file.'); return }
+    setAvatarError('')
+    setUploadingAvatar(true)
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      const img = new Image()
+      img.onload = async () => {
+        // Resize down to a max 256x256 square before storing — keeps the
+        // resulting data URL small enough to live directly on the User row.
+        const size = 256
+        const canvas = document.createElement('canvas')
+        canvas.width = size
+        canvas.height = size
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { setUploadingAvatar(false); return }
+
+        const scale = Math.max(size / img.width, size / img.height)
+        const w = img.width * scale
+        const h = img.height * scale
+        ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h)
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.82)
+        if (dataUrl.length > 600_000) {
+          setAvatarError('Image is still too large after resizing — try a simpler picture.')
+          setUploadingAvatar(false)
+          return
+        }
+
+        const res = await fetch('/api/profile/update', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profilePicUrl: dataUrl }),
+        })
+        setUploadingAvatar(false)
+        if (!res.ok) { setAvatarError('Upload failed. Try again.'); return }
+        await loadAll()
+      }
+      img.onerror = () => { setUploadingAvatar(false); setAvatarError('Could not read that image.') }
+      img.src = reader.result as string
+    }
+    reader.readAsDataURL(file)
+  }
+
   async function submitVerification(type: string) {
     setVerifying(type)
     const r = await fetch('/api/profile/verify', {
@@ -137,7 +187,20 @@ export default function ProfilePage() {
             <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-purple-500/50" />
 
             <div className="relative z-10 flex flex-col sm:flex-row items-start gap-5">
-              <RankBadge rank={userData.rank} size="lg" showLabel />
+              <div className="relative flex-shrink-0 group">
+                <label className="cursor-pointer block">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarSelect} disabled={uploadingAvatar} />
+                  {userData.profilePicUrl ? (
+                    <img src={userData.profilePicUrl} alt="Profile" className="w-20 h-20 rounded-full object-cover border-2 border-purple-500/40" />
+                  ) : (
+                    <RankBadge rank={userData.rank} size="lg" showLabel />
+                  )}
+                  <div className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="font-orbitron text-[9px] text-white text-center px-1">{uploadingAvatar ? '...' : 'CHANGE'}</span>
+                  </div>
+                </label>
+                {avatarError && <p className="font-rajdhani text-[10px] text-red-400 mt-1 max-w-[90px] text-center">{avatarError}</p>}
+              </div>
 
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1">

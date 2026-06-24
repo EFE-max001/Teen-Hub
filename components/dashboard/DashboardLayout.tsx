@@ -98,6 +98,10 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [hasTrial, setHasTrial] = useState<boolean | null>(null)
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [bellOpen, setBellOpen] = useState(false)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   const userRole = session?.user?.role || 'GUEST'
   const userRank = session?.user?.rank || 'F'
@@ -106,8 +110,47 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
     if (!session) return
     fetch('/api/user/me').then(r => r.json()).then(d => {
       setHasTrial(!!d.trial)
+      setAvatarUrl(d.profilePicUrl || null)
     }).catch(() => setHasTrial(null))
   }, [session])
+
+  function loadNotifications() {
+    fetch('/api/notifications').then(r => r.json()).then(d => {
+      setNotifications(d.notifications || [])
+      setUnreadCount(d.unreadCount || 0)
+    }).catch(() => {})
+  }
+
+  useEffect(() => {
+    if (!session) return
+    loadNotifications()
+    const interval = setInterval(loadNotifications, 30000)
+    return () => clearInterval(interval)
+  }, [session])
+
+  async function markAllRead() {
+    setUnreadCount(0)
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+    await fetch('/api/notifications', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ all: true }),
+    })
+  }
+
+  async function openNotification(n: any) {
+    setBellOpen(false)
+    if (!n.read) {
+      setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, read: true } : x))
+      setUnreadCount(c => Math.max(0, c - 1))
+      fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: n.id }),
+      }).catch(() => {})
+    }
+    if (n.link) router.push(n.link)
+  }
 
   function isLocked(item: NavItem): boolean {
     if (item.minRole && ROLE_LEVEL[userRole] < ROLE_LEVEL[item.minRole]) return true
@@ -141,7 +184,11 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
       {session?.user && (
         <div className="px-4 py-4 border-b border-purple-500/15">
           <div className="flex items-center gap-3">
-            <RankBadge rank={session.user.rank} size="sm" />
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover border border-purple-500/40 flex-shrink-0" />
+            ) : (
+              <RankBadge rank={session.user.rank} size="sm" />
+            )}
             <div className="min-w-0">
               <p className="font-orbitron text-xs text-white truncate">
                 {session.user.nickname || session.user.name}
@@ -335,6 +382,63 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                 <span className="text-lg">◎</span>
               </Link>
             )}
+
+            {/* Notification bell */}
+            {session?.user && (
+              <div className="relative">
+                <button
+                  onClick={() => setBellOpen(o => !o)}
+                  className="relative text-slate-500 hover:text-amber-300 transition-colors p-1"
+                  title="Notifications"
+                >
+                  <span className="text-lg">🔔</span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white font-orbitron text-[8px] min-w-[15px] h-[15px] rounded-full flex items-center justify-center px-0.5">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {bellOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setBellOpen(false)} />
+                    <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto bg-[#0d0017] border border-purple-500/30 shadow-xl z-50">
+                      <div className="flex items-center justify-between px-3 py-2.5 border-b border-purple-500/15 sticky top-0 bg-[#0d0017]">
+                        <span className="font-orbitron text-[10px] text-purple-400 tracking-widest uppercase">Notifications</span>
+                        {unreadCount > 0 && (
+                          <button onClick={markAllRead} className="font-orbitron text-[9px] text-slate-500 hover:text-purple-300 tracking-wider">
+                            MARK ALL READ
+                          </button>
+                        )}
+                      </div>
+                      {notifications.length === 0 ? (
+                        <p className="font-rajdhani text-sm text-slate-600 px-4 py-6 text-center">No notifications yet.</p>
+                      ) : (
+                        notifications.map(n => (
+                          <button
+                            key={n.id}
+                            onClick={() => openNotification(n)}
+                            className={`w-full text-left px-3 py-2.5 border-b border-purple-500/5 last:border-0 transition-colors hover:bg-purple-900/15 ${!n.read ? 'bg-purple-900/10' : ''}`}
+                          >
+                            <div className="flex items-start gap-2">
+                              {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 flex-shrink-0" />}
+                              <div className="min-w-0">
+                                <p className={`font-rajdhani text-sm leading-snug ${n.read ? 'text-slate-500' : 'text-slate-200'}`}>{n.title}</p>
+                                {n.body && <p className="font-rajdhani text-xs text-slate-600 mt-0.5 leading-snug">{n.body}</p>}
+                                <p className="font-orbitron text-[9px] text-slate-700 mt-1">
+                                  {new Date(n.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              </div>
+                            </div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
             {session?.user && (
               <div className="flex items-center gap-2">
                 <RankBadge rank={session.user.rank} size="sm" />

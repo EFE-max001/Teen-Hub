@@ -12,7 +12,22 @@ export async function applyTrustEvent(
   source: string = 'SYSTEM'
 ): Promise<{ trustScore: number; trustLevel: string; delta: number }> {
   const delta = TRUST_EVENTS[action] ?? 0
-  if (delta === 0) return { trustScore: 50, trustLevel: 'NEW', delta: 0 }
+  return applyRawTrustDelta(userId, delta, reason || action, source, action)
+}
+
+// For trust adjustments that aren't a fixed enum value — e.g. a client rating
+// from 1-5 needs a variable delta, not one fixed number per action.
+export async function applyRawTrustDelta(
+  userId: string,
+  delta: number,
+  reason: string,
+  source: string = 'SYSTEM',
+  action: string = 'MANUAL'
+): Promise<{ trustScore: number; trustLevel: string; delta: number }> {
+  if (delta === 0) {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { trustScore: true, trustLevel: true } })
+    return { trustScore: user?.trustScore ?? 50, trustLevel: user?.trustLevel ?? 'NEW', delta: 0 }
+  }
 
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { trustScore: true } })
   const current = user?.trustScore ?? 50
@@ -21,7 +36,7 @@ export async function applyTrustEvent(
 
   await Promise.all([
     prisma.trustEvent.create({
-      data: { userId, action, delta, reason: reason || action, source },
+      data: { userId, action, delta, reason, source },
     }),
     prisma.user.update({
       where: { id: userId },

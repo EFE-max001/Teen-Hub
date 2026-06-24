@@ -72,6 +72,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await prisma.user.update({ where: { id }, data: { status: 'ACTIVE' } })
     } else if (action === 'suspend') {
       await prisma.user.update({ where: { id }, data: { status: 'SUSPENDED' } })
+    } else if (action === 'unsuspend') {
+      await prisma.user.update({ where: { id }, data: { status: 'ACTIVE' } })
     } else if (action === 'warn') {
       await prisma.warning.create({
         data: { userId: id, reason: 'Founder warning issued', issuedBy: session.user.id },

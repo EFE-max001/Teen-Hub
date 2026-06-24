@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import { GetServerSideProps } from 'next'
 import { requireAuth } from '@/lib/middleware'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
@@ -22,6 +23,7 @@ const STATUS_COLOR: Record<string, string> = {
 }
 
 export default function QuestsPage() {
+  const { data: session } = useSession()
   const [quests, setQuests] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
@@ -33,7 +35,9 @@ export default function QuestsPage() {
       .catch(() => setLoading(false))
   }, [])
 
-  const filtered = filter === 'all' ? quests : quests.filter(q => q.status === filter.toUpperCase())
+  const filtered = filter === 'all' ? quests
+    : filter === 'mine' ? quests.filter(q => q.claimedById === session?.user?.id)
+    : quests.filter(q => q.status === filter.toUpperCase())
 
   return (
     <>
@@ -47,7 +51,7 @@ export default function QuestsPage() {
               <p className="font-rajdhani text-slate-500 text-sm mt-1">Active missions available to your rank</p>
             </div>
             <div className="flex items-center gap-1.5">
-              {['all', 'open', 'claimed'].map(f => (
+              {['all', 'mine', 'open', 'claimed'].map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
@@ -83,6 +87,12 @@ export default function QuestsPage() {
                   <div className="relative bg-[#0d0017] border border-purple-500/20 p-5 hover:border-purple-400/50 hover:shadow-[0_0_25px_rgba(168,85,247,0.08)] transition-all duration-300 group cursor-pointer h-full">
                     <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/40 group-hover:border-purple-400 transition-colors" />
                     <span className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-purple-500/40 group-hover:border-purple-400 transition-colors" />
+
+                    {quest.aiRecommended && (
+                      <div className="absolute -top-2.5 left-4 font-orbitron text-[8px] tracking-widest uppercase bg-amber-500 text-black px-2 py-0.5 flex items-center gap-1">
+                        <span>✦</span> AI MATCH
+                      </div>
+                    )}
 
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <h3 className="font-orbitron font-bold text-sm text-white leading-snug">{quest.title}</h3>
