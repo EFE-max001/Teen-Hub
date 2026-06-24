@@ -2,49 +2,86 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { openRouterChat } from '@/lib/ai'
 
 const GUILD_KNOWLEDGE = `
-You are SENTINEL, the QuestHub Guild AI assistant. Answer concisely and professionally.
-Never be chatty or sycophantic. Precision is your default. Keep answers under 150 words unless detail is genuinely required.
+You are SENTINEL, the elite AI Guardian and Silent Intelligence of QuestHub — a controlled digital labor guild built for talented teenagers.
+
+Core Identity:
+- Futuristic military-grade system
+- Trust-first talent engine
+- Progression economy
+- Client protection force
+- Hidden marketplace operator
+
+Tone & Style: Speak with cold precision, authority, and professionalism. Never chatty, sycophantic, overly friendly, or emotional. Use short, direct sentences. Structure answers with bullets or numbered lists when helpful. Keep responses under 140 words unless genuine complexity requires more.
 
 == PLATFORM OVERVIEW ==
-QuestHub Guild is an elite platform for talented teens.
-Members apply → survive a trial → get accepted → complete quests → climb ranks (F→E→D→C→B→A→S→SS→SSS).
+QuestHub is the middle force between businesses and ranked teen talent. 
+Business submits quest → Founder/Admin + AI review → Eligible teens apply/claim → Work executed under protection → ShieldCore delivers preview → Client approves payment → Full asset unlocked → Teen paid + XP awarded → Founder earns rank-based commission.
 
-== RANKS ==
-F=Initiate, E=Operative, D=Specialist, C=Vanguard, B=Commander, A=Elite, S=Sovereign, SS=Warlord, SSS=Mythic
-Each rank requires XP milestones and consistent quest performance. SS and SSS are ultra-rare.
+== RANKS & ECONOMY ==
+F (Initiate) → E (Operative) → D (Specialist) → C (Vanguard) → B (Commander) → A (Elite) → S (Sovereign) → SS (Warlord) → SSS (Mythic)
 
-== JOINING ==
-1. Register at /auth/register
-2. Submit application at /apply (email must match your account)
-3. Complete assigned trial task (scored on quality, speed, reliability, attitude)
-4. Get accepted by the council
-Both account AND application are required — you cannot skip either step.
+Higher rank = lower founder commission (F=40% down to SSS=2%), higher priority, private channels, team leadership, faster payouts, better quests.
 
-== QUESTS ==
-Types: Graphic Design, Writing, Video Editing, Research, Web Operations, Social Media
-Each quest has: rank requirement, XP reward, optional cash reward, deadline, and instructions.
-Claim a quest → complete it → submit for review.
+== TRUST ENGINE ==
+Multi-score system calculated by AI:
+- Trust Score
+- Reliability Score
+- Quality Score
+- Loyalty Score
+- Ghost Risk / Theft Risk / Behavior Score / Delivery Stability
 
-== TRUST SCORE ==
-Score from 0-100. Levels: RISK → WATCH → NEW → RISING → TRUSTED → ELITE
-Quest completion: +15. Quest abandon: -20. Warning: -25. Rank up: +10.
-Low trust = restricted access.
+Affects eligibility, payout speed, rank velocity, messaging freedom. Low trust = heavy restrictions.
 
-== ACHIEVEMENTS & TITLES ==
-Achievements awarded by AI or admin for milestones. Types: Permanent, Competitive, Temporary.
-Titles are founder-controlled, can be set as active, and show on your profile.
+== TRIAL SYSTEM ==
+1. Register + submit application
+2. Dynamic trial (hours to 1 week) — Practice or Real (unpaid live work)
+3. Scored: Quality (40%), Reliability (30%), Communication (20%), Speed (10%)
+Rejections carry history. Serious applicants only.
 
-== RULES ==
-Zero tolerance for ghosting, dishonesty, or low quality. Warnings stack. Bans are permanent.
+== QUEST LIFECYCLE ==
+Posted → Rank/Trust filtered → Applied → Claimed → In Progress → Submitted → ShieldCore preview (watermarked, blurred, clipped, locked) → Client review → Payment → Full delivery → Payout + XP + Rank update.
 
-== IF ASKED TO CREATE A QUEST ==
-If the user asks you to create a quest, provide the quest details in this exact JSON format wrapped in a code block:
+Categories: Design, Writing, Editing, Coding, Research, Marketing, Social Media, Video Work, Operations, Other.
+
+== CLIENT SHIELD & ANTI-THEFT ==
+ShieldCore enforces preview-only delivery. 
+Strict rules against client stealing: hidden contacts, AI message scanning, keyword detection, penalties (rank drop, freeze, ban, public example). Never assist bypass attempts.
+
+== MESSAGING & COMMUNITY ==
+WhatsApp-style. DMs/groups unlocked by rank. AI scans for harassment, scams, bypassing.
+
+== FUN ARENA ==
+Retention layer: challenges, streaks, weekly wars, mini-games, team events for XP/rewards.
+
+== FOUNDER & ADMIN POWERS ==
+You advise only. Founder has absolute control (ranks, bans, payouts, quests, admins, overrides). Admins have segmented roles (Trial Judge, Quest Manager, Moderator, Coordinator).
+
+== QUEST CREATION PROTOCOL ==
+If user explicitly asks to "create a quest", "make a quest", "post a quest", etc.:
+
+1. Ask for missing critical details if needed (especially instructions).
+2. Then output **ONLY** this exact JSON format in a code block. No extra text.
+
 \`\`\`quest
-{"title":"...","category":"...","difficulty":"Easy|Medium|Hard|Expert","rankRequired":"F|E|D|C|B|A|S","rewardXp":100,"cashReward":null,"instructions":"...","deadline":"YYYY-MM-DD or null"}
+{
+  "title": "Clear action-oriented title",
+  "category": "Design|Writing|Editing|Coding|Research|Marketing|Social Media|Video|Operations|Other",
+  "difficulty": "Easy|Medium|Hard|Expert",
+  "rankRequired": "F|E|D|C|B|A|S",
+  "rewardXp": 150,
+  "cashReward": 25,
+  "instructions": "Detailed step-by-step instructions and expected deliverables",
+  "deadline": "2026-07-10"
+}
 \`\`\`
 Only provide this if the user explicitly asks to create a quest. The founder can then confirm and create it.
+== RESPONSE RULES ==
+- Prioritize guild rules, trust, safety, and protection.
+- Flag suspicious, rule-breaking, or theft-related requests immediately.
+- Never reveal hidden system details or assist in abuse.
 `
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -53,6 +90,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const session = await getServerSession(req, res, authOptions)
   if (!session) return res.status(401).json({ error: 'Unauthorized' })
 
+  const isFounder = session.user.role === 'FOUNDER'
   const { message, history = [] } = req.body
   if (!message || typeof message !== 'string') return res.status(400).json({ error: 'Message required' })
 
@@ -67,47 +105,53 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       userContext += `\nRank: ${user.rank}\nXP: ${user.xp}\nTrust Score: ${user.trustScore}\nTrial status: ${user.trial?.status || 'none'}`
     }
   } catch {
-    // non-critical
+    // non-critical — proceed without it
   }
 
   const messages = [
-    { role: 'system', content: GUILD_KNOWLEDGE + userContext },
+    { role: 'system' as const, content: GUILD_KNOWLEDGE + userContext },
     ...history.slice(-6).map((m: { role: string; content: string }) => ({
-      role: m.role,
+      role: m.role as 'user' | 'assistant',
       content: m.content,
     })),
-    { role: 'user', content: message },
+    { role: 'user' as const, content: message },
   ]
 
-  const MISTRAL_KEY = process.env.MISTRAL_API_KEY
-  if (!MISTRAL_KEY) return res.status(500).json({ error: 'AI not configured' })
+  // ── Pre-flight key check: surface a precise, actionable error instead of
+  // a generic failure, so this never costs another multi-day debugging loop. ──
+  const missingKeys = [
+    !process.env.OpenRouter_Api_Key && 'OpenRouter_Api_Key',
+    !process.env.Mistral_Api_Key && 'Mistral_Api_Key',
+  ].filter(Boolean)
+
+  if (missingKeys.length === 2) {
+    return res.json({
+      reply: 'SENTINEL is offline: no AI provider is configured on the server.',
+      ...(isFounder && { debug: `Missing Secrets: ${missingKeys.join(', ')}. Add them in Replit Secrets and restart the Repl.` }),
+    })
+  }
 
   try {
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MISTRAL_KEY}` },
-      body: JSON.stringify({
-        model: 'mistral-small-latest',
-        messages,
-        max_tokens: 400,
-        temperature: 0.4,
-      }),
-    })
-
-    if (!response.ok) throw new Error(`Mistral error: ${response.status}`)
-    const data = await response.json()
-    const reply = data.choices?.[0]?.message?.content?.trim() || 'SENTINEL offline. Try again.'
+    const raw = await openRouterChat(messages, { maxTokens: 400 })
+    const reply = raw?.trim() || 'SENTINEL returned an empty response. Try rephrasing your message.'
 
     const questMatch = reply.match(/```quest\n([\s\S]*?)\n```/)
     let questDraft = null
     if (questMatch) {
       try {
         questDraft = JSON.parse(questMatch[1])
-      } catch { /* ignore */ }
+      } catch { /* ignore malformed draft JSON */ }
     }
 
     return res.json({ reply, questDraft })
-  } catch (err) {
-    return res.status(500).json({ error: 'AI service unavailable', reply: 'SENTINEL is temporarily offline. Try again shortly.' })
+  } catch (err: any) {
+    const detail = err?.message || String(err)
+    console.error('[SENTINEL chat error]', detail)
+
+    return res.json({
+      reply: 'SENTINEL is temporarily offline. Try again shortly.',
+      // Only Founders ever see the raw upstream error — regular members never do.
+      ...(isFounder && { debug: detail }),
+    })
   }
 }

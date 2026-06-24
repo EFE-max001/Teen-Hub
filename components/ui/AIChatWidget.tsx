@@ -6,6 +6,7 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   questDraft?: Record<string, unknown> | null
+  debug?: string
 }
 
 const SUGGESTIONS = [
@@ -60,9 +61,10 @@ export default function AIChatWidget() {
         role: 'assistant',
         content: data.reply || 'No response.',
         questDraft: data.questDraft || null,
+        debug: data.debug,
       }])
     } catch {
-      setMessages([...newMessages, { role: 'assistant', content: 'SENTINEL offline. Try again.' }])
+      setMessages([...newMessages, { role: 'assistant', content: 'SENTINEL offline. Try again.', debug: 'Client-side fetch failed — check network tab for a CORS, DNS, or connectivity error.' }])
     } finally {
       setLoading(false)
     }
@@ -72,17 +74,25 @@ export default function AIChatWidget() {
     if (!session || session.user.role !== 'FOUNDER') return
     setCreating(true)
     try {
-      await fetch('/api/founder/quests', {
+      const res = await fetch('/api/founder/quests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(draft),
       })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setMessages((prev) => [
+          ...prev,
+          { role: 'assistant', content: `✗ Failed to create quest.`, debug: data.error || `Server returned ${res.status}` },
+        ])
+        return
+      }
       setMessages((prev) => [
         ...prev,
         { role: 'assistant', content: '✓ Quest created and posted to the Quest Board.' },
       ])
-    } catch {
-      setMessages((prev) => [...prev, { role: 'assistant', content: '✗ Failed to create quest.' }])
+    } catch (err: any) {
+      setMessages((prev) => [...prev, { role: 'assistant', content: '✗ Failed to create quest.', debug: err?.message || 'Network request failed' }])
     } finally {
       setCreating(false)
     }
@@ -136,6 +146,14 @@ export default function AIChatWidget() {
                     <div className="font-orbitron text-[8px] text-purple-400/60 mb-1 tracking-widest">SENTINEL</div>
                   )}
                   <p className="font-rajdhani text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>
+
+                  {/* Founder-only raw error detail — never shown to regular members */}
+                  {m.debug && isFounder && (
+                    <div className="mt-1.5 pt-1.5 border-t border-red-500/20">
+                      <div className="font-orbitron text-[8px] text-red-400/80 tracking-widest mb-0.5">DEBUG (FOUNDER ONLY)</div>
+                      <p className="font-mono text-[10px] text-red-300/90 leading-snug break-all">{m.debug}</p>
+                    </div>
+                  )}
 
                   {/* Quest draft creation button */}
                   {m.questDraft && isFounder && (

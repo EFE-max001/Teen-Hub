@@ -19,20 +19,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { title, category, difficulty, rankRequired, rewardXp, cashReward, instructions, deadline } = req.body
     if (!title || !instructions) return res.status(400).json({ error: 'Title and instructions required' })
 
-    const quest = await prisma.quest.create({
-      data: {
-        title,
-        category: category || 'General',
-        difficulty: difficulty || 'Medium',
-        rankRequired: rankRequired || 'F',
-        rewardXp: parseInt(rewardXp) || 100,
-        cashReward: cashReward ? parseFloat(cashReward) : null,
-        instructions,
-        deadline: deadline ? new Date(deadline) : null,
-        status: 'OPEN',
-      },
-    })
-    return res.json({ quest })
+    let parsedDeadline: Date | null = null
+    if (deadline && typeof deadline === 'string' && !['null', 'n/a', 'none', 'tbd', ''].includes(deadline.trim().toLowerCase())) {
+      const d = new Date(deadline)
+      if (!isNaN(d.getTime())) parsedDeadline = d
+    }
+
+    try {
+      const quest = await prisma.quest.create({
+        data: {
+          title,
+          category: category || 'General',
+          difficulty: difficulty || 'Medium',
+          rankRequired: rankRequired || 'F',
+          rewardXp: parseInt(rewardXp) || 100,
+          cashReward: cashReward ? parseFloat(cashReward) : null,
+          instructions,
+          deadline: parsedDeadline,
+          status: 'OPEN',
+        },
+      })
+      return res.json({ quest })
+    } catch (err: any) {
+      console.error('[quest create error]', err?.message || err)
+      return res.status(500).json({ error: err?.message || 'Failed to create quest' })
+    }
   }
 
   if (req.method === 'DELETE') {

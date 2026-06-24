@@ -117,7 +117,7 @@ export default function FounderDashboard() {
 
   function msg(text: string) {
     setActionMsg(text)
-    setTimeout(() => setActionMsg(''), 3000)
+    setTimeout(() => setActionMsg(''), text.toLowerCase().startsWith('error') ? 7000 : 3000)
   }
 
   async function updateUser(id: string, action: string, value?: any) {
@@ -130,9 +130,22 @@ export default function FounderDashboard() {
     loadAll()
   }
 
-  async function deleteUser(id: string, name: string) {
+  async function deleteUser(id: string, name: string, role?: string) {
     if (!window.confirm(`Permanently delete ${name}? This removes their account and all related activity. This cannot be undone.`)) return
-    const res = await fetch(`/api/founder/user/${id}`, { method: 'DELETE' })
+
+    let confirmPassword: string | undefined
+    if (role === 'FOUNDER') {
+      confirmPassword = window.prompt(
+        `${name} is a FOUNDER account. To confirm this isn't an unauthorized session, enter YOUR OWN Founder password:`
+      ) || undefined
+      if (!confirmPassword) { msg('Founder deletion cancelled — password required.'); return }
+    }
+
+    const res = await fetch(`/api/founder/user/${id}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ confirmPassword }),
+    })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) { msg(`Error: ${data.error || 'Could not delete user.'}`); return }
     msg('User deleted.')
@@ -346,9 +359,15 @@ export default function FounderDashboard() {
 
           {/* Action message */}
           {actionMsg && (
-            <div className="bg-green-900/20 border border-green-500/30 px-4 py-3 font-orbitron text-xs text-green-400 tracking-widest">
-              ✓ {actionMsg}
-            </div>
+            actionMsg.toLowerCase().startsWith('error') ? (
+              <div className="bg-red-900/20 border border-red-500/40 px-4 py-3 font-orbitron text-xs text-red-400 tracking-widest">
+                ✗ {actionMsg}
+              </div>
+            ) : (
+              <div className="bg-green-900/20 border border-green-500/30 px-4 py-3 font-orbitron text-xs text-green-400 tracking-widest">
+                ✓ {actionMsg}
+              </div>
+            )
           )}
 
           {/* Nav (sidebar on desktop, pill row on mobile) + Content */}
@@ -573,12 +592,10 @@ export default function FounderDashboard() {
                                     className="font-orbitron text-[8px] px-2 py-0.5 border border-orange-500/30 text-orange-400 hover:bg-orange-900/20 transition-all">
                                     WARN
                                   </button>
-                                  {u.role !== 'FOUNDER' && (
-                                    <button onClick={() => deleteUser(u.id, u.nickname || u.name || u.email)}
-                                      className="font-orbitron text-[8px] px-2 py-0.5 border border-red-600/50 text-red-500 hover:bg-red-900/30 transition-all">
-                                      DELETE
-                                    </button>
-                                  )}
+                                  <button onClick={() => deleteUser(u.id, u.nickname || u.name || u.email, u.role)}
+                                    className="font-orbitron text-[8px] px-2 py-0.5 border border-red-600/50 text-red-500 hover:bg-red-900/30 transition-all">
+                                    DELETE
+                                  </button>
                                 </div>
                               </td>
                             </tr>

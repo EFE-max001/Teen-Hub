@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
+import bcrypt from 'bcryptjs'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
@@ -11,6 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { id } = req.query as { id: string }
   const action = req.method === 'DELETE' ? 'delete' : req.body?.action
   const value = req.body?.value
+  const confirmPassword = req.body?.confirmPassword
 
   try {
     // ── Permanent deletion takes a completely different path: it has to
@@ -24,8 +26,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const target = await prisma.user.findUnique({ where: { id }, select: { role: true } })
       if (!target) return res.status(404).json({ error: 'User not found' })
+
+      // Deleting ANOTHER Founder is allowed, but requires the acting Founder
+      // to re-prove their own password first. This is the one barrier that
+      // protects against a hijacked/borrowed session being used to wipe out
+      // every other Founder and keep the account for themselves — a hijacker
+      // has the session cookie, but not the real Founder's password.
       if (target.role === 'FOUNDER') {
-        return res.status(400).json({ error: 'Founder accounts cannot be deleted from here.' })
+        if (!confirmPassword) {
+          return res.status(400).json({ error: 'Deleting a Founder account requires your password to confirm.', requiresPassword: true })
+        }
+        const actingFounder = await prisma.user.findUnique({ where: { id: session.user.id }, select: { passwordHash: true } })
+        const valid = actingFounder?.passwordHash && await bcrypt.compare(confirmPassword, actingFounder.passwordHash)
+        if (!valid) {
+          return res.status(403).json({ error: 'Incorrect password. Founder deletion was not performed.' })
+        }
       }
 
       await prisma.$transaction([
