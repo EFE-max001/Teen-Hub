@@ -35,7 +35,8 @@ export default function AIChatWidget() {
         content: `SENTINEL online. I'm your QuestHub AI assistant — ask me about quests, ranks, trust scores, or how the platform works.`,
       }])
     }
-  }, [open])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, messages.length])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })

@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { GetServerSideProps } from 'next'
 import { getAuthSession, requireAuth } from '@/lib/middleware'
 import { prisma } from '@/lib/prisma'
+import { ClaimStatus } from '@prisma/client'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
 import GlowButton from '@/components/ui/GlowButton'
-import GlowTextarea from '@/components/ui/GlowTextarea'
-import GlowInput from '@/components/ui/GlowInput'
+import GlowInput, { GlowTextarea } from '@/components/ui/GlowInput'
 
 const DIFFICULTY_COLOR: Record<string, string> = {
   Easy:   'text-green-400 border-green-500/40',
@@ -231,7 +231,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const quest = await prisma.quest.findUnique({ where: { id } })
   if (!quest) return { notFound: true }
 
-  const ACTIVE = ['CLAIMED', 'IN_PROGRESS', 'SUBMITTED', 'APPROVED']
+  const ACTIVE = ['CLAIMED', 'IN_PROGRESS', 'SUBMITTED', 'APPROVED'] as ClaimStatus[]
   const [myClaim, slotsFilled] = await Promise.all([
     session?.user ? prisma.questClaim.findUnique({ where: { questId_userId: { questId: id, userId: session.user.id } } }) : null,
     prisma.questClaim.count({ where: { questId: id, status: { in: ACTIVE } } }),

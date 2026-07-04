@@ -37,7 +37,8 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
     if (!withId) return
     const name = (router.query.name as string) || 'Member'
     openConv({ userId: withId, name })
-  }, [locked, router.isReady, router.query.with])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locked, router.isReady, router.query.with, router.query.name])
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })

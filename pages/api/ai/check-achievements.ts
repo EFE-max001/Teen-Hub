@@ -10,4 +10,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const awarded = await awardEligibleAchievements(session.user.id)
   return res.json({ awarded, count: awarded.length })
-}a
+}

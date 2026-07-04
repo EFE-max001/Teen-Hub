@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Link from 'next/link'
 import Head from 'next/head'
 import { signIn, getSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/router'
@@ -104,9 +105,9 @@ export default function AdminLoginPage() {
           <div className="mt-6 pt-5 border-t border-red-500/10 text-center">
             <p className="font-rajdhani text-xs text-slate-700">
               Not an admin?{' '}
-              <a href="/auth/login" className="text-purple-500/60 hover:text-purple-400 transition-colors">
+              <Link href="/auth/login" className="text-purple-500/60 hover:text-purple-400 transition-colors">
                 Member login →
-              </a>
+              </Link>
             </p>
           </div>
 

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import bcrypt from 'bcryptjs'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { ClaimStatus } from '@prisma/client'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
@@ -43,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
 
-      const ACTIVE = ['CLAIMED', 'IN_PROGRESS', 'SUBMITTED', 'APPROVED']
+      const ACTIVE = ['CLAIMED', 'IN_PROGRESS', 'SUBMITTED', 'APPROVED'] as ClaimStatus[]
       const affectedQuestIds = (await prisma.questClaim.findMany({
         where: { userId: id, status: { in: ACTIVE } },
         select: { questId: true },

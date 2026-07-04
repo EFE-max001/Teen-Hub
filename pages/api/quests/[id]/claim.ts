@@ -2,9 +2,10 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { ClaimStatus } from '@prisma/client'
 
 const RANK_LEVEL: Record<string, number> = { F:0,E:1,D:2,C:3,B:4,A:5,S:6,SS:7,SSS:8 }
-const ACTIVE_CLAIM_STATUSES = ['CLAIMED', 'IN_PROGRESS', 'SUBMITTED', 'APPROVED']
+const ACTIVE_CLAIM_STATUSES: ClaimStatus[] = ['CLAIMED', 'IN_PROGRESS', 'SUBMITTED', 'APPROVED']
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end()

@@ -1,4 +1,5 @@
 import { useState, useEffect, ChangeEvent } from 'react'
+import Link from 'next/link'
 import Head from 'next/head'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
@@ -249,7 +250,7 @@ export default function ProfilePage() {
             <div className="bg-[#0d0017] border border-purple-500/20 p-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase">Honours</h2>
-                <a href="/dashboard/achievements" className="font-orbitron text-[10px] text-purple-400 hover:text-purple-300 tracking-widest">VIEW ALL →</a>
+                <Link href="/dashboard/achievements" className="font-orbitron text-[10px] text-purple-400 hover:text-purple-300 tracking-widest">VIEW ALL →</Link>
               </div>
               <div className="flex flex-wrap gap-2">
                 {achievements.slice(0, 4).map((a: any) => (
