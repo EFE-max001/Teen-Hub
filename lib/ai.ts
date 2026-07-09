@@ -1,14 +1,20 @@
 /**
- * QuestHub AI Engine — lib/ai.ts  (V4)
+ * QuestHub AI Engine — lib/ai.ts  (V5 — all-free routing)
  *
- * Provider map:
+ * Provider map (all models below are verified FREE tiers as of 2026-07-09):
  *   HuggingFace  → First-layer moderation (toxicity, spam, classification)
- *   Mistral      → Reasoning engine (trial eval, trust, admin recs)
- *   OpenRouter   → Deep analysis + risk (Gemini/Claude via routing)
- *                  Falls back to Mistral if no credits / rate-limited
+ *   Mistral      → Reasoning engine (trial eval, trust, admin recs) — free-tier key
+ *   OpenRouter   → Primary router for everything else. Two keys are rotated
+ *                  automatically on rate-limit/failure (OpenRouter_Api_Key,
+ *                  OpenRouter_Api_Key_2), each model call also has a same-purpose
+ *                  fallback model, then falls through to NVIDIA NIM (direct),
+ *                  then Mistral as the last resort.
+ *   NVIDIA NIM   → Secondary direct provider (integrate.api.nvidia.com), free
+ *                  tier. Used as a fallback layer and directly for a few tasks.
  *
- * Grok replaced by: OpenRouter risk model (claude-3-haiku or llama)
- * Gemini replaced by: OpenRouter with google/gemini-flash via OR
+ * Every model below was individually tested against its live endpoint before
+ * being wired in. Models that 404'd ("unavailable for free") or were dropped
+ * from the free catalog were removed. See .agents/memory/ai-providers.md.
  */
 
 const HF_BASE  = 'https://router.huggingface.co/hf-inference/models'
@@ -18,15 +24,42 @@ const MISTRAL_BASE = 'https://api.mistral.ai/v1'
 const MISTRAL_KEY  = () => process.env.Mistral_Api_Key!
 
 const OR_BASE = 'https://openrouter.ai/api/v1'
-const OR_KEY  = () => process.env.OpenRouter_Api_Key!
+const OR_KEYS = () => [process.env.OpenRouter_Api_Key!, process.env.OpenRouter_Api_Key_2!].filter(Boolean)
 
+const NVIDIA_BASE = 'https://integrate.api.nvidia.com/v1'
+const NVIDIA_KEY  = () => process.env.NVIDIA_Api_Key!
+
+// All OpenRouter models are `:free` variants confirmed live via test calls.
 const MODELS = {
-  reasoning:  'mistral-small-latest',
-  risk:       'anthropic/claude-3-haiku',
-  riskFree:   'meta-llama/llama-3.2-3b-instruct:free',
-  deep:       'google/gemini-flash-1.5',
-  deepFree:   'mistralai/mistral-7b-instruct:free',
-  router:     'mistralai/mistral-7b-instruct:free',
+  // Fast reasoning fallback used directly by Mistral-based helpers
+  reasoning:    'mistral-small-latest',
+
+  // Purpose-built content-safety classifier — ideal for moderation stage 2
+  moderation:       'nvidia/nemotron-3.5-content-safety:free',
+  moderationFallback: 'nvidia/nemotron-nano-9b-v2:free',
+
+  // Risk / pattern detection — small & fast models
+  risk:         'nvidia/nemotron-nano-9b-v2:free',
+  riskFree:     'nvidia/nemotron-3-nano-30b-a3b:free',
+
+  // Deep analysis (quest submission review, long-context reasoning) — largest free models
+  deep:         'nvidia/nemotron-3-ultra-550b-a55b:free',
+  deepFree:     'nvidia/nemotron-3-super-120b-a12b:free',
+
+  // Chain-of-thought reasoning tasks (trial evaluation quality checks, etc.)
+  cot:          'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+
+  // Default general-purpose router model
+  router:       'google/gemma-4-31b-it:free',
+  routerFallback: 'openai/gpt-oss-20b:free',
+}
+
+// NVIDIA NIM direct models — verified free-tier endpoints
+const NVIDIA_MODELS = {
+  general:   'meta/llama-3.1-8b-instruct',
+  reasoning: 'nvidia/llama-3.3-nemotron-super-49b-v1',
+  mistral:   'mistralai/mistral-nemotron',
+  small:     'google/gemma-2-2b-it',
 }
 
 // ─── HuggingFace ───────────────────────────────────────────────────────────
