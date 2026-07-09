@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { triageFeedback } from '@/lib/ai'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
@@ -12,15 +13,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Feedback content is required (min 5 characters)' })
     }
 
+    // AI triage: auto-categorize, prioritize, and flag toxic feedback so the
+    // founder's inbox is pre-sorted instead of a flat unsorted list.
+    let triage: { category: string; priority: string; toxic: boolean; summary: string } | null = null
+    try {
+      triage = await triageFeedback({ message: content.trim() })
+    } catch { /* AI unavailable, falls back to raw content below */ }
+
     const feedback = await prisma.feedback.create({
       data: {
         content: content.trim(),
-        type: type || 'GENERAL',
+        type: type || triage?.category || 'GENERAL',
+        status: triage?.toxic ? 'FLAGGED' : 'OPEN',
         email: session?.user?.email || email || null,
         userId: session?.user?.id || null,
       },
     })
-    return res.status(201).json({ feedback })
+    return res.status(201).json({ feedback, triage })
   }
 
   if (req.method === 'GET') {

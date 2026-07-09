@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { notify } from '@/lib/notify'
+import { reviewQuestSuggestion } from '@/lib/ai'
 
 const ROLE_LEVEL: Record<string, number> = {
   GUEST: 0, TRIAL_MEMBER: 1, ACCEPTED_MEMBER: 2, ACTIVE_WORKER: 3,
@@ -37,6 +38,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!isNaN(d.getTime())) parsedDeadline = d
     }
 
+    // AI pre-review: score relevance/quality before it lands in the founder's
+    // queue, so low-effort suggestions come pre-flagged instead of raw.
+    let aiReview: { relevanceScore: number; feedback: string; recommend: boolean } | null = null
+    try {
+      aiReview = await reviewQuestSuggestion({ title, description: instructions, category })
+    } catch { /* AI unavailable, founder reviews manually */ }
+
     try {
       const suggestion = await prisma.questSuggestion.create({
         data: {
@@ -50,6 +58,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           instructions,
           deadline: parsedDeadline,
           maxParticipants: Math.max(1, parseInt(maxParticipants) || 1),
+          founderNote: aiReview
+            ? `AI pre-review (${aiReview.relevanceScore}/100, ${aiReview.recommend ? 'recommended' : 'not recommended'}): ${aiReview.feedback}`
+            : null,
         },
       })
 

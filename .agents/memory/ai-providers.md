@@ -1,21 +1,28 @@
 ---
 name: AI Provider Map
-description: Which AI providers handle which roles in QuestHub V4, and which replacements are in place
+description: Which AI providers/models handle which roles in QuestHub V5, all-free routing chain, and which keys have no credits
 ---
 
-## Active Provider Map
+## Active Provider Map (V5 — verified 2026-07-09)
 
-| Role | Original | Replacement | Status |
-|------|----------|-------------|--------|
-| Classification / moderation (HF) | HuggingFace | — (working) | ✅ `router.huggingface.co` URL required |
-| Reasoning / eval (Mistral) | Mistral | — (working) | ✅ `mistral-small-latest` |
-| Risk / anomaly engine (Grok) | xAI Grok | OpenRouter → `anthropic/claude-3-haiku` | OpenRouter key valid, paid credits needed |
-| Deep analysis (Gemini) | Google Gemini | OpenRouter → `google/gemini-flash-1.5` | Gemini quota exhausted on both keys |
+| Role | Provider(s) used | Notes |
+|------|------|-------|
+| Classification / moderation stage 1 | HuggingFace | `router.huggingface.co` URL required; working |
+| Moderation stage 2 (safety classifier) | OpenRouter `nvidia/nemotron-3.5-content-safety:free` | purpose-built for this task |
+| Risk / pattern detection | OpenRouter `nvidia/nemotron-nano-9b-v2:free` → `nvidia/nemotron-3-nano-30b-a3b:free` | fast/small models |
+| Deep analysis / long reasoning | OpenRouter `nvidia/nemotron-3-ultra-550b-a55b:free` → `nvidia/nemotron-3-super-120b-a12b:free` | largest free models available |
+| Chain-of-thought (trial eval, admin rec) | OpenRouter `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` | reasoning-tuned |
+| General router / default | OpenRouter `google/gemma-4-31b-it:free` → `openai/gpt-oss-20b:free` | |
+| Reasoning fallback | Mistral `mistral-small-latest` | always-available last resort |
+| Secondary direct provider | NVIDIA NIM (`integrate.api.nvidia.com`) | free tier; used as fallback layer + directly |
 
 ## Fallback Chain
-All OpenRouter calls fall back to direct Mistral if OpenRouter fails (rate-limit or no credits).
-This means the system is always functional, and auto-upgrades when credits are added.
+Every `openRouterChat()` call tries: OR key #1 (primary model) → OR key #2 (primary model) → OR key #1 (fallback model) → OR key #2 (fallback model) → NVIDIA NIM direct → Mistral. Two separate OpenRouter API keys are rotated automatically on any failure (rate-limit, 404, etc), not just one.
 
-**Why:** Grok and Gemini had no working credits at build time. OpenRouter was the cleanest routing layer since the key is valid — once credits are added, all roles automatically use the intended premium models.
+**Why:** OpenRouter's free-tier model catalog changes frequently and many listed `:free` models 404 ("unavailable for free") or intermittently 429. A single key/model was too fragile; rotating keys + same-purpose fallback models + a wholly separate provider (NVIDIA) + Mistral keeps every feature functional even when several links in the chain are down simultaneously.
 
-**How to apply:** If adding a new AI task, use `openRouterChat()` with a fallback, or `mistralChat()` for guaranteed availability.
+**How to apply:** When adding a new AI task, call `openRouterChat()` with both a primary `model` and a `fallbackModel` (pick two different providers within the `:free` list), and let `fallbackToMistral` stay true unless the task truly requires JSON structure Mistral can't produce reliably.
+
+## Known dead ends
+- `Grok_Api_Key` (xAI) exists in secrets but the account has **no credits/licenses** — every model returns 403 `permission-denied`. Excluded from routing until the user adds credits.
+- Most `:free`-suffixed OpenRouter models advertised in docs/blog posts (e.g. `mistralai/mistral-7b-instruct:free`, `deepseek/deepseek-r1:free`, `qwen/qwen-2.5-72b-instruct:free`) are **no longer free** — they 404 with "use this slug instead" pointing at the paid version. Always verify via `GET /api/v1/models` and filter `id.endsWith(':free')` before wiring in a model — don't trust remembered model names.

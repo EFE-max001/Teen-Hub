@@ -117,44 +117,98 @@ export async function mistralChat(
   return d.choices[0].message.content as string
 }
 
-// ─── OpenRouter (with Mistral fallback) ────────────────────────────────────
+// ─── NVIDIA NIM (direct) ───────────────────────────────────────────────────
+
+export async function nvidiaChat(
+  messages: ChatMsg[],
+  opts: { model?: string; maxTokens?: number } = {}
+): Promise<string> {
+  const res = await fetch(`${NVIDIA_BASE}/chat/completions`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${NVIDIA_KEY()}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: opts.model ?? NVIDIA_MODELS.general,
+      messages,
+      max_tokens: opts.maxTokens ?? 512,
+    }),
+    signal: AbortSignal.timeout(20000),
+  })
+  if (!res.ok) throw new Error(`NVIDIA ${res.status}: ${await res.text()}`)
+  const d = await res.json()
+  if (d.error) throw new Error(`NVIDIA error: ${JSON.stringify(d.error)}`)
+  return d.choices[0].message.content as string
+}
+
+// ─── OpenRouter (dual-key rotation, model fallback, NVIDIA + Mistral last resort) ──
+//
+// Chain: OR key #1 (primary model) → OR key #2 (primary model) →
+//        OR key #1 (fallback model, if provided) → OR key #2 (fallback model) →
+//        NVIDIA NIM direct → Mistral (final safety net)
+//
+// Grok_Api_Key exists in secrets but the account has no credits/licenses
+// (403 permission-denied on every model as of 2026-07-09) — excluded from
+// routing until credits are added. See .agents/memory/ai-providers.md.
+
+async function orAttempt(
+  key: string,
+  model: string,
+  messages: ChatMsg[],
+  maxTokens: number
+): Promise<string> {
+  const res = await fetch(`${OR_BASE}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://questhub.io',
+      'X-Title': 'QuestHub Guild',
+    },
+    body: JSON.stringify({ model, messages, max_tokens: maxTokens }),
+    signal: AbortSignal.timeout(20000),
+  })
+  if (!res.ok) throw new Error(`OR ${res.status}: ${await res.text()}`)
+  const d = await res.json()
+  if (d.error) throw new Error(`OR error: ${JSON.stringify(d.error)}`)
+  return d.choices[0].message.content as string
+}
 
 export async function openRouterChat(
   messages: ChatMsg[],
-  opts: { model?: string; maxTokens?: number; fallbackToMistral?: boolean } = {}
+  opts: {
+    model?: string
+    fallbackModel?: string
+    maxTokens?: number
+    fallbackToMistral?: boolean
+    nvidiaModel?: string
+  } = {}
 ): Promise<string> {
-  try {
-    const res = await fetch(`${OR_BASE}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${OR_KEY()}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://questhub.io',
-        'X-Title': 'QuestHub Guild',
-      },
-      body: JSON.stringify({
-        model: opts.model ?? MODELS.router,
-        messages,
-        max_tokens: opts.maxTokens ?? 512,
-      }),
-      signal: AbortSignal.timeout(20000),
-    })
-    if (!res.ok) {
-      const errText = await res.text()
-      throw new Error(`OR ${res.status}: ${errText}`)
+  const maxTokens = opts.maxTokens ?? 512
+  const models = [opts.model ?? MODELS.router, opts.fallbackModel].filter(Boolean) as string[]
+  const keys = OR_KEYS()
+
+  for (const model of models) {
+    for (const key of keys) {
+      try {
+        return await orAttempt(key, model, messages, maxTokens)
+      } catch {
+        // try next key / model combo
+      }
     }
-    const d = await res.json()
-    if (d.error) throw new Error(`OR error: ${JSON.stringify(d.error)}`)
-    return d.choices[0].message.content as string
-  } catch (e) {
-    if (opts.fallbackToMistral !== false) {
-      return mistralChat(messages, { maxTokens: opts.maxTokens })
-    }
-    throw e
   }
+
+  try {
+    return await nvidiaChat(messages, { model: opts.nvidiaModel ?? NVIDIA_MODELS.general, maxTokens })
+  } catch {
+    // fall through to Mistral
+  }
+
+  if (opts.fallbackToMistral !== false) {
+    return mistralChat(messages, { maxTokens })
+  }
+  throw new Error('All AI providers failed (OpenRouter x2 keys, NVIDIA, Mistral)')
 }
 
-// ─── Risk Engine (replaces Grok) ───────────────────────────────────────────
+// ─── Risk Engine (replaces Grok — Grok account has no credits) ────────────
 
 export async function riskAnalysis(
   messages: ChatMsg[],
@@ -162,6 +216,8 @@ export async function riskAnalysis(
 ): Promise<string> {
   return openRouterChat(messages, {
     model: MODELS.risk,
+    fallbackModel: MODELS.riskFree,
+    nvidiaModel: NVIDIA_MODELS.small,
     maxTokens: opts.maxTokens ?? 512,
     fallbackToMistral: true,
   })
@@ -175,7 +231,13 @@ export async function deepAnalysis(
 ): Promise<string> {
   return openRouterChat(
     [{ role: 'user', content: prompt }],
-    { model: MODELS.deep, maxTokens: opts.maxTokens ?? 1024, fallbackToMistral: true }
+    {
+      model: MODELS.deep,
+      fallbackModel: MODELS.deepFree,
+      nvidiaModel: NVIDIA_MODELS.reasoning,
+      maxTokens: opts.maxTokens ?? 1024,
+      fallbackToMistral: true,
+    }
   )
 }
 
@@ -204,7 +266,25 @@ export async function moderateMessage(text: string): Promise<{
     return { safe: true, toxicityScore, stage: 'HF', reason: null, notifyFounder: false }
   }
 
-  let patternFlag = false
+  let safetyFlag = false
+  try {
+    const safetyResult = await openRouterChat([
+      {
+        role: 'system',
+        content: 'You are a content-safety classifier. Classify the message as safe or unsafe (harassment, scam, contact-info sharing, exploitation). Reply JSON: { "unsafe": boolean, "category": string | null }',
+      },
+      { role: 'user', content: `Message: "${text}"` },
+    ], {
+      model: MODELS.moderation,
+      fallbackModel: MODELS.moderationFallback,
+      maxTokens: 80,
+      fallbackToMistral: false,
+    })
+    const m = safetyResult.match(/\{[\s\S]*?\}/)
+    if (m) safetyFlag = JSON.parse(m[0]).unsafe === true
+  } catch { /* purpose-built safety model unavailable, continue to risk stage */ }
+
+  let patternFlag = safetyFlag
   try {
     const riskResult = await riskAnalysis([
       {
@@ -216,7 +296,7 @@ export async function moderateMessage(text: string): Promise<{
     const m = riskResult.match(/\{[\s\S]*?\}/)
     if (m) {
       const parsed = JSON.parse(m[0])
-      patternFlag = parsed.flagged
+      patternFlag = patternFlag || parsed.flagged
     }
   } catch { /* ignore, continue to stage 3 */ }
 
@@ -273,7 +353,13 @@ Score criteria:
 Reply ONLY with JSON: { "score": number, "summary": string, "recommendation": "ACCEPT"|"REVIEW"|"REJECT", "strengths": string[], "concerns": string[] }`
 
   try {
-    const raw = await mistralChat([{ role: 'user', content: prompt }], { maxTokens: 400 })
+    const raw = await openRouterChat([{ role: 'user', content: prompt }], {
+      model: MODELS.cot,
+      fallbackModel: MODELS.deepFree,
+      nvidiaModel: NVIDIA_MODELS.reasoning,
+      maxTokens: 400,
+      fallbackToMistral: true,
+    })
     const m = raw.match(/\{[\s\S]*\}/)
     if (m) return JSON.parse(m[0])
   } catch {}
@@ -440,7 +526,13 @@ ${eligible.map(a => `[${a.id}] ${a.name}: ${a.condition}`).join('\n')}
 Return ONLY a JSON array of earned achievement IDs. Empty array if none.`
 
   try {
-    const raw = await mistralChat([{ role: 'user', content: prompt }], { maxTokens: 150 })
+    const raw = await openRouterChat([{ role: 'user', content: prompt }], {
+      model: MODELS.router,
+      fallbackModel: MODELS.routerFallback,
+      nvidiaModel: NVIDIA_MODELS.general,
+      maxTokens: 150,
+      fallbackToMistral: true,
+    })
     const m = raw.match(/\[[\s\S]*?\]/)
     if (m) return JSON.parse(m[0])
   } catch {}
@@ -495,10 +587,87 @@ Provide a clear, actionable recommendation.
 Reply JSON: { "action": string, "reasoning": string, "priority": "LOW"|"MEDIUM"|"HIGH" }`
 
   try {
-    const raw = await mistralChat([{ role: 'user', content: prompt }], { maxTokens: 300 })
+    const raw = await openRouterChat([{ role: 'user', content: prompt }], {
+      model: MODELS.cot,
+      fallbackModel: MODELS.deepFree,
+      nvidiaModel: NVIDIA_MODELS.reasoning,
+      maxTokens: 300,
+      fallbackToMistral: true,
+    })
     const m = raw.match(/\{[\s\S]*?\}/)
     if (m) return JSON.parse(m[0])
   } catch {}
 
   return { action: 'Manual review required', reasoning: 'AI advisor unavailable', priority: 'MEDIUM' }
+}
+
+// ─── FEEDBACK TRIAGE ────────────────────────────────────────────────────────
+
+export async function triageFeedback(feedback: {
+  message: string
+  category?: string
+}): Promise<{
+  category: 'BUG' | 'FEATURE_REQUEST' | 'PRAISE' | 'COMPLAINT' | 'OTHER'
+  priority: 'LOW' | 'MEDIUM' | 'HIGH'
+  toxic: boolean
+  summary: string
+}> {
+  let toxic = false
+  try {
+    const mod = await moderateMessage(feedback.message)
+    toxic = !mod.safe
+  } catch {}
+
+  const prompt = `Triage this user feedback for a guild platform admin.
+
+Feedback: "${feedback.message}"
+
+Reply JSON: { "category": "BUG"|"FEATURE_REQUEST"|"PRAISE"|"COMPLAINT"|"OTHER", "priority": "LOW"|"MEDIUM"|"HIGH", "summary": string (one sentence) }`
+
+  try {
+    const raw = await openRouterChat([{ role: 'user', content: prompt }], {
+      model: MODELS.router,
+      fallbackModel: MODELS.routerFallback,
+      nvidiaModel: NVIDIA_MODELS.general,
+      maxTokens: 150,
+      fallbackToMistral: true,
+    })
+    const m = raw.match(/\{[\s\S]*?\}/)
+    if (m) {
+      const parsed = JSON.parse(m[0])
+      return { ...parsed, toxic }
+    }
+  } catch {}
+
+  return { category: 'OTHER', priority: 'MEDIUM', toxic, summary: feedback.message.slice(0, 120) }
+}
+
+// ─── QUEST SUGGESTION REVIEW ────────────────────────────────────────────────
+
+export async function reviewQuestSuggestion(suggestion: {
+  title: string
+  description: string
+  category?: string
+}): Promise<{ relevanceScore: number; feedback: string; recommend: boolean }> {
+  const prompt = `A guild member suggested a new quest idea. Evaluate it for relevance and quality.
+
+Title: ${suggestion.title}
+Description: ${suggestion.description}
+Category: ${suggestion.category ?? 'not specified'}
+
+Reply JSON: { "relevanceScore": number (0-100), "feedback": string, "recommend": boolean }`
+
+  try {
+    const raw = await openRouterChat([{ role: 'user', content: prompt }], {
+      model: MODELS.router,
+      fallbackModel: MODELS.routerFallback,
+      nvidiaModel: NVIDIA_MODELS.general,
+      maxTokens: 200,
+      fallbackToMistral: true,
+    })
+    const m = raw.match(/\{[\s\S]*?\}/)
+    if (m) return JSON.parse(m[0])
+  } catch {}
+
+  return { relevanceScore: 50, feedback: 'AI review unavailable — manual review required', recommend: true }
 }

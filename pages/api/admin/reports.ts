@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { generateAdminRec } from '@/lib/ai'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
@@ -21,7 +22,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         reportedAbout: { select: { name: true, nickname: true } },
       },
     })
-    return res.json({ reports })
+
+    // AI decision support: give admins an actionable recommendation per report
+    // instead of a blank list they have to judge cold.
+    const reportsWithAi = await Promise.all(reports.map(async r => {
+      let aiRec = null
+      try {
+        aiRec = await generateAdminRec({
+          type: 'USER_RISK',
+          details: `A user reported another user.\nReason: ${r.reason}\nDetails: ${r.details ?? 'none provided'}`,
+        })
+      } catch { /* AI unavailable, admin reviews manually */ }
+      return { ...r, aiRec }
+    }))
+
+    return res.json({ reports: reportsWithAi })
   }
 
   if (req.method === 'PATCH') {
