@@ -142,6 +142,8 @@ model User {
   warnings           Warning[]
   activityLogs       ActivityLog[]
   arenaEntries       ArenaEntry[]
+  arenaVotes         ArenaVote[]
+  chatGameSessions   ChatGameSession[]
   adminPermission    AdminPermission?
   achievements       UserAchievement[]
   titles             UserTitle[]
@@ -366,6 +368,14 @@ model ArenaChallenge {
   endsAt      DateTime
   createdAt   DateTime     @default(now())
   entries     ArenaEntry[]
+
+  // ── ARENA PROTOCOL rule-engine fields ──
+  category        String?  // Logic | Typing | Quiz | Creative | Social | Time
+  icon            String?  // emoji/icon key rendered on the card
+  status          String   @default("ACTIVE") // ACTIVE, CLOSED, DRAFT
+  isDaily         Boolean  @default(false)
+  config          Json?    // full rule-engine JSON: mechanics/attempt_rules/rewards/anti_cheat/ranking
+  updatedAt       DateTime @updatedAt
 }
 
 model ArenaEntry {
@@ -377,6 +387,38 @@ model ArenaEntry {
   createdAt   DateTime       @default(now())
   user        User           @relation(fields: [userId], references: [id])
   challenge   ArenaChallenge @relation(fields: [challengeId], references: [id])
+
+  // ── AI validator layer ──
+  aiScore    Int?
+  aiFeedback String?
+  aiFlagged  Boolean  @default(false)
+  votes      Int      @default(0)
+  voteRecords ArenaVote[]
+
+  @@unique([challengeId, userId])
+}
+
+model ArenaVote {
+  id        String     @id @default(cuid())
+  entryId   String
+  voterId   String
+  createdAt DateTime   @default(now())
+  entry     ArenaEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  voter     User       @relation(fields: [voterId], references: [id])
+
+  @@unique([entryId, voterId])
+}
+
+model ChatGameSession {
+  id          String   @id @default(cuid())
+  channel     String
+  gameType    String   // TRUTH_DARE, WOULD_RATHER, TWO_TRUTHS, WORD_CHAIN, GUILD_TRIVIA
+  state       Json
+  status      String   @default("IN_PROGRESS") // IN_PROGRESS, FINISHED
+  startedById String
+  startedBy   User     @relation(fields: [startedById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model TrialTask {

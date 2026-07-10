@@ -333,7 +333,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
   )
 
   return (
-    <div className="min-h-screen bg-deep-black flex">
+    <div className="min-h-screen bg-transparent flex">
       <aside className="hidden md:flex flex-col w-56 lg:w-60 bg-[#08000f] border-r border-purple-500/15 fixed top-0 left-0 bottom-0 z-40">
         <SidebarContent />
       </aside>

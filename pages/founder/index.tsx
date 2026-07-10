@@ -94,7 +94,22 @@ export default function FounderDashboard() {
   }
   const [taskForm, setTaskForm] = useState({ title:'',description:'',category:'Design',difficulty:'Medium',instructions:'',deadlineHours:'24' })
   const [adminForm, setAdminForm] = useState({ name:'',email:'',password:'',role:'MODERATOR',canTrials:false,canQuests:false,canUsers:false,canReports:false,canArena:false })
-  const [arenaForm, setArenaForm] = useState({ title:'',description:'',type:'challenge',xpReward:'50',cashReward:'',endsAt:'' })
+  const [arenaForm, setArenaForm] = useState({
+    title:'', description:'', category:'Logic', icon:'◆',
+    mechanicsType:'puzzle', validationType:'auto',
+    difficulty:'medium', timeLimitSeconds:'120',
+    entryLimit:'1', cooldownMinutes:'1440',
+    xpReward:'50', coinReward:'0', cashReward:'', badge:'',
+    endsAt:'', isDaily:false,
+  })
+  const ARENA_CATEGORIES: Record<string, { icon: string; mechanicsOptions: string[] }> = {
+    Logic:    { icon: '🧩', mechanicsOptions: ['puzzle'] },
+    Typing:   { icon: '⌨️', mechanicsOptions: ['typing'] },
+    Quiz:     { icon: '🧠', mechanicsOptions: ['quiz'] },
+    Creative: { icon: '🎨', mechanicsOptions: ['creative'] },
+    Social:   { icon: '👥', mechanicsOptions: ['social_task'] },
+    Time:     { icon: '⏱️', mechanicsOptions: ['tap_speed'] },
+  }
   const [achForm, setAchForm] = useState({ name:'',description:'',type:'PERMANENT',icon:'🏆',condition:'',xpBonus:'0' })
   const [titleForm, setTitleForm] = useState({ name:'',description:'',condition:'',icon:'⚔️',canExpire:false })
   const [saving, setSaving] = useState(false)
@@ -349,15 +364,58 @@ export default function FounderDashboard() {
   }
 
   async function postArena() {
+    if (!arenaForm.title || !arenaForm.endsAt) return msg('Title and end date required')
     setSaving(true)
-    await fetch('/api/founder/arena', {
+    const config = {
+      game_id: arenaForm.title.toLowerCase().replace(/\s+/g, '_'),
+      name: arenaForm.title,
+      description: arenaForm.description,
+      category: arenaForm.category,
+      objective: arenaForm.description,
+      rules: [
+        'Answer before time runs out',
+        'One attempt per cooldown window',
+        arenaForm.mechanicsType === 'creative' ? 'Submissions are reviewed by the AI validator' : 'Auto-graded by the AI validator',
+      ],
+      mechanics: {
+        type: arenaForm.mechanicsType,
+        input_required: true,
+        validation_type: arenaForm.validationType,
+      },
+      difficulty: arenaForm.difficulty,
+      time_limit_seconds: parseInt(arenaForm.timeLimitSeconds) || 0,
+      attempt_rules: {
+        entry_limit: parseInt(arenaForm.entryLimit) || 1,
+        cooldown_minutes: parseInt(arenaForm.cooldownMinutes) || 0,
+      },
+      rewards: {
+        coins: parseInt(arenaForm.coinReward) || 0,
+        xp: parseInt(arenaForm.xpReward) || 0,
+        badge: arenaForm.badge || '',
+      },
+      ranking: { enabled: true, score_type: arenaForm.mechanicsType === 'creative' ? 'points' : 'accuracy' },
+      anti_cheat: { ip_limit: true, device_lock: false, answer_shuffling: arenaForm.mechanicsType === 'quiz' },
+    }
+    const r = await fetch('/api/founder/arena', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(arenaForm),
+      body: JSON.stringify({
+        title: arenaForm.title,
+        description: arenaForm.description,
+        category: arenaForm.category,
+        icon: arenaForm.icon || ARENA_CATEGORIES[arenaForm.category]?.icon,
+        type: arenaForm.mechanicsType.toUpperCase(),
+        xpReward: arenaForm.xpReward,
+        cashReward: arenaForm.cashReward,
+        endsAt: arenaForm.endsAt,
+        isDaily: arenaForm.isDaily,
+        config,
+      }),
     })
     setSaving(false)
-    setArenaForm({ title:'',description:'',type:'challenge',xpReward:'50',cashReward:'',endsAt:'' })
-    msg('Arena event posted.')
+    if (!r.ok) { const d = await r.json(); return msg('Error: ' + d.error) }
+    setArenaForm(p => ({ ...p, title:'', description:'', endsAt:'', isDaily:false }))
+    msg('Arena game deployed to the grid.')
     loadAll()
   }
 
@@ -1141,53 +1199,112 @@ export default function FounderDashboard() {
                 </div>
               )}
 
-              {/* ── ARENA TAB ── */}
+              {/* ── ARENA TAB (rule-engine game builder) ── */}
               {tab === 'Arena' && (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="bg-[#0d0017] border border-amber-500/20 p-5">
                     <h3 className="font-orbitron text-xs text-amber-400 tracking-widest uppercase mb-5 pb-3 border-b border-amber-500/20">
-                      Post Arena Event
+                      Assemble Arena Game
                     </h3>
                     <div className="flex flex-col gap-4">
-                      <GlowInput label="Event Title *" placeholder="Weekly Guild War" value={arenaForm.title} onChange={e=>setArenaForm(p=>({...p,title:e.target.value}))} />
-                      <GlowTextarea label="Description *" placeholder="What's the challenge?" rows={3} value={arenaForm.description} onChange={e=>setArenaForm(p=>({...p,description:e.target.value}))} />
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Type</label>
-                          <select value={arenaForm.type} onChange={e=>setArenaForm(p=>({...p,type:e.target.value}))}
-                            className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70 transition-all">
-                            {['challenge','tournament','poll','mini_game','guild_war'].map(t=><option key={t}>{t}</option>)}
-                          </select>
-                        </div>
-                        <GlowInput label="XP Reward" type="number" placeholder="50" value={arenaForm.xpReward} onChange={e=>setArenaForm(p=>({...p,xpReward:e.target.value}))} />
-                        <GlowInput label="Cash Reward ($, optional)" type="number" placeholder="0" value={arenaForm.cashReward} onChange={e=>setArenaForm(p=>({...p,cashReward:e.target.value}))} />
-                        <div>
-                          <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">End Date *</label>
-                          <input type="datetime-local" value={arenaForm.endsAt} onChange={e=>setArenaForm(p=>({...p,endsAt:e.target.value}))}
-                            className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70 transition-all [color-scheme:dark]" />
+                      <div>
+                        <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Choose Game Type</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {Object.entries(ARENA_CATEGORIES).map(([cat, meta]) => (
+                            <button
+                              key={cat}
+                              onClick={() => setArenaForm(p => ({ ...p, category: cat, icon: meta.icon, mechanicsType: meta.mechanicsOptions[0] }))}
+                              className={`border p-2.5 flex flex-col items-center gap-1 transition-all ${
+                                arenaForm.category === cat ? 'border-amber-400 bg-amber-900/20 text-amber-300' : 'border-purple-500/20 text-slate-500 hover:border-purple-400/50'
+                              }`}
+                            >
+                              <span className="text-lg">{meta.icon}</span>
+                              <span className="font-orbitron text-[9px] tracking-widest">{cat}</span>
+                            </button>
+                          ))}
                         </div>
                       </div>
-                      <GlowButton variant="primary" size="md" loading={saving} onClick={postArena}>Post Event</GlowButton>
+
+                      <GlowInput label="Game Title *" placeholder="Code Rush" value={arenaForm.title} onChange={e=>setArenaForm(p=>({...p,title:e.target.value}))} />
+                      <GlowTextarea label="Objective / Description *" placeholder="Solve patterns under time pressure" rows={2} value={arenaForm.description} onChange={e=>setArenaForm(p=>({...p,description:e.target.value}))} />
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Difficulty</label>
+                          <select value={arenaForm.difficulty} onChange={e=>setArenaForm(p=>({...p,difficulty:e.target.value}))}
+                            className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70">
+                            {['easy','medium','hard'].map(d=><option key={d}>{d}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Validation</label>
+                          <select value={arenaForm.validationType} onChange={e=>setArenaForm(p=>({...p,validationType:e.target.value}))}
+                            className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70">
+                            <option value="auto">AI Auto-grade</option>
+                            <option value="manual">Manual review</option>
+                            <option value="hybrid">Hybrid (AI + admin)</option>
+                          </select>
+                        </div>
+                        <GlowInput label="Time Limit (seconds)" type="number" placeholder="120" value={arenaForm.timeLimitSeconds} onChange={e=>setArenaForm(p=>({...p,timeLimitSeconds:e.target.value}))} />
+                        <GlowInput label="Entry Limit" type="number" placeholder="1" value={arenaForm.entryLimit} onChange={e=>setArenaForm(p=>({...p,entryLimit:e.target.value}))} />
+                        <GlowInput label="Cooldown (minutes)" type="number" placeholder="1440" value={arenaForm.cooldownMinutes} onChange={e=>setArenaForm(p=>({...p,cooldownMinutes:e.target.value}))} />
+                        <GlowInput label="Badge (optional)" placeholder="🏅 Speed Demon" value={arenaForm.badge} onChange={e=>setArenaForm(p=>({...p,badge:e.target.value}))} />
+                        <GlowInput label="XP Reward" type="number" placeholder="50" value={arenaForm.xpReward} onChange={e=>setArenaForm(p=>({...p,xpReward:e.target.value}))} />
+                        <GlowInput label="Coin Reward" type="number" placeholder="0" value={arenaForm.coinReward} onChange={e=>setArenaForm(p=>({...p,coinReward:e.target.value}))} />
+                        <GlowInput label="Cash Reward ($, optional)" type="number" placeholder="0" value={arenaForm.cashReward} onChange={e=>setArenaForm(p=>({...p,cashReward:e.target.value}))} />
+                        <div>
+                          <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">Closes At *</label>
+                          <input type="datetime-local" value={arenaForm.endsAt} onChange={e=>setArenaForm(p=>({...p,endsAt:e.target.value}))}
+                            className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70 [color-scheme:dark]" />
+                        </div>
+                      </div>
+
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={arenaForm.isDaily} onChange={e=>setArenaForm(p=>({...p,isDaily:e.target.checked}))} className="w-4 h-4 accent-amber-500" />
+                        <span className="font-rajdhani text-sm text-amber-300">Flag as today's Daily Challenge (pulsing badge)</span>
+                      </label>
+
+                      <GlowButton variant="primary" size="md" loading={saving} onClick={postArena}>Deploy Game</GlowButton>
                     </div>
                   </div>
 
                   <div className="bg-[#0d0017] border border-purple-500/20 p-5">
                     <h3 className="font-orbitron text-xs text-white tracking-widest uppercase mb-4 pb-3 border-b border-purple-500/15">
-                      Active Events ({arena.length})
+                      Deployed Games ({arena.length})
                     </h3>
-                    <div className="flex flex-col gap-2 max-h-[500px] overflow-y-auto">
+                    <div className="flex flex-col gap-2 max-h-[600px] overflow-y-auto">
                       {arena.length === 0 ? (
-                        <p className="font-rajdhani text-slate-600 text-sm text-center py-6">No events posted yet.</p>
+                        <p className="font-rajdhani text-slate-600 text-sm text-center py-6">No games deployed yet.</p>
                       ) : arena.map((e:any) => (
                         <div key={e.id} className="border border-purple-500/10 p-3">
-                          <div className="font-orbitron text-xs text-white mb-1">{e.title}</div>
-                          <div className="flex items-center gap-3 text-[10px]">
-                            <span className="font-orbitron text-purple-400/70">{e.type}</span>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span>{e.icon}</span>
+                            <div className="font-orbitron text-xs text-white">{e.title}</div>
+                            {e.isDaily && <span className="ml-auto font-orbitron text-[8px] text-amber-400 border border-amber-500/40 px-1.5 py-0.5 animate-pulse">DAILY</span>}
+                          </div>
+                          <div className="flex items-center gap-3 text-[10px] flex-wrap">
+                            <span className="font-orbitron text-purple-400/70">{e.category}</span>
                             <span className="font-orbitron text-green-400">+{e.xpReward}XP</span>
                             {e.cashReward && <span className="font-orbitron text-amber-400">${e.cashReward}</span>}
-                            <span className={`ml-auto font-orbitron ${new Date(e.endsAt)>new Date()?'text-green-400':'text-slate-600'}`}>
-                              {new Date(e.endsAt)>new Date()?'LIVE':'ENDED'}
+                            <span className="font-orbitron text-slate-600">{e._count?.entries ?? 0} entries</span>
+                            <span className={`ml-auto font-orbitron ${e.status==='ACTIVE' && new Date(e.endsAt)>new Date()?'text-green-400':'text-slate-600'}`}>
+                              {e.status==='ACTIVE' && new Date(e.endsAt)>new Date()?'LIVE':'CLOSED'}
                             </span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-2">
+                            {e.status === 'ACTIVE' ? (
+                              <button onClick={async()=>{await fetch('/api/founder/arena',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:e.id,status:'CLOSED'})});loadAll()}}
+                                className="font-orbitron text-[9px] text-red-400 border border-red-500/30 px-2 py-1 hover:bg-red-900/20">CLOSE</button>
+                            ) : (
+                              <button onClick={async()=>{await fetch('/api/founder/arena',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:e.id,status:'ACTIVE'})});loadAll()}}
+                                className="font-orbitron text-[9px] text-green-400 border border-green-500/30 px-2 py-1 hover:bg-green-900/20">REOPEN</button>
+                            )}
+                            {!e.isDaily && (
+                              <button onClick={async()=>{await fetch('/api/founder/arena',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:e.id,isDaily:true})});loadAll()}}
+                                className="font-orbitron text-[9px] text-amber-400 border border-amber-500/30 px-2 py-1 hover:bg-amber-900/20">SET DAILY</button>
+                            )}
+                            <button onClick={async()=>{await fetch('/api/founder/arena',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:e.id})});loadAll()}}
+                              className="ml-auto font-orbitron text-[9px] text-slate-600 border border-slate-700 px-2 py-1 hover:bg-slate-800">DELETE</button>
                           </div>
                         </div>
                       ))}

@@ -12,6 +12,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!perms?.canArena) return res.status(403).json({ error: 'No arena permission' })
   }
 
-  const challenges = await prisma.arenaChallenge.findMany({ orderBy: { createdAt: 'desc' } })
+  const challenges = await prisma.arenaChallenge.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: { _count: { select: { entries: true } } },
+  })
   res.json({ challenges })
 }

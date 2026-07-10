@@ -2,3 +2,6 @@
 - [NextAuth route filename](nextauth-filename.md) — must be [...nextauth].ts with ASCII dots, not […nextauth].ts with ellipsis character
 - [AI Provider Map](ai-providers.md) — Grok replaced with OpenRouter+Mistral fallback; Gemini replaced same way; HF confirmed working on router.huggingface.co
 - [Application Linking System](app-linking.md) — apply.ts/register.ts do email-based merging; apply-first creates account with no password, register later sets it
+- [Prisma schema workflow](prisma-schema-workflow.md) — no migrations folder exists; always use `prisma db push --accept-data-loss`, never `migrate dev`
+- [.replit port config is tool-owned](replit-port-config.md) — direct edits blocked; use configureWorkflow/removeWorkflow instead; stale duplicate port entries may persist harmlessly even after reconfiguring
+- [Full-page animated backgrounds](fullpage-canvas-background.md) — mount fixed/-z-10 canvas in _app.tsx; must audit layout wrapper bg colors (e.g. bg-deep-black) and make them transparent or it won't show through

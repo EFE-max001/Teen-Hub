@@ -671,3 +671,123 @@ Reply JSON: { "relevanceScore": number (0-100), "feedback": string, "recommend":
 
   return { relevanceScore: 50, feedback: 'AI review unavailable — manual review required', recommend: true }
 }
+// ─── ARENA PROTOCOL: AI Game Validator Layer ───────────────────────────────
+
+export async function validateArenaEntry(input: {
+  gameTitle: string
+  category: string
+  objective: string
+  validationType: 'auto' | 'manual' | 'hybrid'
+  content: string
+}): Promise<{ score: number; feedback: string; flagged: boolean }> {
+  if (input.validationType === 'manual') {
+    return { score: 0, feedback: 'Pending manual review', flagged: false }
+  }
+
+  const prompt = `You are the ARENA PROTOCOL AI validator for a competitive guild mini-game.
+
+Game: ${input.gameTitle}
+Category: ${input.category}
+Objective: ${input.objective}
+Submitted entry: ${input.content}
+
+Score the entry 0-100 on relevance, effort, and creativity. Flag it if it looks like spam, a copy-paste cheat, or unrelated content.
+Reply JSON: { "score": number, "feedback": string, "flagged": boolean }`
+
+  try {
+    const raw = await deepAnalysis(prompt, { maxTokens: 300 })
+    const m = raw.match(/\{[\s\S]*?\}/)
+    if (m) return JSON.parse(m[0])
+  } catch {}
+
+  return { score: 50, feedback: 'AI validator unavailable — scored as neutral, admin can override.', flagged: false }
+}
+
+export async function generateArenaPrompt(category: string, difficulty: string): Promise<{
+  prompt: string
+  answer?: string
+}> {
+  const req = `Generate one short, fresh ${difficulty}-difficulty "${category}" mini-game prompt/question for a competitive tech guild's Arena Protocol.
+Keep it punchy (max 2 sentences). If it has a single objectively correct answer, include it.
+Reply JSON: { "prompt": string, "answer": string|null }`
+
+  try {
+    const raw = await openRouterChat([{ role: 'user', content: req }], {
+      model: MODELS.router,
+      fallbackModel: MODELS.routerFallback,
+      nvidiaModel: NVIDIA_MODELS.general,
+      maxTokens: 200,
+      fallbackToMistral: true,
+    })
+    const m = raw.match(/\{[\s\S]*?\}/)
+    if (m) return JSON.parse(m[0])
+  } catch {}
+
+  return { prompt: `Give your best ${category.toLowerCase()} answer under pressure!`, answer: undefined }
+}
+
+// ─── GHOST PROTOCOL: Community Party Games ─────────────────────────────────
+
+export async function generateGhostProtocolContent(
+  gameType: 'TRUTH_DARE' | 'WOULD_RATHER' | 'TWO_TRUTHS' | 'WORD_CHAIN' | 'GUILD_TRIVIA',
+  extra?: string
+): Promise<any> {
+  const prompts: Record<string, string> = {
+    TRUTH_DARE: `Generate ONE fun, guild-appropriate "truth or dare" style prompt for a tech guild chat game — either a deep/funny question or a light harmless dare. Keep it workplace-safe.
+Reply JSON: { "mode": "truth"|"dare", "prompt": string }`,
+    WOULD_RATHER: `Generate ONE "would you rather" dilemma with two extreme, funny tech/career options for a guild chat game.
+Reply JSON: { "optionA": string, "optionB": string }`,
+    GUILD_TRIVIA: `Generate 5 rapid-fire multiple choice trivia questions about coding, tech history, or internet culture, for a guild chat game. Keep questions short.
+Reply JSON: { "questions": [ { "question": string, "options": string[4], "correctIndex": number } ] }`,
+    WORD_CHAIN: `Generate a fun starting word (6-10 letters, common English noun) to kick off a word-chain game.
+Reply JSON: { "startWord": string }`,
+    TWO_TRUTHS: `no-op`,
+  }
+
+  if (gameType === 'TWO_TRUTHS') {
+    // User-submitted content, not AI-generated — validated separately.
+    return {}
+  }
+
+  try {
+    const raw = await openRouterChat([{ role: 'user', content: prompts[gameType] }], {
+      model: MODELS.router,
+      fallbackModel: MODELS.routerFallback,
+      nvidiaModel: NVIDIA_MODELS.general,
+      maxTokens: 500,
+      fallbackToMistral: true,
+    })
+    const m = raw.match(/\{[\s\S]*\}/)
+    if (m) return JSON.parse(m[0])
+  } catch {}
+
+  const fallback: Record<string, any> = {
+    TRUTH_DARE: { mode: 'truth', prompt: "What's the most useless skill you're weirdly proud of?" },
+    WOULD_RATHER: { optionA: 'Debug legacy code with no comments forever', optionB: 'Attend daily stand-ups at 5AM forever' },
+    GUILD_TRIVIA: {
+      questions: [
+        { question: 'What does "HTTP" stand for?', options: ['HyperText Transfer Protocol', 'High Transfer Text Protocol', 'Host Transfer Text Program', 'HyperText Text Protocol'], correctIndex: 0 },
+      ],
+    },
+    WORD_CHAIN: { startWord: 'dragon' },
+  }
+  return fallback[gameType] ?? {}
+}
+
+export async function judgeTwoTruthsGuess(statements: string[], lieIndex: number): Promise<string> {
+  const prompt = `A guild member played "Two Truths and a Lie". Their statements were:
+1. ${statements[0]}
+2. ${statements[1]}
+3. ${statements[2]}
+The lie was statement #${lieIndex + 1}. Write one short, dramatic reveal line (max 20 words) announcing the lie to the chat.`
+  try {
+    return await openRouterChat([{ role: 'user', content: prompt }], {
+      model: MODELS.router,
+      fallbackModel: MODELS.routerFallback,
+      maxTokens: 60,
+      fallbackToMistral: true,
+    })
+  } catch {
+    return `The truth is out — statement #${lieIndex + 1} was the lie all along!`
+  }
+}

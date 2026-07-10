@@ -21,6 +21,8 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<any[]>([])
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [showHelp, setShowHelp] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
 
   const userRank = session?.user?.rank || 'F'
@@ -44,6 +46,7 @@ export default function ChatPage() {
 
   async function send() {
     if (!text.trim()) return
+    setError('')
     const res = await fetch(`/api/chat/${channel}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -53,6 +56,8 @@ export default function ChatPage() {
     if (res.ok) {
       setMessages(prev => [...prev, data.message])
       setText('')
+    } else {
+      setError(data.error || 'Message failed to send')
     }
   }
 
@@ -104,11 +109,28 @@ export default function ChatPage() {
                 <span className="font-orbitron text-xs text-white tracking-wide">
                   #{CHANNELS.find(c => c.id === channel)?.label || channel}
                 </span>
-                <div className="ml-auto flex items-center gap-2">
+                <div className="ml-auto flex items-center gap-3">
+                  <button
+                    onClick={() => setShowHelp(v => !v)}
+                    className="font-orbitron text-[9px] text-purple-400 border border-purple-500/30 px-2 py-1 hover:bg-purple-900/20 tracking-widest"
+                  >
+                    👻 GHOST PROTOCOL
+                  </button>
                   <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
                   <span className="font-rajdhani text-[10px] text-slate-600">AI-monitored</span>
                 </div>
               </div>
+
+              {showHelp && (
+                <div className="px-5 py-3 border-b border-purple-500/15 bg-purple-900/10 font-rajdhani text-xs text-slate-400 space-y-1">
+                  <p className="font-orbitron text-[10px] text-purple-300 tracking-widest uppercase mb-1">Party Game Commands</p>
+                  <p><code className="text-purple-300">/party truth-or-dare</code> — start Truth or Dare</p>
+                  <p><code className="text-purple-300">/party would-you-rather</code> — start Would You Rather</p>
+                  <p><code className="text-purple-300">/party two-truths fact 1 | fact 2 | fact 3</code> — start Two Truths and a Lie</p>
+                  <p><code className="text-purple-300">/truth</code> / <code className="text-purple-300">/dare</code> — new Truth or Dare round · <code className="text-purple-300">/wyr</code> — new dilemma</p>
+                  <p><code className="text-purple-300">/guess 1|2|3</code> — guess the lie · <code className="text-purple-300">/endgame</code> — end the round</p>
+                </div>
+              )}
 
               <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3">
                 {loading ? (
@@ -120,34 +142,50 @@ export default function ChatPage() {
                     <p className="font-rajdhani text-slate-700 text-sm">No messages yet. Be the first.</p>
                   </div>
                 ) : (
-                  messages.map((msg: any) => (
-                    <div key={msg.id} className="flex items-start gap-3">
-                      <div className="flex-shrink-0 mt-0.5">
-                        <RankBadge rank={msg.user?.rank || 'F'} size="sm" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-orbitron text-[11px] text-purple-300">
-                            {msg.user?.nickname || msg.user?.name || 'Unknown'}
-                          </span>
-                          <span className="font-rajdhani text-[10px] text-slate-600">
-                            {new Date(msg.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-                          </span>
+                  messages.map((msg: any) => {
+                    const isGhost = msg.content?.startsWith('👻')
+                    if (isGhost) {
+                      return (
+                        <div key={msg.id} className="border border-purple-500/25 bg-purple-900/10 px-4 py-2.5 whitespace-pre-line">
+                          <p className="font-rajdhani text-purple-200 text-sm leading-relaxed">{msg.content}</p>
                         </div>
-                        <p className="font-rajdhani text-slate-300 text-sm leading-relaxed">{msg.content}</p>
+                      )
+                    }
+                    return (
+                      <div key={msg.id} className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-0.5">
+                          <RankBadge rank={msg.user?.rank || 'F'} size="sm" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-orbitron text-[11px] text-purple-300">
+                              {msg.user?.nickname || msg.user?.name || 'Unknown'}
+                            </span>
+                            <span className="font-rajdhani text-[10px] text-slate-600">
+                              {new Date(msg.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="font-rajdhani text-slate-300 text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    )
+                  })
                 )}
                 <div ref={endRef} />
               </div>
+
+              {error && (
+                <div className="px-5 py-1.5 border-t border-red-500/20 bg-red-900/10">
+                  <p className="font-rajdhani text-red-400 text-xs">{error}</p>
+                </div>
+              )}
 
               <div className="px-4 py-3 border-t border-purple-500/15 flex items-center gap-3">
                 <input
                   value={text}
                   onChange={e => setText(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && send()}
-                  placeholder={`Message #${CHANNELS.find(c => c.id === channel)?.label || channel}…`}
+                  placeholder={`Message #${CHANNELS.find(c => c.id === channel)?.label || channel}… (try /party truth-or-dare)`}
                   className="flex-1 bg-black/40 border border-purple-500/20 text-slate-200 text-sm font-rajdhani px-4 py-2.5 focus:outline-none focus:border-purple-400/50 transition-colors"
                 />
                 <button

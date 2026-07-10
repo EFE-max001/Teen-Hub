@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { moderateMessage } from '@/lib/ai'
 import { applyTrustEvent } from '@/lib/trustEngine'
+import { handleGhostCommand } from '@/lib/ghostProtocol'
 
 const RANK_LEVEL: Record<string, number> = { F:0,E:1,D:2,C:3,B:4,A:5,S:6,SS:7,SSS:8 }
 const CHANNEL_RANK: Record<string, string> = { elite: 'A' }
@@ -30,6 +31,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     const { content } = req.body
     if (!content?.trim()) return res.status(400).json({ error: 'Empty message' })
+
+    if (content.trim().startsWith('/')) {
+      const userLabel = (session.user as any).nickname || session.user.name || 'A guild member'
+      const result = await handleGhostCommand(channel, session.user.id, userLabel, content)
+      if (result.handled) {
+        if (result.error) return res.status(400).json({ error: result.error })
+        const message = await prisma.chatMessage.create({
+          data: { userId: session.user.id, channel, content: result.systemContent || '' },
+          include: { user: { select: { id: true, name: true, nickname: true, rank: true } } },
+        })
+        return res.json({ message, ghostProtocol: true })
+      }
+    }
 
     const moderation = await moderateMessage(content)
 

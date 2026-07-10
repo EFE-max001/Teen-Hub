@@ -1,0 +1,152 @@
+# Master Blueprint: Phase C — Immersive Guild Experience
+
+This document outlines the exact vision, design, and technical implementation for Phase C of QuestHub Guild. Developers must follow this guide strictly to ensure the platform maintains its premium, high-performance, dark sci-fi military aesthetic.
+
+---
+
+## 1. The Vision: What We Are Building
+
+QuestHub is not a standard web application; it is a futuristic digital labor guild. Phase C introduces three major pillars to make the platform feel alive, competitive, and immersive:
+
+1. **The Sentinel Grid (3D Background)**: The application must feel like it is being actively monitored by a central AI. We achieve this with a combined holographic figure (The Sentinel) controlling an infinite 3D perspective grid. It must look cutting-edge but consume **zero** heavy network data and have minimal battery impact (no heavy WebGL models).
+2. **ARENA PROTOCOL (Mini-game Engine)**: A dedicated zone where members compete in rapid, structured challenges (design duels, coding speed-runs, daily prompts). It is a gamified testing ground to earn XP and prove worth outside of standard quests.
+3. **GHOST PROTOCOL (Community Party Games)**: The guild chat must be a social hub. We are embedding real-time, AI-moderated multiplayer games directly into the chat stream via slash commands (`/truth_dare`, `/would_rather`, etc.) to build community bonds.
+
+---
+
+## 2. Feature Details & Developer Instructions
+
+### 2.1. The "Sentinel Grid" Animated Background
+
+**The Vibe**: A translucent, wireframe AI humanoid stands at the edge of the void, projecting and manipulating a massive neon-purple grid floor. It feels like you are inside a quantum command center.
+
+**Technical Constraint**: **NO 3D MODEL DOWNLOADS. NO HIGH-GPU WEBGL.** We are simulating high-end 3D using CSS and lightweight Canvas 2D to save battery and data.
+
+**Developer Implementation Steps**:
+
+1. **The Infinite Grid (Base Layer)**:
+   - Create a full-width, fixed `<div className="fixed bottom-0 left-0 right-0 h-[60vh] -z-20 pointer-events-none">`.
+   - Apply CSS 3D perspective: `transform: perspective(1000px) rotateX(75deg);`
+   - Set the background using two overlapping `linear-gradient`s to draw the grid lines (neon purple with low opacity).
+   - Animate the `background-position` vertically using a linear, infinite CSS `@keyframes` to make the grid appear to be constantly moving forward towards the user.
+
+2. **The Sentinel Entity (Middle Layer)**:
+   - Procure or create an abstract, wireframe/low-poly SVG silhouette of a humanoid figure from the waist up, with one arm extended.
+   - Position it fixed at the bottom right: `right: -5%; bottom: 0; height: 60vh; z-index: -10; opacity: 0.15;`.
+   - Apply CSS filters for the hologram effect: `filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));`
+   - Animate the SVG: Add a slow vertical translation (hovering) and slight opacity flickering (to simulate a glitchy hologram) using standard CSS animations.
+
+3. **Data Particle Flow (Top Layer)**:
+   - Overlay a full-screen `<canvas className="fixed inset-0 pointer-events-none -z-5">`.
+   - Write a raw JavaScript `requestAnimationFrame` loop.
+   - Spawn a low number of particles (max 50) at the screen coordinates corresponding to the Sentinel's extended hand.
+   - Calculate their trajectories to match the perspective lines of the CSS grid below them, making them fly "forward" along the grid.
+   - Draw them as simple glowing dots (`ctx.arc`, `ctx.fillStyle`, `ctx.shadowBlur`).
+   - *Crucial*: This canvas must pause its animation loop when the tab is out of focus to save battery.
+
+4. **Integration**:
+   - Wrap all three layers in a `<SentinelBackground />` React component.
+   - Mount it once in `pages/_app.tsx` behind your `<DashboardLayout />` so it persists smoothly during page transitions without remounting.
+
+---
+
+### 2.2. ARENA PROTOCOL (Mini-game Engine)
+
+**The Vibe**: A high-stakes tournament bracket interface. Sharp angular cards, glowing borders, and intense typography.
+
+**Mechanics**:
+- The Founder configures games via a backend dashboard (JSON-driven structure).
+- Games have types: `VOTE_BATTLE` (users submit, others vote), `SPEED_RUN` (first to complete wins), `CREATIVE_PROMPT` (open-ended).
+- One game is always flagged as the `DAILY_CHALLENGE` (pulsing amber badge, 24-hour countdown).
+
+**Developer Implementation Steps**:
+
+1. **Database Schema**:
+   Add the following to `prisma/schema.prisma` (Note: Run `npx prisma migrate dev` after):
+   ```prisma
+   model ArenaGame {
+     id             String             @id @default(cuid())
+     title          String
+     type           String             // "VOTE_BATTLE", "SPEED_RUN", "CREATIVE_PROMPT"
+     icon           String             // Emoji or icon name
+     prompt         String             // The instructions/question
+     xpReward       Int
+     isDaily        Boolean            @default(false)
+     status         String             @default("ACTIVE") // ACTIVE, CLOSED
+     deadline       DateTime?
+     createdAt      DateTime           @default(now())
+     entries        ArenaEntry[]
+   }
+
+   model ArenaEntry {
+     id             String    @id @default(cuid())
+     gameId         String
+     game           ArenaGame @relation(fields: [gameId], references: [id], onDelete: Cascade)
+     userId         String
+     user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+     content        String    // URL, text answer, etc.
+     score          Int       @default(0) // Used for voting or auto-grading
+     createdAt      DateTime  @default(now())
+
+     @@unique([gameId, userId]) // Prevent duplicate entries per user
+   }
+   ```
+
+2. **API Routes**:
+   - Create `pages/api/arena/index.ts` to `GET` all active games and `POST` new games (Founder only).
+   - Create `pages/api/arena/[id]/submit.ts` to handle user submissions (creates `ArenaEntry`).
+   - Create `pages/api/arena/[id]/vote.ts` to increment the `score` on an entry (ensure users can only vote once per entry).
+
+3. **UI Construction (`pages/dashboard/arena.tsx`)**:
+   - Create a CSS Grid layout.
+   - Style game cards with `bg-[#0d0017]` and neon borders. Use the `<GlowButton>` component for interactions.
+   - For the Daily Challenge, implement a live countdown timer (`setInterval` recalculating time remaining).
+   - Build a leaderboard sidebar that fetches the top 10 users ordered by `xp` descending.
+
+---
+
+### 2.3. GHOST PROTOCOL (Community Party Games in Chat)
+
+**The Vibe**: Chaotic, fun, fast-paced text games happening directly inside the main guild chat channel to keep retention high and build relationships.
+
+**The Games**:
+1.  **`/truth_dare`**: AI generates a guild-themed dare or deep question. User has 60s to answer. Skip = XP penalty.
+2.  **`/would_rather`**: AI generates two extreme tech/career dilemmas. Entire chat votes. Winning side gets XP.
+3.  **`/two_truths`**: A user inputs 3 statements. The chat votes on the lie. Reveal with dramatic animation.
+4.  **`/word_chain`**: Rapid-fire. Type a word starting with the last letter of the previous word. 10s timer per player.
+5.  **`/guild_trivia`**: AI generates 5 rapid-fire questions about coding, tech history, or platform lore. First correct answer wins the round.
+
+**Developer Implementation Steps**:
+
+1. **Database Schema for Game State**:
+   We need a flexible way to store the state of an active chat game.
+   ```prisma
+   model ChatGameSession {
+     id          String    @id @default(cuid())
+     channel     String    // The chat channel it is running in (e.g., "general")
+     gameType    String    // "TRUTH_DARE", "WOULD_RATHER", etc.
+     state       Json      // Flexible payload (current turn, prompt, votes, timer)
+     status      String    @default("IN_PROGRESS") // IN_PROGRESS, FINISHED
+     startedById String
+     startedBy   User      @relation(fields: [startedById], references: [id])
+     createdAt   DateTime  @default(now())
+     updatedAt   DateTime  @updatedAt
+   }
+   ```
+
+2. **Command Interception**:
+   - In your existing `pages/api/chat.ts` `POST` handler, before saving a normal message, check if `content.startsWith('/')`.
+   - If it matches a game command, create a `ChatGameSession` instead of a standard `ChatMessage`.
+   - Call the `mistralChat` AI function in `lib/ai.ts` to generate the game content (e.g., generating the 'Would You Rather' options). Save this to the `state` JSON column.
+   - Inject a system message into the chat: `[GHOST PROTOCOL INITIATED: WOULD YOU RATHER. Options below.]`
+
+3. **Frontend Rendering (`pages/dashboard/chat.tsx`)**:
+   - Modify the message polling logic to also fetch the active `ChatGameSession` for the channel.
+   - If an active game exists, render a specialized UI component directly above the chat input box.
+   - Example: For `/would_rather`, render two large `<GlowButton>` elements showing Option A and Option B. When a user clicks, send a `POST` request to a new `pages/api/chat/game-action.ts` route to update the JSON state (adding their vote).
+   - Implement real-time polling (every 2-3 seconds) so the UI updates as other users vote or submit answers.
+
+4. **Resolution**:
+   - Once the win condition is met (timer runs out, all votes cast), update the session `status` to `FINISHED`.
+   - Award XP to the winners using `prisma.user.update`.
+   - Inject a final system message announcing the results and XP gained.
