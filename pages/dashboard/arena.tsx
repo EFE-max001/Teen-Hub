@@ -27,36 +27,53 @@ function useCountdown(endsAt?: string) {
 function GameCard({ game, onOpen }: { game: any; onOpen: () => void }) {
   const countdown = useCountdown(game.isDaily ? game.endsAt : undefined)
   const myEntry = game.entries?.[0]
+  const accent = game.isDaily ? 'amber' : 'purple'
   return (
     <button
       onClick={onOpen}
-      className={`relative text-left border p-4 flex flex-col gap-2 transition-all duration-300 group ${
+      className={`relative text-left border-2 aspect-[4/5] flex flex-col items-center justify-center gap-2 px-3 py-4 transition-all duration-300 group overflow-hidden rounded-sm ${
         game.isDaily
-          ? 'border-amber-500/60 bg-gradient-to-b from-amber-900/20 to-[#0d0017] shadow-[0_0_25px_rgba(245,158,11,0.15)]'
-          : 'border-purple-500/25 bg-[#0d0017] hover:border-purple-400/60 hover:shadow-[0_0_25px_rgba(168,85,247,0.12)]'
+          ? 'border-amber-400/70 bg-gradient-to-b from-amber-950/40 via-[#0d0017] to-[#0d0017] shadow-[0_0_30px_rgba(245,158,11,0.25)]'
+          : 'border-purple-500/40 bg-gradient-to-b from-purple-950/20 via-[#0d0017] to-[#0d0017] hover:border-purple-400/80 hover:shadow-[0_0_30px_rgba(168,85,247,0.25)]'
       }`}
     >
+      {/* corner brackets */}
+      <span className={`absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2 ${game.isDaily ? 'border-amber-400/70' : 'border-purple-400/50'}`} />
+      <span className={`absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2 ${game.isDaily ? 'border-amber-400/70' : 'border-purple-400/50'}`} />
+      <span className={`absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 ${game.isDaily ? 'border-amber-400/70' : 'border-purple-400/50'}`} />
+      <span className={`absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 ${game.isDaily ? 'border-amber-400/70' : 'border-purple-400/50'}`} />
+
       {game.isDaily && (
-        <span className="absolute -top-2 left-3 font-orbitron text-[8px] text-amber-300 bg-amber-900/80 border border-amber-500/60 px-2 py-0.5 tracking-widest animate-pulse">
+        <span className="absolute top-2 left-1/2 -translate-x-1/2 font-orbitron text-[7px] text-amber-300 bg-amber-900/90 border border-amber-500/60 px-2 py-0.5 tracking-widest animate-pulse whitespace-nowrap">
           🔥 DAILY CHALLENGE
         </span>
       )}
-      <div className="flex items-center justify-between mt-1">
-        <span className="text-2xl">{game.icon || '◆'}</span>
-        {game.isDaily && countdown && (
-          <span className="font-orbitron text-[10px] text-amber-400">{countdown}</span>
-        )}
+
+      <div className={`relative w-14 h-14 rounded-full flex items-center justify-center text-3xl mt-3 transition-transform duration-300 group-hover:scale-110 ${
+        game.isDaily ? 'shadow-[0_0_25px_rgba(245,158,11,0.5)] bg-amber-500/10' : 'shadow-[0_0_20px_rgba(168,85,247,0.35)] bg-purple-500/10'
+      }`}>
+        <span className={`absolute inset-0 rounded-full border ${game.isDaily ? 'border-amber-400/50' : 'border-purple-400/40'}`} />
+        {game.icon || '◆'}
       </div>
-      <h3 className="font-orbitron font-bold text-sm text-white leading-snug group-hover:text-purple-200">{game.title}</h3>
-      <p className="font-rajdhani text-slate-500 text-xs line-clamp-2">{game.description}</p>
-      <div className="flex items-center gap-3 mt-1 pt-2 border-t border-purple-500/10 text-[10px]">
-        <span className="font-orbitron text-purple-400/70 uppercase">{game.category}</span>
-        <span className="font-orbitron text-green-400">+{game.xpReward}XP</span>
-        <span className="ml-auto font-orbitron text-slate-600">{game._count?.entries ?? 0} plays</span>
+
+      <h3 className={`font-orbitron font-bold text-[11px] text-center leading-snug tracking-wider uppercase mt-1 ${game.isDaily ? 'text-amber-200' : 'text-white group-hover:text-purple-200'}`}>
+        {game.title}
+      </h3>
+
+      {game.isDaily && countdown ? (
+        <span className="font-orbitron text-[10px] text-amber-400">{countdown}</span>
+      ) : (
+        <span className="font-orbitron text-[9px] text-green-400">+{game.xpReward} XP</span>
+      )}
+
+      <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-2 text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className={`font-orbitron uppercase ${accent === 'amber' ? 'text-amber-400/70' : 'text-purple-400/70'}`}>{game.category}</span>
+        <span className="font-orbitron text-slate-600">· {game._count?.entries ?? 0} plays</span>
       </div>
+
       {myEntry && (
-        <div className="font-orbitron text-[9px] text-purple-400">
-          Your score: {myEntry.aiScore ?? '—'}
+        <div className="absolute top-2 right-2 font-orbitron text-[8px] text-purple-400 bg-black/60 px-1.5 py-0.5 border border-purple-500/30">
+          {myEntry.aiScore ?? '—'}
         </div>
       )}
     </button>
@@ -236,7 +253,7 @@ export default function ArenaPage() {
                   <p className="font-rajdhani text-slate-700 text-sm mt-1">The Founder will deploy new games soon.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
                   {daily && <GameCard key={daily.id} game={daily} onOpen={() => setActive(daily)} />}
                   {others.map(g => <GameCard key={g.id} game={g} onOpen={() => setActive(g)} />)}
                 </div>

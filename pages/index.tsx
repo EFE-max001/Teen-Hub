@@ -50,14 +50,14 @@ export default function LandingPage() {
         <meta name="description" content="An elite guild for talented teens. Apply, survive the trial, rank up, and complete real quests that build a reputation that matters." />
       </Head>
 
-      <div className="min-h-screen bg-deep-black flex flex-col">
+      <div className="min-h-screen bg-transparent flex flex-col">
         <Navbar />
         <main className="flex-1 pt-16">
 
           {/* ── HERO ──────────────────────────────────────────── */}
           <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4 py-20">
             {/* Grid bg */}
-            <div className="absolute inset-0 grid-bg opacity-60 pointer-events-none" />
+            <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
 
             {/* Orbs */}
             <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-700/6 rounded-full blur-3xl pointer-events-none" />
@@ -294,6 +294,58 @@ export default function LandingPage() {
                       <p className="font-rajdhani text-slate-500 text-xs sm:text-sm leading-relaxed">{f.desc}</p>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ── ARENA / GHOST PROTOCOL / SENTINEL GRID ──────────────── */}
+          <section id="arena" className="py-20 sm:py-28 px-4 sm:px-6 relative overflow-hidden bg-black/30">
+            <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
+            <div className="max-w-6xl mx-auto relative z-10">
+              <div className="text-center mb-12 sm:mb-16">
+                <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase">Beyond The Trial</span>
+                <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
+                  THE PROTOCOLS
+                </h2>
+                <div className="w-20 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto mb-4" />
+                <p className="font-rajdhani text-slate-500 text-sm sm:text-base max-w-xl mx-auto">
+                  Compete, socialize, and watch the Grid come alive around you.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+                <div className="relative bg-black/60 border border-purple-500/20 p-6 group hover:border-amber-400/50 transition-all duration-300 overflow-hidden">
+                  <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-amber-500/40 group-hover:border-amber-400 transition-colors" />
+                  <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-amber-500/40 group-hover:border-amber-400 transition-colors" />
+                  <div className="text-3xl mb-3">🕹️</div>
+                  <h3 className="font-orbitron font-bold text-sm sm:text-base text-amber-400 mb-2 tracking-widest">ARENA PROTOCOL</h3>
+                  <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">
+                    A structured mini-game engine — logic, typing, quiz, creative and social
+                    challenges, all scored by AI. Rotating daily challenge, live leaderboard, real XP.
+                  </p>
+                </div>
+
+                <div className="relative bg-black/60 border border-purple-500/20 p-6 group hover:border-purple-400/50 transition-all duration-300 overflow-hidden">
+                  <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-purple-500/40 group-hover:border-purple-400 transition-colors" />
+                  <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-purple-500/40 group-hover:border-purple-400 transition-colors" />
+                  <div className="text-3xl mb-3">👻</div>
+                  <h3 className="font-orbitron font-bold text-sm sm:text-base text-purple-400 mb-2 tracking-widest">GHOST PROTOCOL</h3>
+                  <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">
+                    Party games live in Guild Chat: Truth or Dare, Would You Rather, Two Truths
+                    and a Lie — triggered instantly with slash commands like <span className="text-purple-300">/party</span>.
+                  </p>
+                </div>
+
+                <div className="relative bg-black/60 border border-purple-500/20 p-6 group hover:border-cyan-400/50 transition-all duration-300 overflow-hidden">
+                  <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-500/40 group-hover:border-cyan-400 transition-colors" />
+                  <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-500/40 group-hover:border-cyan-400 transition-colors" />
+                  <div className="text-3xl mb-3">◈</div>
+                  <h3 className="font-orbitron font-bold text-sm sm:text-base text-cyan-400 mb-2 tracking-widest">SENTINEL GRID</h3>
+                  <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">
+                    The live perspective grid rendering beneath every screen — a signal that
+                    the Sentinel network is always watching, always active.
+                  </p>
                 </div>
               </div>
             </div>

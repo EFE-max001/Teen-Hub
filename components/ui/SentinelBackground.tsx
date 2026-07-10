@@ -1,5 +1,112 @@
 import { useEffect, useRef } from 'react'
 
+// Low-poly wireframe humanoid figure standing beside the grid, one arm extended
+// feeding a stream of light particles down into the nearest grid nodes — pure
+// Canvas2D line/arc drawing (triangulated "mesh" look), no 3D engine involved.
+function drawSentinelFigure(ctx: CanvasRenderingContext2D, width: number, height: number, horizonY: number, t: number) {
+  const cx = width * 0.8
+  const groundY = horizonY + (height - horizonY) * 0.7
+  const scale = Math.min(height, width) * 0.0013
+  const bob = Math.sin(t * 30) * 2
+
+  const sway = Math.sin(t * 18) * 3
+
+  // Joint positions (a simple humanoid rig), in local unscaled units, origin at feet.
+  const J = {
+    head: { x: sway * 0.3, y: -142 },
+    neck: { x: sway * 0.3, y: -122 },
+    chest: { x: 0, y: -95 },
+    hip: { x: 0, y: -60 },
+    shoulderL: { x: -20, y: -115 },
+    shoulderR: { x: 20, y: -115 },
+    elbowL: { x: -32, y: -85 },
+    elbowR: { x: 42, y: -95 },
+    handL: { x: -38, y: -55 },
+    handR: { x: 70, y: -100 },
+    kneeL: { x: -10, y: -30 },
+    kneeR: { x: 10, y: -30 },
+    footL: { x: -12, y: 0 },
+    footR: { x: 12, y: 0 },
+  }
+
+  function P(p: { x: number; y: number }) {
+    return { x: cx + p.x * scale, y: groundY + bob + p.y * scale }
+  }
+
+  const bones: [keyof typeof J, keyof typeof J][] = [
+    ['head', 'neck'], ['neck', 'chest'], ['chest', 'hip'],
+    ['neck', 'shoulderL'], ['neck', 'shoulderR'],
+    ['shoulderL', 'elbowL'], ['elbowL', 'handL'],
+    ['shoulderR', 'elbowR'], ['elbowR', 'handR'],
+    ['hip', 'kneeL'], ['kneeL', 'footL'],
+    ['hip', 'kneeR'], ['kneeR', 'footR'],
+    ['shoulderL', 'shoulderR'], ['hip', 'shoulderL'], ['hip', 'shoulderR'],
+  ]
+
+  ctx.save()
+  ctx.shadowColor = 'rgba(192,132,252,0.6)'
+  ctx.shadowBlur = 8
+
+  // Wireframe bone lines
+  ctx.strokeStyle = 'rgba(216,180,254,0.55)'
+  ctx.lineWidth = 1.4
+  for (const [a, b] of bones) {
+    const pa = P(J[a]); const pb = P(J[b])
+    ctx.beginPath()
+    ctx.moveTo(pa.x, pa.y)
+    ctx.lineTo(pb.x, pb.y)
+    ctx.stroke()
+  }
+
+  // Triangulated mesh accents across the torso (gives the low-poly "hologram" look)
+  ctx.strokeStyle = 'rgba(168,85,247,0.3)'
+  ctx.lineWidth = 0.8
+  const meshLines: [keyof typeof J, keyof typeof J][] = [
+    ['shoulderL', 'hip'], ['shoulderR', 'hip'], ['neck', 'hip'],
+  ]
+  for (const [a, b] of meshLines) {
+    const pa = P(J[a]); const pb = P(J[b])
+    ctx.beginPath()
+    ctx.moveTo(pa.x, pa.y)
+    ctx.lineTo(pb.x, pb.y)
+    ctx.stroke()
+  }
+
+  // Head — small wireframe sphere (a few crossing ellipses)
+  const headP = P(J.head)
+  const headR = 11 * scale
+  ctx.strokeStyle = 'rgba(216,180,254,0.6)'
+  ctx.lineWidth = 1
+  ctx.beginPath(); ctx.arc(headP.x, headP.y, headR, 0, Math.PI * 2); ctx.stroke()
+  ctx.beginPath(); ctx.ellipse(headP.x, headP.y, headR, headR * 0.4, 0, 0, Math.PI * 2); ctx.stroke()
+
+  // Joint nodes
+  ctx.fillStyle = 'rgba(224,196,255,0.85)'
+  for (const key of Object.keys(J) as (keyof typeof J)[]) {
+    const p = P(J[key])
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.restore()
+
+  // Particle stream flowing from the extended hand down into the grid,
+  // echoing the "AI touching the network" look from the reference art.
+  const hand = P(J.handR)
+  const target = { x: cx * 0.35, y: groundY + (height - groundY) * 0.7 }
+  const streamCount = 14
+  for (let i = 0; i < streamCount; i++) {
+    const phase = ((t * 55) + i / streamCount) % 1
+    const x = hand.x + (target.x - hand.x) * phase + Math.sin(phase * 8 + t * 20) * 10 * (1 - phase)
+    const y = hand.y + (target.y - hand.y) * phase
+    const r = (1 - phase) * 2.4 + 0.4
+    ctx.beginPath()
+    ctx.arc(x, y, r, 0, Math.PI * 2)
+    ctx.fillStyle = `rgba(200,160,255,${0.7 * (1 - phase * 0.6)})`
+    ctx.fill()
+  }
+}
+
 // SENTINEL GRID — animated 3D-style perspective grid background.
 // Pure Canvas2D (no WebGL): a horizon-plane grid rendered with manual perspective
 // projection, drifting toward the viewer, plus ambient neon particles and scanlines.
@@ -132,6 +239,11 @@ export default function SentinelBackground() {
       ctx!.moveTo(0, horizonY)
       ctx!.lineTo(width, horizonY)
       ctx!.stroke()
+
+      // Sentinel figure — a low-poly wireframe humanoid standing at the right side of
+      // the grid, one hand extended, feeding a stream of light particles into the grid.
+      // Pure Canvas2D line/arc drawing, no 3D engine.
+      drawSentinelFigure(ctx!, width, height, horizonY, t)
 
       // subtle scanline overlay
       ctx!.fillStyle = 'rgba(0,0,0,0.04)'

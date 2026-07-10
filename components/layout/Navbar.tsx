@@ -12,6 +12,7 @@ export default function Navbar() {
     { href: '/#how-it-works', label: 'How It Works' },
     { href: '/#ranks',        label: 'Ranks'        },
     { href: '/#quests',       label: 'Quests'       },
+    { href: '/#arena',        label: 'Protocols'    },
   ]
 
   return (
@@ -85,44 +86,6 @@ export default function Navbar() {
               </>
             )}
           </div>
-          {session ? (
-            <>
-              <Link
-                href="/dashboard"
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-3 px-3 py-3 text-purple-300 hover:text-white font-rajdhani font-semibold text-sm tracking-widest uppercase transition-colors"
-              >
-                <span className="w-1 h-1 bg-purple-400 rotate-45 flex-shrink-0" />
-                Dashboard
-              </Link>
-              <button
-                onClick={() => { signOut({ callbackUrl: typeof window !== 'undefined' ? window.location.origin + '/' : '/' }); setMenuOpen(false) }}
-                className="flex items-center gap-3 px-3 py-3 text-slate-500 hover:text-red-400 font-rajdhani font-semibold text-sm tracking-widest uppercase transition-colors text-left w-full"
-              >
-                <span className="w-1 h-1 bg-slate-600 rotate-45 flex-shrink-0" />
-                Log Out
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/auth/login"
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-3 px-3 py-3 text-slate-300 hover:text-purple-300 font-rajdhani font-semibold text-sm tracking-widest uppercase transition-colors"
-              >
-                <span className="w-1 h-1 bg-slate-600 rotate-45 flex-shrink-0" />
-                Login
-              </Link>
-              <Link
-                href="/auth/register"
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-3 px-3 py-3 mt-1 bg-purple-700/30 border border-purple-500/40 text-purple-200 font-orbitron text-xs tracking-widest uppercase transition-all duration-200"
-              >
-                <span className="w-1 h-1 bg-purple-400 rotate-45 flex-shrink-0" />
-                Register
-              </Link>
-            </>
-          )}
           {/* Mobile menu toggle */}
           <button
             className="md:hidden flex flex-col gap-1.5 p-2"

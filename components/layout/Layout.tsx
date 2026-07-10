@@ -9,7 +9,7 @@ interface LayoutProps {
 
 export default function Layout({ children, showFooter = true }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-deep-black flex flex-col">
+    <div className="min-h-screen bg-transparent flex flex-col">
       <Navbar />
       <main className="flex-1 pt-16">
         {children}
