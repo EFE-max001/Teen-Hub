@@ -229,14 +229,30 @@ export default function ArenaPage() {
       <Head><title>Arena Protocol — QuestHub Guild</title></Head>
       <DashboardLayout>
         <div className="max-w-6xl mx-auto flex flex-col gap-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="font-orbitron font-black text-xl text-white tracking-widest uppercase">Arena Protocol</h1>
-              <p className="font-rajdhani text-slate-500 text-sm mt-1">Structured mini-game engine — compete, earn XP, prove worth</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
-              <span className="font-orbitron text-[10px] text-purple-400 tracking-widest">GRID ONLINE</span>
+          {/* Tournament-bracket header — angled purple panel with converging corner
+              lines, echoing the arena_games_ui reference's "high-stakes bracket" feel
+              instead of a plain title bar. */}
+          <div className="relative overflow-hidden border border-purple-500/30 bg-gradient-to-r from-purple-950/50 via-[#0d0017] to-[#0d0017] px-5 py-5">
+            {/* converging bracket lines, pure CSS */}
+            <svg className="absolute inset-0 w-full h-full opacity-40 pointer-events-none" preserveAspectRatio="none">
+              <line x1="0%" y1="0%" x2="14%" y2="50%" stroke="rgba(168,85,247,0.5)" strokeWidth="1" />
+              <line x1="0%" y1="100%" x2="14%" y2="50%" stroke="rgba(168,85,247,0.5)" strokeWidth="1" />
+              <line x1="100%" y1="0%" x2="86%" y2="50%" stroke="rgba(245,158,11,0.4)" strokeWidth="1" />
+              <line x1="100%" y1="100%" x2="86%" y2="50%" stroke="rgba(245,158,11,0.4)" strokeWidth="1" />
+            </svg>
+            <span className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-purple-400/60" />
+            <span className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-amber-400/60" />
+
+            <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <div className="font-orbitron text-[10px] text-purple-400/70 tracking-[0.4em] uppercase">Compete · Earn · Prove Worth</div>
+                <h1 className="font-orbitron font-black text-2xl text-white tracking-widest uppercase glow-text">Arena Protocol</h1>
+                <p className="font-rajdhani text-slate-500 text-sm mt-1">Structured mini-game engine — rapid challenges, ranked entries, real XP</p>
+              </div>
+              <div className="flex items-center gap-2 border border-purple-500/30 bg-black/30 px-3 py-1.5">
+                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+                <span className="font-orbitron text-[10px] text-purple-400 tracking-widest">GRID ONLINE</span>
+              </div>
             </div>
           </div>
 

@@ -8,6 +8,7 @@ import RankBadge from '@/components/ui/RankBadge'
 import StatusChip from '@/components/ui/StatusChip'
 import { GlowInput, GlowTextarea } from '@/components/ui/GlowInput'
 import GlowButton from '@/components/ui/GlowButton'
+import RadarSweep from '@/components/ui/RadarSweep'
 
 const TAB_GROUPS = [
   { label: 'Command', tabs: ['Overview'] },
@@ -449,11 +450,21 @@ export default function FounderDashboard() {
       <DashboardLayout>
         <div className="max-w-7xl mx-auto flex flex-col gap-5">
 
-          {/* Header */}
-          <div className="relative bg-gradient-to-r from-amber-900/20 via-[#0d0017] to-amber-900/10 border border-amber-500/30 p-5 overflow-hidden">
+          {/* Header — control-room console: deep teal-blue base (matches the war-room
+              reference art) with the amber radar as the glowing focal instrument, and a
+              faint grid wall texture behind everything for depth. */}
+          <div className="relative bg-gradient-to-r from-[#031014] via-[#050a12] to-[#0d0017] border border-amber-500/30 p-5 overflow-hidden">
+            <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
+            <div className="absolute inset-y-0 right-0 w-40 bg-gradient-to-l from-amber-900/10 to-transparent pointer-events-none" />
             <span className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-amber-500/60" />
             <span className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-amber-500/60" />
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+
+            {/* radar instrument, bleeding off the right edge like a console screen */}
+            <div className="hidden md:block absolute -right-10 top-1/2 -translate-y-1/2 opacity-70 pointer-events-none">
+              <RadarSweep size={190} />
+            </div>
+
+            <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-amber-500/20 border border-amber-500/40 rotate-45 flex items-center justify-center">
                   <span className="text-amber-400 -rotate-45 font-orbitron font-black text-lg">★</span>
@@ -472,7 +483,7 @@ export default function FounderDashboard() {
                 )}
               </div>
               {stats && (
-                <div className="flex flex-wrap gap-4 sm:ml-auto">
+                <div className="flex flex-wrap gap-4 sm:ml-auto md:mr-24">
                   {[
                     { label:'Total Users', value: stats.totalUsers || 0 },
                     { label:'Active', value: stats.activeUsers || 0, color:'text-green-400' },

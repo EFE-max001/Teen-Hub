@@ -112,8 +112,9 @@ export default function ChatPage() {
                 <div className="ml-auto flex items-center gap-3">
                   <button
                     onClick={() => setShowHelp(v => !v)}
-                    className="font-orbitron text-[9px] text-purple-400 border border-purple-500/30 px-2 py-1 hover:bg-purple-900/20 tracking-widest"
+                    className="relative flex items-center gap-1.5 font-orbitron text-[9px] text-purple-300 border border-purple-500/40 bg-purple-900/10 px-2.5 py-1.5 hover:bg-purple-900/25 tracking-widest transition-colors"
                   >
+                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
                     👻 GHOST PROTOCOL
                   </button>
                   <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
@@ -145,9 +146,31 @@ export default function ChatPage() {
                   messages.map((msg: any) => {
                     const isGhost = msg.content?.startsWith('👻')
                     if (isGhost) {
+                      const body = msg.content.replace(/^👻\s*/, '')
+                      const game =
+                        /truth or dare/i.test(body) ? { label: 'TRUTH OR DARE', icon: '🎲', color: 'amber' } :
+                        /would you rather/i.test(body) ? { label: 'WOULD YOU RATHER', icon: '⚖️', color: 'purple' } :
+                        /two truths/i.test(body) ? { label: 'TWO TRUTHS AND A LIE', icon: '🕵️', color: 'green' } :
+                        { label: 'GHOST PROTOCOL', icon: '👻', color: 'purple' }
+                      const styles: Record<string, string> = {
+                        amber: 'border-amber-500/35 bg-amber-900/10',
+                        purple: 'border-purple-500/35 bg-purple-900/10',
+                        green: 'border-emerald-500/35 bg-emerald-900/10',
+                      }
+                      const labelColor: Record<string, string> = {
+                        amber: 'text-amber-300',
+                        purple: 'text-purple-300',
+                        green: 'text-emerald-300',
+                      }
                       return (
-                        <div key={msg.id} className="border border-purple-500/25 bg-purple-900/10 px-4 py-2.5 whitespace-pre-line">
-                          <p className="font-rajdhani text-purple-200 text-sm leading-relaxed">{msg.content}</p>
+                        <div key={msg.id} className={`relative border px-4 py-3 ${styles[game.color]}`}>
+                          <span className={`absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 ${styles[game.color].split(' ')[0]}`} />
+                          <span className={`absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 ${styles[game.color].split(' ')[0]}`} />
+                          <div className={`flex items-center gap-1.5 mb-1.5 font-orbitron text-[9px] tracking-widest ${labelColor[game.color]}`}>
+                            <span>{game.icon}</span>
+                            <span>{game.label}</span>
+                          </div>
+                          <p className="font-rajdhani text-purple-100 text-sm leading-relaxed whitespace-pre-line">{body}</p>
                         </div>
                       )
                     }

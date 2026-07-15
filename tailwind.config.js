@@ -45,12 +45,17 @@ const config: Config = {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(-50%)' },
         },
+        'radar-spin': {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' },
+        },
       },
       animation: {
         'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
         flicker: 'flicker 8s infinite',
         float: 'float 6s ease-in-out infinite',
         marquee: 'marquee 30s linear infinite',
+        'radar-spin': 'radar-spin 4s linear infinite',
       },
     },
   },
