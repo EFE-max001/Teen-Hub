@@ -82,9 +82,27 @@ export default function RobotAvatar({
     // violet-black and add a touch of emissive so bloom catches the seams.
     // Clone each material rather than mutating the cached GLTF material.
     const finalBox = new THREE.Box3().setFromObject(cloned)
+    // Collect first, mutate after — traverse() walks the live children
+    // array, so adding a new Mesh as a child *during* traversal makes it
+    // visit that new mesh too, which adds another rim, which gets visited
+    // too, and so on forever (this was the "Maximum call stack size
+    // exceeded" crash). Reading into a plain array first and looping over
+    // that instead avoids touching the tree mid-walk.
+    const meshes: THREE.Mesh[] = []
     cloned.traverse(obj => {
       const mesh = obj as THREE.Mesh
-      if (!mesh.isMesh) return
+      if (mesh.isMesh) meshes.push(mesh)
+
+      // candidate bones for idle motion — a short standalone chain off the
+      // root (as opposed to the long paired L/R limb chains) reads as the
+      // head/sensor cluster; the wrist/palm joints get a gentle sway so the
+      // hands don't look frozen.
+      const name = obj.name
+      if (name === 'Bone.001' && !headBoneRef.current) headBoneRef.current = obj
+      if (name === 'Bone.038.L' || name === 'Bone.038.R') swayBonesRef.current.push(obj)
+    })
+
+    meshes.forEach(mesh => {
       const srcMat = mesh.material as THREE.MeshStandardMaterial
       const mat = srcMat.clone() as THREE.MeshStandardMaterial
       mat.color = new THREE.Color('#0b0710').lerp(new THREE.Color(color), 0.05)
@@ -96,14 +114,6 @@ export default function RobotAvatar({
       rim.scale.setScalar(1.015)
       rim.raycast = () => null
       mesh.add(rim)
-
-      // candidate bones for idle motion — a short standalone chain off the
-      // root (as opposed to the long paired L/R limb chains) reads as the
-      // head/sensor cluster; the wrist/palm joints get a gentle sway so the
-      // hands don't look frozen.
-      const name = obj.name
-      if (name === 'Bone.001' && !headBoneRef.current) headBoneRef.current = obj
-      if (name === 'Bone.038.L' || name === 'Bone.038.R') swayBonesRef.current.push(obj)
     })
 
     // 3. chest energy-core anchor, placed proportionally to the model's own
