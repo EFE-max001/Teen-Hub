@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
 import * as THREE from 'three'
@@ -61,24 +61,29 @@ export default function Scene({ reducedMotion = false }: { reducedMotion?: boole
       camera={{ fov: 34, near: 0.1, far: 100 }}
     >
       <color attach="background" args={[COLORS.background]} />
-      <ambientLight intensity={0.5} color={COLORS.primary} />
-      <directionalLight position={[2, 4, 3]} intensity={0.7} color={COLORS.primary} />
+      <ambientLight intensity={0.9} color={COLORS.primary} />
+      <directionalLight position={[2, 4, 3]} intensity={1.6} color={COLORS.primary} />
       {/* soft fill so the robot's metal reads with some shape instead of
           going flat/dark on its shadow side */}
-      <directionalLight position={[-3, 2, -2]} intensity={0.25} color={COLORS.glow} />
+      <directionalLight position={[-3, 2, -2]} intensity={0.7} color={COLORS.glow} />
+      {/* rim/key light from behind-ish so the silhouette separates from the
+          near-black background instead of reading as a dark blob */}
+      <pointLight position={[avatarX, 2.4, -2.5]} intensity={2.2} color={COLORS.glow} distance={12} />
 
       <CameraRig lookAtX={lookAtX} />
       <Stars isMobile={isMobile} />
       <Grid color={COLORS.grid} />
 
       <group position={[avatarX, 0, 0]}>
-        <RobotAvatar color={COLORS.primary} reducedMotion={reducedMotion} onCoreAnchor={setCoreAnchor} />
+        <Suspense fallback={null}>
+          <RobotAvatar color={COLORS.primary} reducedMotion={reducedMotion} onCoreAnchor={setCoreAnchor} />
+          <Butterflies
+            colors={[COLORS.glow, COLORS.primary]}
+            reducedMotion={reducedMotion}
+            count={isMobile ? 5 : 11}
+          />
+        </Suspense>
         <EnergyParticles count={particleCount} color={COLORS.glow} origin={coreAnchor} />
-        <Butterflies
-          colors={[COLORS.glow, COLORS.primary]}
-          reducedMotion={reducedMotion}
-          count={isMobile ? 5 : 11}
-        />
       </group>
 
       {/* Bloom is what turns the flat additive glow into the soft neon halo

@@ -105,9 +105,14 @@ export default function RobotAvatar({
     meshes.forEach(mesh => {
       const srcMat = mesh.material as THREE.MeshStandardMaterial
       const mat = srcMat.clone() as THREE.MeshStandardMaterial
-      mat.color = new THREE.Color('#0b0710').lerp(new THREE.Color(color), 0.05)
+      // was lerp(0.05) with emissiveIntensity 0.1 — that's a near-black
+      // material under weak lights on a near-black (#050510) background,
+      // which reads as "not showing" even though it's technically drawing.
+      // Lerping further toward the brand purple, and raising emissive,
+      // keeps the dark-metal look but makes the silhouette actually read.
+      mat.color = new THREE.Color('#0b0710').lerp(new THREE.Color(color), 0.35)
       mat.emissive = new THREE.Color(color)
-      mat.emissiveIntensity = 0.1
+      mat.emissiveIntensity = 0.45
       mesh.material = mat
 
       const rim = new THREE.Mesh(mesh.geometry, rimMaterial)

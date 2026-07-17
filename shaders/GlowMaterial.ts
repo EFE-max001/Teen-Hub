@@ -35,8 +35,11 @@ export function createGlowMaterial(color: string) {
         float band = fract(vWorldY * 0.9 - uTime * 0.6);
         float vein = smoothstep(0.0, 0.08, band) * smoothstep(0.22, 0.08, band);
         float flicker = 0.9 + 0.1 * sin(uTime * 6.0) * sin(uTime * 1.7);
-        float intensity = (0.32 + fresnel * 1.3 + vein * 0.9) * flicker;
-        float alpha = clamp(0.32 * 0.6 + fresnel * 0.9 + vein * 0.5, 0.0, 1.0);
+        // was (0.32 + ...) with alpha baseline 0.32*0.6 ≈ 0.19 — too
+        // reliant on the fresnel term, so only edge-on wings read; a flock
+        // in mixed orientations mostly looked like it "wasn't showing".
+        float intensity = (0.6 + fresnel * 1.3 + vein * 0.9) * flicker;
+        float alpha = clamp(0.55 + fresnel * 0.7 + vein * 0.5, 0.0, 1.0);
         gl_FragColor = vec4(uColor * intensity, alpha);
       }
     `,
