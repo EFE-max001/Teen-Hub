@@ -1,11 +1,30 @@
 import Head from 'next/head'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+import { useEffect, useState } from 'react'
 import { GetServerSideProps } from 'next'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import GlowButton from '@/components/ui/GlowButton'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+
+// R3F touches WebGL/canvas APIs that don't exist on the server, so this
+// must be a client-only import or getServerSideProps below will crash the
+// page on every request.
+const Scene = dynamic(() => import('@/components/Scene'), { ssr: false })
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setReduced(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return reduced
+}
 
 const RANKS = [
   { rank: 'F',   label: 'Initiate',   color: 'text-slate-400',  border: 'border-slate-600/40',  glow: '',                                  desc: 'Unproven. The starting point for every operative.' },
@@ -43,6 +62,8 @@ const AI_FEATURES = [
 ]
 
 export default function LandingPage() {
+  const reducedMotion = usePrefersReducedMotion()
+
   return (
     <>
       <Head>
@@ -55,14 +76,13 @@ export default function LandingPage() {
         <main className="flex-1 pt-16">
 
           {/* ── HERO ──────────────────────────────────────────── */}
-          <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4 py-20">
-            {/* Grid bg */}
-            <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
-
-            {/* Orbs */}
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-700/6 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-1/4 left-1/4 w-72 h-72 bg-purple-900/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute top-1/4 right-1/4 w-48 h-48 bg-fuchsia-900/8 rounded-full blur-3xl pointer-events-none" />
+          <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4 py-20 bg-[#03060A]">
+            {/* Living Digital Forest — portal, tech butterflies, 3D grid and
+                stars. Replaces the old flat CSS grid + gradient orbs; this
+                supplies the background color and all ambient motion now. */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+              <Scene reducedMotion={reducedMotion} />
+            </div>
 
             {/* Accent lines */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-b from-purple-500/40 to-transparent pointer-events-none" />

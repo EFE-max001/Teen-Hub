@@ -1,9 +1,9 @@
 // components/Butterflies.tsx
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useGLTF, useAnimations } from '@react-three/drei'
+import { useGLTF, useAnimations, Trail } from '@react-three/drei'
 import * as THREE from 'three'
-import { createGlowMaterial } from '../shaders/GlowMaterial'
+import { createTechButterflyMaterial } from '../shaders/TechButterflyMaterial'
 
 const MODEL_PATH = '/models/blue_butterfly.glb'
 
@@ -25,6 +25,8 @@ type FlightConfig = {
   behavior: Behavior
   orbitDir: 1 | -1
   color: string
+  colorB: string
+  trail: boolean
 }
 
 // Hand-placed so the flock reads as a loose, asymmetric cluster that
@@ -32,7 +34,7 @@ type FlightConfig = {
 // that travel far and wide, mid-size ones looping in slow orbits (some
 // clockwise, some not — they shouldn't all bank the same way), and small
 // ones just hovering close to center for texture.
-const FLOCK: Array<Omit<FlightConfig, 'color'>> = [
+const FLOCK: Array<Omit<FlightConfig, 'color' | 'colorB' | 'trail'>> = [
   { home: new THREE.Vector3(-1.7, 3.6, -0.5), area: new THREE.Vector3(2.6, 0.5, 0.5), speed: 0.22, seed: 0.3, scale: 0.26, behavior: 'roam', orbitDir: 1 },
   { home: new THREE.Vector3(1.9, 2.6, 0.1), area: new THREE.Vector3(0.9, 0.35, 0.45), speed: 0.4, seed: 2.1, scale: 0.15, behavior: 'orbit', orbitDir: 1 },
   { home: new THREE.Vector3(-1.9, 2.2, 0.15), area: new THREE.Vector3(0.16, 0.1, 0.12), speed: 0.6, seed: 4.4, scale: 0.07, behavior: 'hover', orbitDir: 1 },
@@ -44,8 +46,6 @@ const FLOCK: Array<Omit<FlightConfig, 'color'>> = [
   { home: new THREE.Vector3(2.1, 3.9, 0.2), area: new THREE.Vector3(0.13, 0.08, 0.1), speed: 0.62, seed: 7.3, scale: 0.065, behavior: 'hover', orbitDir: 1 },
   { home: new THREE.Vector3(0.5, 2.9, -0.3), area: new THREE.Vector3(0.55, 0.25, 0.3), speed: 0.45, seed: 9.6, scale: 0.11, behavior: 'orbit', orbitDir: 1 },
   { home: new THREE.Vector3(-0.3, 2.4, 0.4), area: new THREE.Vector3(0.12, 0.07, 0.09), speed: 0.58, seed: 0.9, scale: 0.05, behavior: 'hover', orbitDir: -1 },
-  // — extended flock spread across the full width, framing the portal instead
-  // carry the full width of the scene rather than cluster near one figure —
   { home: new THREE.Vector3(-3.2, 2.8, -0.6), area: new THREE.Vector3(1.4, 0.4, 0.4), speed: 0.24, seed: 11.2, scale: 0.18, behavior: 'roam', orbitDir: 1 },
   { home: new THREE.Vector3(3.4, 3.2, -0.3), area: new THREE.Vector3(1.6, 0.45, 0.4), speed: 0.21, seed: 13.5, scale: 0.2, behavior: 'roam', orbitDir: -1 },
   { home: new THREE.Vector3(-2.6, 1.7, 0.3), area: new THREE.Vector3(0.5, 0.2, 0.25), speed: 0.42, seed: 15.1, scale: 0.09, behavior: 'orbit', orbitDir: 1 },
@@ -72,17 +72,60 @@ function noise1(t: number, seed: number) {
   )
 }
 
+// Real butterfly flight doesn't move at constant speed — it's a chain of
+// quick wing-beat bursts and brief glides/pauses, which is what actually
+// reads as "alive" rather than "drifting on a fixed path". This warps the
+// time value fed into the wander function so the same smooth curve gets
+// traversed unevenly: fast through some stretches, nearly stalled at others.
+// It's still a pure function of t (no stored/mutable target), so the
+// finite-difference heading sample below stays continuous and jump-free.
+function burstGlide(t: number, seed: number) {
+  const burst = 0.5 + 0.5 * Math.sin(t * 1.7 + seed * 4.0)
+  const eased = Math.pow(burst, 1.6)
+  return t + eased * 0.6
+}
+
 function wanderOffset(t: number, seed: number, area: THREE.Vector3, out: THREE.Vector3) {
+  const wt = burstGlide(t, seed)
   out.set(
-    noise1(t, seed) * area.x,
-    noise1(t * 0.8, seed + 4.1) * area.y,
-    noise1(t * 0.6, seed + 9.3) * area.z
+    noise1(wt, seed) * area.x,
+    noise1(wt * 0.8, seed + 4.1) * area.y,
+    noise1(wt * 0.6, seed + 9.3) * area.z
   )
+  // quick, higher-frequency, non-harmonic jitter on top of the wander base —
+  // the erratic short-range flutter real butterflies show even mid-glide
+  out.x += Math.sin(wt * 5.3 + seed * 2.0) * area.x * 0.07
+  out.z += Math.cos(wt * 4.1 + seed * 3.3) * area.z * 0.07
   return out
 }
 
 const _pos = new THREE.Vector3()
 const _tmp = new THREE.Vector3()
+
+// The wingtip isn't at a fixed offset we can hardcode — it's whichever
+// corner of the wing mesh's own bounding box sits farthest from the wing's
+// pivot (local origin). Computing it from the actual geometry means this
+// keeps working correctly even if the model is swapped for a different
+// GLB later, rather than a coordinate baked in from inspecting this one file.
+function farthestCorner(mesh: THREE.Mesh): THREE.Vector3 {
+  mesh.geometry.computeBoundingBox()
+  const box = mesh.geometry.boundingBox
+  if (!box) return new THREE.Vector3()
+  let best = new THREE.Vector3(box.min.x, box.min.y, box.min.z)
+  let bestDist = 0
+  for (const x of [box.min.x, box.max.x]) {
+    for (const y of [box.min.y, box.max.y]) {
+      for (const z of [box.min.z, box.max.z]) {
+        const d = x * x + y * y + z * z
+        if (d > bestDist) {
+          bestDist = d
+          best = new THREE.Vector3(x, y, z)
+        }
+      }
+    }
+  }
+  return best
+}
 
 // Position at time t for a given flight config — pulled out as a pure
 // function of time (rather than integrated velocity/state) so it stays
@@ -99,7 +142,7 @@ function flightPosition(cfg: FlightConfig, t: number, out: THREE.Vector3) {
   } else {
     // orbit — a real loop (some clockwise, some not) with organic wobble
     // layered on top so it doesn't read as a perfect repeating ellipse
-    const angle = tt * cfg.orbitDir
+    const angle = burstGlide(tt, cfg.seed) * cfg.orbitDir
     wanderOffset(tt * 0.6, cfg.seed, cfg.area, _tmp)
     out.set(
       Math.cos(angle) * cfg.area.x + _tmp.x * 0.25,
@@ -120,41 +163,70 @@ function Butterfly({ config }: { config: FlightConfig }) {
   const groupRef = useRef<THREE.Group>(null!)
   const { actions, mixer } = useAnimations(animations, cloned)
 
-  const glowMaterial = useMemo(() => createGlowMaterial(config.color), [config.color])
-  const lineMaterial = useMemo(
-    () =>
-      new THREE.LineBasicMaterial({
-        color: config.color,
-        transparent: true,
-        opacity: 0.8,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      }),
-    [config.color]
+  const wingMaterial = useMemo(
+    () => createTechButterflyMaterial(config.color, config.colorB),
+    [config.color, config.colorB]
   )
 
+  // per-instance wing-beat bob: frequency/phase/amplitude vary so 25
+  // butterflies never bounce in lockstep. Kept separate from the position
+  // used for heading/banking below so the bob doesn't make turns jittery.
+  const bob = useMemo(
+    () => ({
+      freq: 7 + Math.random() * 5,
+      phase: Math.random() * Math.PI * 2,
+      amp: 0.035 + Math.random() * 0.02,
+    }),
+    []
+  )
+
+  const downTipRef = useRef<THREE.Object3D>(new THREE.Object3D())
+  const upTipRef = useRef<THREE.Object3D>(new THREE.Object3D())
+  const [tipsReady, setTipsReady] = useState(false)
+
   useEffect(() => {
-    // same wireframe-glow treatment as the AI avatar, for stylistic
-    // consistency with the rest of the scene
     cloned.traverse(obj => {
       const mesh = obj as THREE.Mesh
       if (!mesh.isMesh) return
-      mesh.material = glowMaterial
-      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, 20), lineMaterial)
-      mesh.add(edges)
+      // The source GLB carries a leftover Blender reference cube (node
+      // "Cube", mesh "Cube.001") parented alongside the two real wing
+      // pieces, offset ~1.8 units from the body with its own transform
+      // animation (CubeAction). It has nothing to do with the butterfly —
+      // hide it rather than material it, or every instance drags a stray
+      // glowing box through the scene.
+      if (/cube/i.test(obj.name)) {
+        mesh.visible = false
+        return
+      }
+      mesh.material = wingMaterial
     })
-    // random start phase + flap speed per instance so the flock doesn't
-    // flutter in lockstep
-    Object.values(actions).forEach(action => {
-      if (!action) return
+    // Only play the two real wing-flap clips. CubeAction is intentionally
+    // skipped (see above) — playing it just animates the hidden stray cube
+    // for no visual benefit.
+    Object.entries(actions).forEach(([name, action]) => {
+      if (!action || /cube/i.test(name)) return
       action.reset().play()
       action.time = Math.random() * (action.getClip().duration || 1)
     })
     mixer.timeScale = 1.6 + Math.random() * 0.6
-  }, [cloned, actions, mixer, glowMaterial, lineMaterial])
+
+    if (config.trail) {
+      const down = cloned.getObjectByName('wing_down') as THREE.Mesh | undefined
+      const up = cloned.getObjectByName('wing_up') as THREE.Mesh | undefined
+      if (down?.isMesh && up?.isMesh) {
+        downTipRef.current.position.copy(farthestCorner(down))
+        down.add(downTipRef.current)
+        upTipRef.current.position.copy(farthestCorner(up))
+        up.add(upTipRef.current)
+        // parented directly to the wing nodes, so these inherit the flap
+        // rotation each frame automatically — no per-frame code needed
+        setTipsReady(true)
+      }
+    }
+  }, [cloned, actions, mixer, wingMaterial, config.trail])
 
   useFrame((state, delta) => {
-    glowMaterial.uniforms.uTime.value = state.clock.elapsedTime
+    wingMaterial.uniforms.uTime.value = state.clock.elapsedTime
     mixer.update(delta)
 
     const g = groupRef.current
@@ -175,14 +247,46 @@ function Butterfly({ config }: { config: FlightConfig }) {
     const vz = _pos.z - _tmp.z
 
     const yaw = Math.atan2(vx, vz || 1e-4) + BASE_YAW
-    const bank = THREE.MathUtils.clamp(-vx * 5, -0.7, 0.7)
-    const pitch = THREE.MathUtils.clamp(vy * 4, -0.45, 0.45)
+    // sharper turn response than a smooth glider — butterflies bank hard
+    // and quickly rather than easing into turns
+    const bank = THREE.MathUtils.clamp(-vx * 7, -0.95, 0.95)
+    const pitch = THREE.MathUtils.clamp(vy * 5, -0.5, 0.5)
     g.rotation.set(pitch, yaw, bank)
+
+    // wing-beat bob applied after heading so it adds visible lift bounce
+    // without corrupting the turn/banking calculation above
+    g.position.y += Math.sin(t * bob.freq + bob.phase) * bob.amp * (config.scale / 0.12)
   })
+
+  // Two short trails — one per wing — each following an anchor parented
+  // directly to that wing's own animated node, so the ribbon actually
+  // flutters with the flap instead of trailing a static point on the body.
+  // This is the "wings leave tiny pixel particles" detail from the brief.
+  const trailWidth = Math.max(0.4, config.scale * 3)
 
   return (
     <group ref={groupRef} scale={config.scale}>
       <primitive object={cloned} />
+      {config.trail && tipsReady && (
+        <>
+          <Trail
+            target={downTipRef}
+            width={trailWidth}
+            length={2.2}
+            color={config.color}
+            attenuation={(w: number) => w * w}
+            decay={2.5}
+          />
+          <Trail
+            target={upTipRef}
+            width={trailWidth}
+            length={2.2}
+            color={config.colorB}
+            attenuation={(w: number) => w * w}
+            decay={2.5}
+          />
+        </>
+      )}
     </group>
   )
 }
@@ -201,6 +305,11 @@ export default function Butterflies({
     return FLOCK.slice(0, n).map((f, i) => ({
       ...f,
       color: colors[i % colors.length],
+      colorB: colors[(i + 1) % colors.length],
+      // only the larger roam/orbit butterflies get a trail — keeps draw
+      // calls sane with a 25-strong flock and reads better anyway, since a
+      // trail on a tiny hovering butterfly just looks like noise
+      trail: !reducedMotion && f.behavior !== 'hover' && f.scale > 0.09,
       // reduced motion keeps things alive (wings still flap via the baked
       // clip, gentle hover stays on) but drops long-distance travel
       behavior: reducedMotion ? ('hover' as Behavior) : f.behavior,

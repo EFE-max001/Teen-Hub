@@ -16,7 +16,7 @@ html {
 }
 
 body {
-  background-color: #020008;
+  background-color: #03060A;
   color: #e2e8f0;
   font-family: 'Rajdhani', sans-serif;
   min-height: 100vh;
@@ -31,29 +31,29 @@ h1, h2, h3, h4, h5, h6 {
 /* ── Grid background ── */
 .grid-bg {
   background-image:
-    linear-gradient(rgba(168, 85, 247, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(168, 85, 247, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
   background-size: 48px 48px;
 }
 
 /* ── Glow utilities ── */
 .glow-text {
-  text-shadow: 0 0 25px rgba(168, 85, 247, 0.7), 0 0 50px rgba(168, 85, 247, 0.3);
+  text-shadow: 0 0 25px rgba(0, 229, 255, 0.6), 0 0 50px rgba(139, 92, 246, 0.3);
 }
 
 .glow-border {
-  border: 1px solid rgba(168, 85, 247, 0.35);
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.08), inset 0 0 20px rgba(168, 85, 247, 0.04);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.08), inset 0 0 20px rgba(0, 229, 255, 0.04);
 }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: #020008; }
-::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #a855f7; }
+::-webkit-scrollbar-track { background: #03060A; }
+::-webkit-scrollbar-thumb { background: #00A8B8; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #00E5FF; }
 
 /* ── Selection ── */
 ::selection {
-  background: rgba(168, 85, 247, 0.3);
+  background: rgba(0, 229, 255, 0.3);
   color: #fff;
 }

@@ -6,6 +6,7 @@ import Butterflies from './Butterflies'
 import Grid from './Grid'
 import Stars from './Stars'
 import Portal from './Portal'
+import Trees from './Trees'
 
 // "Living Digital Forest" palette — replaces the earlier single-purple
 // cyberpunk set. Restrained per the brief: midnight/navy base, electric
@@ -74,6 +75,7 @@ export default function Scene({ reducedMotion = false }: { reducedMotion?: boole
 
       <CameraRig reducedMotion={reducedMotion} />
       <Stars isMobile={isMobile} />
+      <Trees reducedMotion={reducedMotion} />
       <Grid color={COLORS.navy} />
 
       <Suspense fallback={null}>
