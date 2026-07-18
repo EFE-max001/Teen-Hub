@@ -16,6 +16,14 @@ const config: Config = {
         'silver': '#94a3b8',
         'crimson': '#dc2626',
         'electric-blue': '#3b82f6',
+        // "Living Digital Forest" palette — the current brand direction.
+        // Prefer these for new work; the tokens above are legacy.
+        'portal-black': '#03060A',
+        'portal-navy': '#0A1428',
+        'portal-cyan': '#00E5FF',
+        'portal-emerald': '#00FFA3',
+        'portal-violet': '#8B5CF6',
+        'portal-glow': '#F5FBFF',
       },
       fontFamily: {
         orbitron: ['Orbitron', 'monospace'],

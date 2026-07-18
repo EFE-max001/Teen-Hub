@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useProgress } from '@react-three/drei'
 
 // Drives the game-style loading screen. `useProgress` reads three.js's
-// global LoadingManager, so it sees every useGLTF() load in the app (robot,
+// global LoadingManager, so it sees every useGLTF() load in the app (portal, GLTF models,
 // butterflies) without needing to wire each one up manually.
 //
 // Two gotchas this works around:

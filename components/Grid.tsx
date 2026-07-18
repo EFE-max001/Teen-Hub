@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { createGridMaterial } from '../shaders/GridShader'
 
-export default function Grid({ color = '#5D2EFF' }: { color?: string }) {
+export default function Grid({ color = '#0A1428' }: { color?: string }) {
   const materialRef = useRef<THREE.ShaderMaterial>(null!)
   const material = useMemo(() => createGridMaterial(color), [color])
 

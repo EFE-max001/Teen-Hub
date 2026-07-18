@@ -1,19 +1,22 @@
-import { Suspense, useEffect, useMemo, useState } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
 import * as THREE from 'three'
-import RobotAvatar from './RobotAvatar'
 import Butterflies from './Butterflies'
 import Grid from './Grid'
 import Stars from './Stars'
-import EnergyParticles from './EnergyParticles'
+import Portal from './Portal'
 
-// Exact palette from the UI/UX Design Guide.
+// "Living Digital Forest" palette — replaces the earlier single-purple
+// cyberpunk set. Restrained per the brief: midnight/navy base, electric
+// cyan + emerald + violet accents, white glow for particles/highlights.
 const COLORS = {
-  background: '#050510',
-  primary: '#9D4DFF',
-  glow: '#C670FF',
-  grid: '#5D2EFF',
+  background: '#03060A',
+  navy: '#0A1428',
+  cyan: '#00E5FF',
+  emerald: '#00FFA3',
+  violet: '#8B5CF6',
+  whiteGlow: '#F5FBFF',
 }
 
 function useIsMobile() {
@@ -27,30 +30,34 @@ function useIsMobile() {
   return isMobile
 }
 
-// Positions/aims the camera. Fixed on a point left of scene-center — NOT on
-// the avatar itself. (Pointing the camera directly at the avatar's own
-// position cancels out any offset you give it, which is why it rendered
-// dead-center over the headline before.) The avatar's own group position is
-// what creates the visual offset to the right; the camera just holds still.
-function CameraRig({ lookAtX }: { lookAtX: number }) {
+// The camera looks at the portal, centered. Per the brief: "never stop the
+// camera completely... an almost imperceptible drift, like breathing."
+function CameraRig({ reducedMotion = false }: { reducedMotion?: boolean }) {
   const { camera } = useThree()
+  const base = useRef(new THREE.Vector3(0, 2.6, 8.4))
+
   useEffect(() => {
-    camera.position.set(0, 2.3, 7.6)
-    camera.lookAt(lookAtX, 1.9, 0)
+    camera.position.copy(base.current)
+    camera.lookAt(0, 2.4, 0)
     if (camera instanceof THREE.PerspectiveCamera) camera.updateProjectionMatrix()
-  }, [lookAtX, camera])
+  }, [camera])
+
+  useFrame((state) => {
+    if (reducedMotion) return
+    const t = state.clock.elapsedTime
+    // small, slow sinusoidal drift — not a step forward, just breathing —
+    // plus the faintest forward creep so the scene never feels frozen
+    camera.position.x = base.current.x + Math.sin(t * 0.12) * 0.12
+    camera.position.y = base.current.y + Math.sin(t * 0.09) * 0.06
+    camera.position.z = base.current.z - Math.min(t * 0.01, 0.6)
+    camera.lookAt(0, 2.4, 0)
+  })
+
   return null
 }
 
 export default function Scene({ reducedMotion = false }: { reducedMotion?: boolean }) {
   const isMobile = useIsMobile()
-  const avatarX = isMobile ? 0 : 2.6
-  const lookAtX = isMobile ? 0 : -0.9
-  const particleCount = isMobile ? 100 : 250
-
-  // measured off the robot's actual mesh bounds once it loads (see
-  // RobotAvatar's onCoreAnchor) rather than a hardcoded hand position
-  const [coreAnchor, setCoreAnchor] = useState<THREE.Vector3 | undefined>(undefined)
 
   const dpr = useMemo<[number, number]>(() => (isMobile ? [1, 1.5] : [1, 2]), [isMobile])
 
@@ -58,45 +65,36 @@ export default function Scene({ reducedMotion = false }: { reducedMotion?: boole
     <Canvas
       dpr={dpr}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
-      camera={{ fov: 34, near: 0.1, far: 100 }}
+      camera={{ fov: 38, near: 0.1, far: 100 }}
     >
       <color attach="background" args={[COLORS.background]} />
-      <ambientLight intensity={0.9} color={COLORS.primary} />
-      <directionalLight position={[2, 4, 3]} intensity={1.6} color={COLORS.primary} />
-      {/* soft fill so the robot's metal reads with some shape instead of
-          going flat/dark on its shadow side */}
-      <directionalLight position={[-3, 2, -2]} intensity={0.7} color={COLORS.glow} />
-      {/* rim/key light from behind-ish so the silhouette separates from the
-          near-black background instead of reading as a dark blob */}
-      <pointLight position={[avatarX, 2.4, -2.5]} intensity={2.2} color={COLORS.glow} distance={12} />
+      <ambientLight intensity={0.55} color={COLORS.violet} />
+      <directionalLight position={[2, 4, 3]} intensity={0.7} color={COLORS.cyan} />
+      <directionalLight position={[-3, 2, -2]} intensity={0.5} color={COLORS.violet} />
 
-      <CameraRig lookAtX={lookAtX} />
+      <CameraRig reducedMotion={reducedMotion} />
       <Stars isMobile={isMobile} />
-      <Grid color={COLORS.grid} />
+      <Grid color={COLORS.navy} />
 
-      <group position={[avatarX, 0, 0]}>
-        <Suspense fallback={null}>
-          <RobotAvatar color={COLORS.primary} reducedMotion={reducedMotion} onCoreAnchor={setCoreAnchor} />
-          <Butterflies
-            colors={[COLORS.glow, COLORS.primary]}
-            reducedMotion={reducedMotion}
-            count={isMobile ? 5 : 11}
-          />
-        </Suspense>
-        <EnergyParticles count={particleCount} color={COLORS.glow} origin={coreAnchor} />
-      </group>
+      <Suspense fallback={null}>
+        <Portal center={[0, 2.4, -0.3]} radius={1.9} reducedMotion={reducedMotion} />
+        <Butterflies
+          colors={[COLORS.cyan, COLORS.violet, COLORS.emerald]}
+          reducedMotion={reducedMotion}
+          count={isMobile ? 10 : 24}
+        />
+      </Suspense>
 
-      {/* Bloom is what turns the flat additive glow into the soft neon halo
-          from the reference art — a plain emissive material can't produce
-          that falloff on its own. Lighter settings on mobile to protect the
-          frame budget. */}
+      {/* Bloom turns the flat additive glow into the soft neon halo from
+          the reference art. Lighter settings on mobile to protect frame
+          budget. */}
       <EffectComposer multisampling={isMobile ? 0 : 4}>
         <Bloom
-          luminanceThreshold={0.15}
+          luminanceThreshold={0.12}
           luminanceSmoothing={0.4}
-          intensity={isMobile ? 0.8 : 1.3}
+          intensity={isMobile ? 0.9 : 1.4}
           mipmapBlur
-          radius={0.6}
+          radius={0.65}
         />
         <Vignette eskil={false} offset={0.25} darkness={0.9} />
       </EffectComposer>

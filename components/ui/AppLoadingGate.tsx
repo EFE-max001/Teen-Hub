@@ -5,7 +5,7 @@ import { AnimatePresence } from 'framer-motion'
 import { useAssetsReady } from '@/hooks/useAssetsReady'
 import LoadingScreen from './LoadingScreen'
 
-// Home is the only route with the heavy hero scene (robot + butterfly
+// Home is the only route with the heavy hero scene (portal + butterfly
 // flock), so it's the only one gated behind the loader — dashboard/login/etc
 // keep loading instantly the way they do today, the 3D background just
 // fades in quietly behind them like it already does.

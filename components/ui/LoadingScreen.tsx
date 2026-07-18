@@ -41,7 +41,7 @@ export default function LoadingScreen({ progress }: { progress: number }) {
         className="absolute w-[600px] h-[600px] rounded-full pointer-events-none"
         style={{
           background:
-            'radial-gradient(circle, rgba(157,77,255,0.25) 0%, rgba(157,77,255,0.08) 45%, transparent 70%)',
+            'radial-gradient(circle, rgba(0,229,255,0.22) 0%, rgba(139,92,246,0.1) 45%, transparent 70%)',
           filter: 'blur(10px)',
         }}
       />
@@ -51,24 +51,24 @@ export default function LoadingScreen({ progress }: { progress: number }) {
             console splash rather than a generic spinner */}
         <div className="relative w-28 h-28 flex items-center justify-center">
           <motion.div
-            className="absolute inset-0 border border-[#9D4DFF]/40 rounded-lg"
+            className="absolute inset-0 border border-[#00E5FF]/40 rounded-lg"
             style={{ borderRadius: '30%' }}
             animate={{ rotate: 360 }}
             transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
           />
           <motion.div
-            className="absolute inset-3 border border-[#C670FF]/60 rounded-lg"
+            className="absolute inset-3 border border-[#8B5CF6]/60 rounded-lg"
             style={{ borderRadius: '30%' }}
             animate={{ rotate: -360 }}
             transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
           />
           <motion.div
-            className="w-6 h-6 bg-gradient-to-br from-[#C670FF] to-[#9D4DFF]"
+            className="w-6 h-6 bg-gradient-to-br from-[#8B5CF6] to-[#00E5FF]"
             style={{ borderRadius: '30%' }}
             animate={{ scale: [1, 1.25, 1], boxShadow: [
-              '0 0 10px rgba(198,112,255,0.6)',
-              '0 0 28px rgba(198,112,255,0.95)',
-              '0 0 10px rgba(198,112,255,0.6)',
+              '0 0 10px rgba(139,92,246,0.6)',
+              '0 0 28px rgba(139,92,246,0.95)',
+              '0 0 10px rgba(139,92,246,0.6)',
             ] }}
             transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
           />
@@ -81,14 +81,14 @@ export default function LoadingScreen({ progress }: { progress: number }) {
           >
             QUESTHUB
           </h1>
-          <p className="text-xs tracking-[0.4em] text-[#9D4DFF]">GUILD NETWORK</p>
+          <p className="text-xs tracking-[0.4em] text-[#00E5FF]">GUILD NETWORK</p>
         </div>
 
         {/* progress bar */}
         <div className="w-64 flex flex-col gap-2">
           <div className="h-[3px] w-full bg-white/10 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-gradient-to-r from-[#7c3aed] to-[#C670FF]"
+              className="h-full bg-gradient-to-r from-[#00E5FF] to-[#8B5CF6]"
               animate={{ width: `${Math.max(4, progress)}%` }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
             />

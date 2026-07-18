@@ -9,7 +9,7 @@ const SentinelBackground = dynamic(() => import('@/components/ui/SentinelBackgro
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
     <SessionProvider session={session}>
-      {/* SentinelBackground mounts (and starts loading the robot + butterfly
+      {/* SentinelBackground mounts (and starts loading the portal + butterfly
           models) immediately, same as before. AppLoadingGate just decides
           when the page is allowed to become visible — on "/" that's "once
           the models are ready", everywhere else it's "immediately". */}
