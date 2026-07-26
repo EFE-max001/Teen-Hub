@@ -302,7 +302,11 @@ export default function Butterflies({
 }) {
   const flock = useMemo(() => {
     const n = count ?? FLOCK.length
-    return FLOCK.slice(0, n).map((f, i) => ({
+    // Prefer peripheral homes (large |x|) over central ones when the count
+    // is trimmed down — the text column sits near x≈0, so this keeps
+    // butterflies framing the hero instead of flying through the headline.
+    const sorted = [...FLOCK].sort((a, b) => Math.abs(b.home.x) - Math.abs(a.home.x))
+    return sorted.slice(0, n).map((f, i) => ({
       ...f,
       color: colors[i % colors.length],
       colorB: colors[(i + 1) % colors.length],

@@ -1,118 +1,198 @@
 // components/Trees.tsx
 //
-// "Technology behaving like nature" — trunks read as dark, near-silhouette
-// forms (so the portal and butterflies stay the visual focus in front of
-// them), canopies are built from glowing branch-light nodes rather than
-// flat green foliage, per the brief: "Buttons grow from glowing vines made
-// of light... Menus branch outward like leaves." No new dependencies —
-// everything here is primitive geometry + emissive materials, kept low-poly
-// since this sits behind an already-busy scene (portal + 24 butterflies).
+// v2 — the first pass (a trunk + one big wireframe icosahedron canopy) read
+// as a floating glowing ball, not a tree: the trunk color (#050510) was
+// nearly identical to the scene background (#03060A) and effectively
+// invisible, and a single smooth sphere doesn't carry any branching
+// silhouette. This version fixes both: the trunk uses the same fresnel
+// rim-glow material as the portal/butterflies so it's actually visible as
+// a silhouette against the stars, and the canopy is built from individual
+// branches fanning out from the crown — each ending in a small bright
+// node — so it reads as a structure, not a blob. Tech + magic + nature:
+// branches are glowing energy conduits (tech), tipped with gold/emerald
+// light-nodes (magic + nature) rather than literal foliage.
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { createGlowMaterial } from '../shaders/GlowMaterial'
+
+type Branch = {
+  start: THREE.Vector3
+  dir: THREE.Vector3
+  length: number
+  radius: number
+  twig?: { dir: THREE.Vector3; length: number }
+}
 
 type TreeSpec = {
   position: [number, number, number]
   height: number
-  canopyRadius: number
+  spread: number
   color: string
   seed: number
 }
 
-// A loose ring of trees flanking the portal — far background layer, so
-// they're pushed back in Z and spread wide in X, framing the scene rather
-// than crowding it.
+// Loose ring flanking the portal — far background layer, pushed back in Z
+// and spread wide in X so they frame the scene rather than crowd it.
 const TREES: TreeSpec[] = [
-  { position: [-4.6, 0, -3.5], height: 3.4, canopyRadius: 1.1, color: '#00E5FF', seed: 1 },
-  { position: [-3.1, 0, -4.8], height: 2.6, canopyRadius: 0.85, color: '#8B5CF6', seed: 2 },
-  { position: [4.4, 0, -3.6], height: 3.6, canopyRadius: 1.15, color: '#00FFA3', seed: 3 },
-  { position: [3.0, 0, -4.9], height: 2.5, canopyRadius: 0.8, color: '#8B5CF6', seed: 4 },
-  { position: [-5.8, 0, -5.5], height: 4.2, canopyRadius: 1.3, color: '#00E5FF', seed: 5 },
-  { position: [5.9, 0, -5.6], height: 4.0, canopyRadius: 1.25, color: '#00FFA3', seed: 6 },
-  { position: [0.2, 0, -6.4], height: 3.0, canopyRadius: 1.0, color: '#8B5CF6', seed: 7 },
+  { position: [-4.6, 0, -4.2], height: 3.0, spread: 1.5, color: '#FFC65C', seed: 1 },
+  { position: [-3.0, 0, -5.6], height: 2.3, spread: 1.1, color: '#00FFA3', seed: 2 },
+  { position: [4.4, 0, -4.3], height: 3.2, spread: 1.6, color: '#00FFA3', seed: 3 },
+  { position: [3.0, 0, -5.7], height: 2.2, spread: 1.0, color: '#FFC65C', seed: 4 },
+  { position: [-5.9, 0, -6.4], height: 3.7, spread: 1.8, color: '#FFC65C', seed: 5 },
+  { position: [5.9, 0, -6.5], height: 3.5, spread: 1.7, color: '#00FFA3', seed: 6 },
 ]
 
-// Small glowing nodes scattered through the canopy volume — the "branches
-// of light" detail. Positions are precomputed per tree rather than random
-// every render, using a simple deterministic hash so it's stable and cheap.
-function canopyNodes(spec: TreeSpec, count: number) {
-  const nodes: THREE.Vector3[] = []
+// Cheap deterministic pseudo-random in [0,1), seeded — stable across
+// re-renders without needing to store generated branches in state.
+function rand(seed: number) {
+  const x = Math.sin(seed * 127.1) * 43758.5453
+  return x - Math.floor(x)
+}
+
+function buildBranches(spec: TreeSpec): Branch[] {
+  const trunkTop = new THREE.Vector3(0, spec.height, 0)
+  const count = 5
+  const branches: Branch[] = []
   for (let i = 0; i < count; i++) {
-    const s = spec.seed * 97 + i * 13.7
-    const theta = Math.sin(s) * Math.PI * 2
-    const phi = Math.acos(2 * (Math.abs(Math.sin(s * 1.7)) % 1) - 1)
-    const r = spec.canopyRadius * (0.5 + 0.5 * (Math.abs(Math.sin(s * 2.3)) % 1))
-    nodes.push(
-      new THREE.Vector3(
-        r * Math.sin(phi) * Math.cos(theta),
-        spec.height + spec.canopyRadius * 0.3 + r * Math.cos(phi) * 0.6,
-        r * Math.sin(phi) * Math.sin(theta)
-      )
-    )
+    const s = spec.seed * 31 + i * 7.3
+    const theta = rand(s) * Math.PI * 2
+    // mostly upward (60°–85° from horizontal) so it reads as a crown, not
+    // a starburst
+    const phi = THREE.MathUtils.degToRad(55 + rand(s + 1) * 30)
+    const dir = new THREE.Vector3(
+      Math.sin(phi) * Math.cos(theta),
+      Math.cos(phi),
+      Math.sin(phi) * Math.sin(theta)
+    ).normalize()
+    const length = spec.spread * (0.6 + rand(s + 2) * 0.5)
+    const branch: Branch = {
+      start: trunkTop,
+      dir,
+      length,
+      radius: 0.03 + rand(s + 3) * 0.015,
+    }
+    // a couple of branches get a secondary twig for a less symmetric,
+    // more fractal-feeling crown
+    if (i % 2 === 0) {
+      const twigTheta = theta + (rand(s + 4) - 0.5) * 1.4
+      const twigPhi = phi - THREE.MathUtils.degToRad(15 + rand(s + 5) * 15)
+      branch.twig = {
+        dir: new THREE.Vector3(
+          Math.sin(twigPhi) * Math.cos(twigTheta),
+          Math.cos(twigPhi),
+          Math.sin(twigPhi) * Math.sin(twigTheta)
+        ).normalize(),
+        length: length * 0.55,
+      }
+    }
+    branches.push(branch)
   }
-  return nodes
+  return branches
+}
+
+const UP = new THREE.Vector3(0, 1, 0)
+
+// Cylinders default to extending along +Y from their own center — this
+// gives the position/quaternion to place one running from `start` along
+// `dir` for `length` units.
+function segmentTransform(start: THREE.Vector3, dir: THREE.Vector3, length: number) {
+  const mid = start.clone().addScaledVector(dir, length / 2)
+  const quat = new THREE.Quaternion().setFromUnitVectors(UP, dir)
+  const end = start.clone().addScaledVector(dir, length)
+  return { mid, quat, end }
 }
 
 function Tree({ spec, reducedMotion }: { spec: TreeSpec; reducedMotion: boolean }) {
-  const nodes = useMemo(() => canopyNodes(spec, 10), [spec])
+  const branches = useMemo(() => buildBranches(spec), [spec])
+  const trunkMaterial = useMemo(() => createGlowMaterial(spec.color), [spec.color])
   const nodeRefs = useRef<THREE.Mesh[]>([])
-  const trunkTop = spec.height
 
   useFrame(state => {
+    trunkMaterial.uniforms.uTime.value = state.clock.elapsedTime
     if (reducedMotion) return
     const t = state.clock.elapsedTime
-    // gentle asynchronous twinkle — each node pulses on its own phase so
-    // the canopy reads as quietly alive rather than static
     nodeRefs.current.forEach((mesh, i) => {
       if (!mesh) return
-      const s = 0.7 + 0.3 * Math.sin(t * (0.6 + i * 0.07) + spec.seed * i)
+      const s = 0.75 + 0.25 * Math.sin(t * (0.5 + i * 0.06) + spec.seed * i)
       mesh.scale.setScalar(s)
     })
   })
 
+  let nodeIndex = 0
+
   return (
     <group position={spec.position}>
-      {/* Trunk — flat dark fill, no emissive: a true silhouette shape that
-          lets the glowing canopy and the portal/butterflies in front of it
-          stay the focal point. */}
-      <mesh position={[0, trunkTop / 2, 0]}>
-        <cylinderGeometry args={[0.06, 0.16, trunkTop, 6]} />
-        <meshBasicMaterial color="#050510" />
-      </mesh>
-      {/* A couple of asymmetric branch stubs so the trunk doesn't read as a
-          straight pole. */}
-      <mesh position={[0.18, trunkTop * 0.7, 0.05]} rotation={[0, 0, -0.6]}>
-        <cylinderGeometry args={[0.02, 0.05, trunkTop * 0.35, 5]} />
-        <meshBasicMaterial color="#050510" />
-      </mesh>
-      <mesh position={[-0.15, trunkTop * 0.55, -0.08]} rotation={[0, 0, 0.5]}>
-        <cylinderGeometry args={[0.02, 0.045, trunkTop * 0.3, 5]} />
-        <meshBasicMaterial color="#050510" />
+      {/* Trunk — same fresnel rim-glow material as the portal/butterflies,
+          so it reads as an actual silhouette against the stars instead of
+          disappearing into the background like the flat-fill version did. */}
+      <mesh position={[0, spec.height / 2, 0]}>
+        <cylinderGeometry args={[0.05, 0.14, spec.height, 6]} />
+        <primitive object={trunkMaterial} attach="material" />
       </mesh>
 
-      {/* Canopy — a soft glowing core plus scattered light-nodes standing
-          in for "branches of light" rather than foliage. */}
-      <mesh position={[0, trunkTop + spec.canopyRadius * 0.3, 0]}>
-        <icosahedronGeometry args={[spec.canopyRadius * 0.55, 1]} />
-        <meshBasicMaterial
-          color={spec.color}
-          transparent
-          opacity={0.14}
-          wireframe
-        />
+      {/* Root flare — two short stubs so the base doesn't look like a pole
+          planted straight into the ground. */}
+      <mesh position={[0.1, 0.06, 0.04]} rotation={[0, 0, -0.5]}>
+        <cylinderGeometry args={[0.02, 0.06, 0.22, 5]} />
+        <primitive object={trunkMaterial} attach="material" />
       </mesh>
-      {nodes.map((pos, i) => (
-        <mesh
-          key={i}
-          position={pos}
-          ref={el => {
-            if (el) nodeRefs.current[i] = el
-          }}
-        >
-          <sphereGeometry args={[0.035, 6, 6]} />
-          <meshBasicMaterial color={spec.color} transparent opacity={0.85} />
-        </mesh>
-      ))}
+      <mesh position={[-0.09, 0.06, -0.05]} rotation={[0, 0, 0.45]}>
+        <cylinderGeometry args={[0.02, 0.055, 0.2, 5]} />
+        <primitive object={trunkMaterial} attach="material" />
+      </mesh>
+
+      {/* Crown — branches fanning from the trunk top, each a tapered
+          conduit ending in a small bright node. */}
+      {branches.map((b, i) => {
+        const { mid, quat, end } = segmentTransform(b.start, b.dir, b.length)
+        const idx = nodeIndex++
+        const twig = b.twig
+        let twigEnd: THREE.Vector3 | null = null
+        let twigIdx = -1
+        if (twig) {
+          const t = segmentTransform(end, twig.dir, twig.length)
+          twigEnd = t.end
+          twigIdx = nodeIndex++
+        }
+        return (
+          <group key={i}>
+            <mesh position={mid} quaternion={quat}>
+              <cylinderGeometry args={[b.radius * 0.3, b.radius, b.length, 5]} />
+              <primitive object={trunkMaterial} attach="material" />
+            </mesh>
+            <mesh
+              position={end}
+              ref={el => {
+                if (el) nodeRefs.current[idx] = el
+              }}
+            >
+              <icosahedronGeometry args={[0.05 + rand(spec.seed + i) * 0.03, 0]} />
+              <meshBasicMaterial color={spec.color} transparent opacity={0.9} />
+            </mesh>
+            {twig && twigEnd && (
+              <>
+                <mesh
+                  position={end.clone().addScaledVector(twig.dir, twig.length / 2)}
+                  quaternion={new THREE.Quaternion().setFromUnitVectors(UP, twig.dir)}
+                >
+                  <cylinderGeometry args={[b.radius * 0.15, b.radius * 0.35, twig.length, 5]} />
+                  <primitive object={trunkMaterial} attach="material" />
+                </mesh>
+                <mesh
+                  position={twigEnd}
+                  ref={el => {
+                    if (el) nodeRefs.current[twigIdx] = el
+                  }}
+                >
+                  <icosahedronGeometry args={[0.035, 0]} />
+                  <meshBasicMaterial color={spec.color} transparent opacity={0.85} />
+                </mesh>
+              </>
+            )}
+          </group>
+        )
+      })}
     </group>
   )
 }

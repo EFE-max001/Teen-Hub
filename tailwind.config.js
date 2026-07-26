@@ -24,18 +24,25 @@ const config: Config = {
         'portal-emerald': '#00FFA3',
         'portal-violet': '#8B5CF6',
         'portal-glow': '#F5FBFF',
+        'portal-gold': '#FFC65C',
+        'portal-moonlight': '#D9EDE6',
       },
       fontFamily: {
         orbitron: ['Orbitron', 'monospace'],
         rajdhani: ['Rajdhani', 'sans-serif'],
+        // "Living Digital Forest" v2 typography — elegant/organic rather
+        // than technical, for the redesigned UI chrome (headings, buttons,
+        // nav). Prefer these over orbitron/rajdhani for new work.
+        cinzel: ['Cinzel', 'serif'],
+        cormorant: ['"Cormorant Garamond"', 'serif'],
       },
       backgroundImage: {
         'purple-glow': 'radial-gradient(ellipse at center, rgba(168,85,247,0.15) 0%, transparent 70%)',
       },
       keyframes: {
         'pulse-glow': {
-          '0%, 100%': { boxShadow: '0 0 20px rgba(168,85,247,0.4)' },
-          '50%': { boxShadow: '0 0 40px rgba(168,85,247,0.8)' },
+          '0%, 100%': { boxShadow: '0 0 20px rgba(0,255,163,0.35)' },
+          '50%': { boxShadow: '0 0 40px rgba(255,198,92,0.5)' },
         },
         flicker: {
           '0%, 100%': { opacity: '1' },

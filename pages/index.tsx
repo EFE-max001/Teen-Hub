@@ -1,30 +1,12 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
 import { GetServerSideProps } from 'next'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import GlowButton from '@/components/ui/GlowButton'
+import OrnamentDivider from '@/components/ui/OrnamentDivider'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
-
-// R3F touches WebGL/canvas APIs that don't exist on the server, so this
-// must be a client-only import or getServerSideProps below will crash the
-// page on every request.
-const Scene = dynamic(() => import('@/components/Scene'), { ssr: false })
-
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReduced(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-  return reduced
-}
 
 const RANKS = [
   { rank: 'F',   label: 'Initiate',   color: 'text-slate-400',  border: 'border-slate-600/40',  glow: '',                                  desc: 'Unproven. The starting point for every operative.' },
@@ -62,8 +44,6 @@ const AI_FEATURES = [
 ]
 
 export default function LandingPage() {
-  const reducedMotion = usePrefersReducedMotion()
-
   return (
     <>
       <Head>
@@ -76,53 +56,76 @@ export default function LandingPage() {
         <main className="flex-1 pt-16">
 
           {/* ── HERO ──────────────────────────────────────────── */}
-          <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4 py-20 bg-[#03060A]">
-            {/* Living Digital Forest — portal, tech butterflies, 3D grid and
-                stars. Replaces the old flat CSS grid + gradient orbs; this
-                supplies the background color and all ambient motion now. */}
-            <div className="absolute inset-0 z-0 pointer-events-none">
-              <Scene reducedMotion={reducedMotion} />
-            </div>
+          <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4 py-20">
+            {/* No local background mount here anymore — the Living Digital
+                Forest (fog + roots + particles + portal/butterflies/branch)
+                is mounted once, globally, via SentinelBackground in
+                _app.tsx, so it's consistent across every page instead of
+                just this hero, and so there's only ever one WebGL canvas
+                running instead of two stacked on top of each other. */}
+
+            {/* Text-legibility vignette — sits between the background and
+                the copy (not touching either), so the headline/body text
+                stays readable regardless of what's animating behind it,
+                without having to dim the whole scene globally. */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse 60% 55% at 50% 42%, rgba(2,6,4,0.55) 0%, rgba(2,6,4,0.25) 55%, transparent 80%)' }}
+            />
 
             {/* Accent lines */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-b from-purple-500/40 to-transparent pointer-events-none" />
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-t from-purple-500/40 to-transparent pointer-events-none" />
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-px w-32 bg-gradient-to-r from-transparent to-purple-500/30 pointer-events-none" />
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 h-px w-32 bg-gradient-to-l from-transparent to-purple-500/30 pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-b from-portal-emerald/40 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-t from-portal-emerald/40 to-transparent pointer-events-none" />
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-px w-32 bg-gradient-to-r from-transparent to-portal-gold/30 pointer-events-none" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 h-px w-32 bg-gradient-to-l from-transparent to-portal-gold/30 pointer-events-none" />
+
+            {/* Legibility scrim — a soft dark radial gradient behind the
+                copy block only, not the whole hero. Without this, the
+                headline/subtitle have to compete directly with whatever
+                the background layer is doing at any given moment, which is
+                exactly the "chaotic" problem: text needs guaranteed
+                contrast independent of the ambient scene underneath it. */}
+            <div
+              className="absolute inset-0 z-[5] pointer-events-none"
+              style={{
+                background: 'radial-gradient(ellipse 60% 55% at 50% 45%, rgba(2,6,4,0.72) 0%, rgba(2,6,4,0.35) 55%, transparent 80%)',
+              }}
+            />
 
             <div className="relative z-10 text-center max-w-5xl mx-auto w-full">
 
               {/* Status badge */}
-              <div className="inline-flex items-center gap-3 mb-8 border border-purple-500/25 bg-purple-950/30 px-4 py-2 backdrop-blur-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                <span className="font-orbitron text-[9px] sm:text-[10px] text-slate-400 tracking-[0.35em] uppercase">Guild Network Online</span>
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" style={{ animationDelay: '0.5s' }} />
+              <div className="inline-flex items-center gap-3 mb-8 border border-portal-emerald/25 bg-portal-emerald/[0.06] px-4 py-2 backdrop-blur-sm rounded-full">
+                <div className="w-1.5 h-1.5 rounded-full bg-portal-emerald animate-pulse" />
+                <span className="font-cinzel text-[9px] sm:text-[10px] text-portal-moonlight/70 tracking-[0.35em] uppercase">Guild Network Online</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-portal-emerald animate-pulse" style={{ animationDelay: '0.5s' }} />
               </div>
 
               {/* Main heading */}
               <div className="mb-4">
-                <h1 className="font-orbitron font-black leading-none tracking-tight">
-                  <span className="block text-4xl sm:text-6xl md:text-8xl lg:text-9xl text-white">
-                    QUEST<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500">HUB</span>
+                <h1 className="font-cinzel font-semibold leading-none tracking-wide">
+                  <span className="block text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-portal-moonlight">
+                    Quest<span className="text-transparent bg-clip-text bg-gradient-to-r from-portal-gold via-portal-emerald to-portal-cyan">Hub</span>
                   </span>
-                  <span className="block text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-slate-500 tracking-[0.25em] mt-1">
-                    G U I L D
+                  <span className="block text-xl sm:text-2xl md:text-3xl lg:text-4xl text-slate-400 tracking-[0.3em] mt-2 font-normal">
+                    Guild
                   </span>
                 </h1>
               </div>
 
               {/* Divider line */}
-              <div className="flex items-center justify-center gap-4 mb-8">
-                <div className="flex-1 max-w-24 h-px bg-gradient-to-r from-transparent to-purple-500/50" />
-                <span className="font-orbitron text-[9px] text-purple-400/70 tracking-[0.4em] uppercase">Elite Talent Platform</span>
-                <div className="flex-1 max-w-24 h-px bg-gradient-to-l from-transparent to-purple-500/50" />
+              <div className="flex items-center justify-center gap-4 mb-2">
+                <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Elite Talent Platform</span>
+              </div>
+              <div className="mb-8">
+                <OrnamentDivider color="#FFC65C" />
               </div>
 
               {/* Subtitle */}
-              <p className="font-rajdhani text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed px-2">
+              <p className="font-cormorant text-base sm:text-lg md:text-xl text-slate-300/90 max-w-2xl mx-auto mb-10 leading-relaxed px-2 italic">
                 An elite guild for talented teens. Not everyone gets in — you have to earn it.
                 Apply, survive the trial, rank up from{' '}
-                <span className="text-slate-300 font-semibold">F to SSS</span>, and complete real operations
+                <span className="text-portal-moonlight font-semibold not-italic">F to SSS</span>, and complete real operations
                 that build a reputation that actually matters.
               </p>
 

@@ -6,19 +6,31 @@ import Butterflies from './Butterflies'
 import Grid from './Grid'
 import Stars from './Stars'
 import Portal from './Portal'
-import Trees from './Trees'
+import GrassField from './GrassField'
+import HeartSeed from './HeartSeed'
+import Crystal from './Crystal'
 
-// "Living Digital Forest" palette — replaces the earlier single-purple
-// cyberpunk set. Restrained per the brief: midnight/navy base, electric
-// cyan + emerald + violet accents, white glow for particles/highlights.
+// "Living Digital Forest" palette — tech + magic + nature. Cyan carries
+// the tech read, gold carries magic, emerald carries nature, violet
+// bridges tech/magic, moonlight is the soft neutral highlight (text,
+// portal core) rather than pure white.
 const COLORS = {
-  background: '#03060A',
-  navy: '#0A1428',
+  background: '#040A08',
+  navy: '#0A1A16',
   cyan: '#00E5FF',
   emerald: '#00FFA3',
   violet: '#8B5CF6',
+  gold: '#FFC65C',
+  moonlight: '#D9EDE6',
   whiteGlow: '#F5FBFF',
 }
+
+// Branch (sci-fi_artificial_tree.glb) intentionally left out of the scene:
+// its leaf-card texture turned out to be a sparse orange circuit-line
+// graphic, not foliage — rendering it correctly (which the earlier material
+// fix did) just makes that clearer, not better. Worth revisiting with a
+// model that actually has leaf/foliage texture content, not this one tuned
+// further.
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false)
@@ -65,25 +77,30 @@ export default function Scene({ reducedMotion = false }: { reducedMotion?: boole
   return (
     <Canvas
       dpr={dpr}
-      gl={{ antialias: true, powerPreference: 'high-performance' }}
+      gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       camera={{ fov: 38, near: 0.1, far: 100 }}
     >
-      <color attach="background" args={[COLORS.background]} />
-      <ambientLight intensity={0.55} color={COLORS.violet} />
-      <directionalLight position={[2, 4, 3]} intensity={0.7} color={COLORS.cyan} />
-      <directionalLight position={[-3, 2, -2]} intensity={0.5} color={COLORS.violet} />
+      {/* No opaque background color here on purpose — this Canvas now
+          sits inside LivingBackground on top of the CSS FogLayer, and an
+          opaque fill would completely hide it. */}
+      <ambientLight intensity={0.5} color={COLORS.violet} />
+      <directionalLight position={[2, 4, 3]} intensity={0.65} color={COLORS.cyan} />
+      <directionalLight position={[-3, 2, -2]} intensity={0.4} color={COLORS.violet} />
+      <pointLight position={[0, 3, -4.5]} intensity={0.7} color={COLORS.gold} distance={14} decay={2} />
 
       <CameraRig reducedMotion={reducedMotion} />
       <Stars isMobile={isMobile} />
-      <Trees reducedMotion={reducedMotion} />
+      <GrassField />
       <Grid color={COLORS.navy} />
 
       <Suspense fallback={null}>
         <Portal center={[0, 2.4, -0.3]} radius={1.9} reducedMotion={reducedMotion} />
+        <HeartSeed position={[0, 2.4, -0.3]} glowColor={COLORS.gold} reducedMotion={reducedMotion} />
+        <Crystal position={[2.6, 3.6, -0.8]} color={COLORS.cyan} scale={0.8} reducedMotion={reducedMotion} />
         <Butterflies
-          colors={[COLORS.cyan, COLORS.violet, COLORS.emerald]}
+          colors={[COLORS.cyan, COLORS.violet, COLORS.emerald, COLORS.gold]}
           reducedMotion={reducedMotion}
-          count={isMobile ? 10 : 24}
+          count={isMobile ? 6 : 11}
         />
       </Suspense>
 

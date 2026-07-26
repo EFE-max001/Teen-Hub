@@ -1,7 +1,7 @@
 import { Component, useEffect, useState, type ReactNode } from 'react'
 import dynamic from 'next/dynamic'
 
-const Scene = dynamic(() => import('../Scene'), { ssr: false })
+const LivingBackground = dynamic(() => import('../LivingBackground'), { ssr: false })
 
 // A CSS-only stand-in for the 3D scene — used if WebGL genuinely can't
 // initialize in this browser/tab, so the page still looks intentional
@@ -95,7 +95,7 @@ export default function SentinelBackground() {
         </>
       ) : (
         <WebGLErrorBoundary key={attempt} onFail={handleFail}>
-          <Scene reducedMotion={reducedMotion} />
+          <LivingBackground reducedMotion={reducedMotion} />
         </WebGLErrorBoundary>
       )}
     </div>
