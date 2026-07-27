@@ -39,16 +39,25 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop nav links */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-slate-400 hover:text-portal-emerald font-cinzel text-xs tracking-[0.15em] uppercase transition-colors duration-200"
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="hidden md:flex flex-col items-center">
+            <div className="flex items-center gap-8">
+              {navLinks.map(link => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-slate-400 hover:text-portal-emerald font-cinzel text-xs tracking-[0.15em] uppercase transition-colors duration-200"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+            {/* Organic underline — a thin root-like track with a small
+                light pulse traveling back and forth through it every few
+                seconds, so the nav reads as part of the same living
+                ecosystem instead of a static row of links. */}
+            <div className="relative w-full h-px mt-3 bg-gradient-to-r from-transparent via-portal-emerald/20 to-transparent overflow-hidden">
+              <div className="nav-pulse absolute top-0 h-full w-10 bg-gradient-to-r from-transparent via-portal-gold to-transparent" />
+            </div>
           </div>
 
           {/* Desktop auth buttons */}

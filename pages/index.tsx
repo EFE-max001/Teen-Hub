@@ -95,14 +95,14 @@ export default function LandingPage() {
             <div className="relative z-10 text-center max-w-5xl mx-auto w-full">
 
               {/* Status badge */}
-              <div className="inline-flex items-center gap-3 mb-8 border border-portal-emerald/25 bg-portal-emerald/[0.06] px-4 py-2 backdrop-blur-sm rounded-full">
+              <div className="hero-assemble inline-flex items-center gap-3 mb-8 border border-portal-emerald/25 bg-portal-emerald/[0.06] px-4 py-2 backdrop-blur-sm rounded-full">
                 <div className="w-1.5 h-1.5 rounded-full bg-portal-emerald animate-pulse" />
                 <span className="font-cinzel text-[9px] sm:text-[10px] text-portal-moonlight/70 tracking-[0.35em] uppercase">Guild Network Online</span>
                 <div className="w-1.5 h-1.5 rounded-full bg-portal-emerald animate-pulse" style={{ animationDelay: '0.5s' }} />
               </div>
 
               {/* Main heading */}
-              <div className="mb-4">
+              <div className="hero-assemble mb-4" style={{ animationDelay: '120ms' }}>
                 <h1 className="font-cinzel font-semibold leading-none tracking-wide">
                   <span className="block text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-portal-moonlight">
                     Quest<span className="text-transparent bg-clip-text bg-gradient-to-r from-portal-gold via-portal-emerald to-portal-cyan">Hub</span>
@@ -114,15 +114,18 @@ export default function LandingPage() {
               </div>
 
               {/* Divider line */}
-              <div className="flex items-center justify-center gap-4 mb-2">
+              <div className="hero-assemble flex items-center justify-center gap-4 mb-2" style={{ animationDelay: '220ms' }}>
                 <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Elite Talent Platform</span>
               </div>
-              <div className="mb-8">
+              <div className="hero-assemble mb-8" style={{ animationDelay: '260ms' }}>
                 <OrnamentDivider color="#FFC65C" />
               </div>
 
               {/* Subtitle */}
-              <p className="font-cormorant text-base sm:text-lg md:text-xl text-slate-300/90 max-w-2xl mx-auto mb-10 leading-relaxed px-2 italic">
+              <p
+                className="hero-assemble font-cormorant text-base sm:text-lg md:text-xl text-slate-300/90 max-w-2xl mx-auto mb-10 leading-relaxed px-2 italic"
+                style={{ animationDelay: '340ms' }}
+              >
                 An elite guild for talented teens. Not everyone gets in — you have to earn it.
                 Apply, survive the trial, rank up from{' '}
                 <span className="text-portal-moonlight font-semibold not-italic">F to SSS</span>, and complete real operations

@@ -60,8 +60,19 @@ function CameraRig({ reducedMotion = false }: { reducedMotion?: boolean }) {
     const t = state.clock.elapsedTime
     // small, slow sinusoidal drift — not a step forward, just breathing —
     // plus the faintest forward creep so the scene never feels frozen
-    camera.position.x = base.current.x + Math.sin(t * 0.12) * 0.12
-    camera.position.y = base.current.y + Math.sin(t * 0.09) * 0.06
+    const breatheX = Math.sin(t * 0.12) * 0.12
+    const breatheY = Math.sin(t * 0.09) * 0.06
+
+    // subtle mouse parallax on top of the breathing drift — state.pointer
+    // is already normalized device coordinates (-1..1) that R3F tracks
+    // for us, so this needs no separate mousemove listener. Kept small on
+    // purpose: per the brief, "tiny parallax, almost invisible, huge
+    // immersion" — this is meant to be felt, not noticed.
+    const parallaxX = state.pointer.x * 0.18
+    const parallaxY = state.pointer.y * 0.1
+
+    camera.position.x = base.current.x + breatheX + parallaxX
+    camera.position.y = base.current.y + breatheY + parallaxY
     camera.position.z = base.current.z - Math.min(t * 0.01, 0.6)
     camera.lookAt(0, 2.4, 0)
   })

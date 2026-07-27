@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
-import { createPortalMaterial } from '../shaders/PortalMaterial'
+import { createPortalMaterial, createPortalMistMaterial, createSparkMaterial } from '../shaders/PortalMaterial'
 import { createGlowMaterial } from '../shaders/GlowMaterial'
 
 // Small floating "glass shard" polygons scattered around the ring — per the
@@ -55,6 +55,67 @@ const SHARDS: ShardConfig[] = [
   { angle: 5.7, radius: 2.15, y: 0.75, scale: 0.07, spinSpeed: 0.5, geometry: 'octa', color: '#8B5CF6' },
 ]
 
+function Sparks({ radius, color }: { radius: number; color: string }) {
+  const material = useMemo(() => createSparkMaterial(color), [color])
+  const geometry = useMemo(() => {
+    const COUNT = 24
+    const seeds = new Float32Array(COUNT)
+    const positions = new Float32Array(COUNT * 3) // required by BufferGeometry even though the vertex shader recomputes position; left at origin
+    for (let i = 0; i < COUNT; i++) seeds[i] = i / COUNT + Math.random() * (1 / COUNT) * 0.5
+    const geo = new THREE.BufferGeometry()
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    geo.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1))
+    return geo
+  }, [])
+
+  useFrame(state => {
+    material.uniforms.uTime.value = state.clock.elapsedTime
+    material.uniforms.uRadius.value = radius
+  })
+
+  return <points geometry={geometry} material={material} />
+}
+
+// Small glyph-like accents that fade in and out along the ring at their
+// own pace — "occasional runes fading in and out" from the brief. Reuses
+// the existing fresnel glow material (which has an alpha floor and can't
+// fade to fully transparent on its own) and animates *scale* instead, so
+// no new shader is needed just for this.
+type RuneConfig = { angle: number; radius: number; y: number; phase: number; period: number; color: string }
+
+const RUNES: RuneConfig[] = [
+  { angle: 0.6, radius: 2.35, y: 0.5, phase: 0, period: 7, color: '#FFC65C' },
+  { angle: 2.3, radius: 2.3, y: -0.4, phase: 2.3, period: 8, color: '#00E5FF' },
+  { angle: 4.0, radius: 2.4, y: 0.15, phase: 4.6, period: 6.5, color: '#8B5CF6' },
+  { angle: 5.4, radius: 2.3, y: -0.6, phase: 1.1, period: 7.5, color: '#00FFA3' },
+]
+
+function Rune({ config }: { config: RuneConfig }) {
+  const ref = useRef<THREE.Mesh>(null!)
+  const material = useMemo(() => createGlowMaterial(config.color), [config.color])
+  const x = Math.cos(config.angle) * config.radius
+  const z = Math.sin(config.angle) * config.radius * 0.35
+
+  useFrame(state => {
+    material.uniforms.uTime.value = state.clock.elapsedTime
+    const t = ((state.clock.elapsedTime + config.phase) % config.period) / config.period
+    // visible for a short window each cycle (smooth up-hold-down), at 0
+    // scale (invisible) the rest of the time — "occasional", not constant
+    const visibleWindow = 0.28
+    const s = t < visibleWindow
+      ? Math.sin((t / visibleWindow) * Math.PI) * 0.09
+      : 0
+    ref.current.scale.setScalar(Math.max(s, 0.0001))
+    ref.current.rotation.z = state.clock.elapsedTime * 0.3
+  })
+
+  return (
+    <mesh ref={ref} position={[x, config.y, z]} material={material}>
+      <octahedronGeometry args={[1, 0]} />
+    </mesh>
+  )
+}
+
 export default function Portal({
   center = [0, 2.4, -0.3] as [number, number, number],
   radius = 1.9,
@@ -67,9 +128,12 @@ export default function Portal({
   const groupRef = useRef<THREE.Group>(null!)
   const ringMaterial = useMemo(() => createPortalMaterial('#00E5FF', '#8B5CF6'), [])
   const ringGeometry = useMemo(() => new THREE.TorusGeometry(radius, 0.035, 16, 220), [radius])
+  const mistMaterial = useMemo(() => createPortalMistMaterial('#00E5FF', '#8B5CF6'), [])
+  const mistGeometry = useMemo(() => new THREE.CircleGeometry(radius * 1.05, 64), [radius])
 
   useFrame((state, delta) => {
     ringMaterial.uniforms.uTime.value = state.clock.elapsedTime
+    mistMaterial.uniforms.uTime.value = state.clock.elapsedTime
     if (!reducedMotion) {
       groupRef.current.rotation.z += delta * 0.045
     }
@@ -77,9 +141,12 @@ export default function Portal({
 
   return (
     <group position={center}>
+      <mesh geometry={mistGeometry} material={mistMaterial} />
       <group ref={groupRef}>
         <mesh geometry={ringGeometry} material={ringMaterial} />
       </group>
+      {!reducedMotion && <Sparks radius={radius} color="#F5FBFF" />}
+      {!reducedMotion && RUNES.map((r, i) => <Rune key={i} config={r} />)}
       {SHARDS.map((s, i) => (
         <Shard key={i} config={s} />
       ))}

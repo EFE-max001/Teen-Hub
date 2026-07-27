@@ -19,7 +19,7 @@ export default function LivingBackground({ reducedMotion = false }: { reducedMot
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <FogLayer />
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 pointer-events-auto">
         <Scene reducedMotion={reducedMotion} />
       </div>
       <GlowingRoots reducedMotion={reducedMotion} />
