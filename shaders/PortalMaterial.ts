@@ -11,6 +11,11 @@ export function createPortalMaterial(colorA: string, colorB: string) {
       uColorA: { value: new THREE.Color(colorA) },
       uColorB: { value: new THREE.Color(colorB) },
       uTime: { value: 0 },
+      // 0 = idle, 1 = cursor right at the portal — driven from Scene/
+      // Portal based on pointer distance from screen center, not a true
+      // 3D projection (see Portal.tsx), which is a reasonable
+      // approximation since the portal sits screen-centered by design.
+      uProximity: { value: 0 },
     },
     vertexShader: `
       varying vec2 vUv;
@@ -29,6 +34,7 @@ export function createPortalMaterial(colorA: string, colorB: string) {
       uniform vec3 uColorA;
       uniform vec3 uColorB;
       uniform float uTime;
+      uniform float uProximity;
       varying vec2 vUv;
       varying vec3 vNormal;
       varying vec3 vViewDir;
@@ -42,15 +48,18 @@ export function createPortalMaterial(colorA: string, colorB: string) {
         float mixAmt = sin(vUv.x * 6.28318 + uTime * 0.4) * 0.5 + 0.5;
         vec3 base = mix(uColorA, uColorB, mixAmt);
 
-        // bright streaks travel around the loop — "flowing data streams"
-        float flow = fract(vUv.x * 3.0 - uTime * 0.35);
+        // bright streaks travel around the loop — "flowing data streams" —
+        // sped up slightly as the cursor approaches, part of the portal
+        // "noticing" the visitor
+        float flowSpeed = 0.35 + uProximity * 0.5;
+        float flow = fract(vUv.x * 3.0 - uTime * flowSpeed);
         float streak = smoothstep(0.0, 0.16, flow) * smoothstep(0.5, 0.16, flow);
 
         // gentle overall breathing pulse, ~4s period
         float pulse = 0.85 + 0.15 * sin(uTime * 0.8);
 
-        float intensity = (0.95 + fresnel * 1.5 + streak * 1.2) * pulse;
-        float alpha = clamp(0.8 + fresnel * 0.45, 0.0, 1.0);
+        float intensity = (0.95 + fresnel * 1.5 + streak * 1.2) * pulse * (1.0 + uProximity * 0.5);
+        float alpha = clamp(0.8 + fresnel * 0.45 + uProximity * 0.15, 0.0, 1.0);
         gl_FragColor = vec4(base * intensity, alpha);
       }
     `,
@@ -154,7 +163,13 @@ export function createSparkMaterial(color: string) {
         vLife = 1.0 - t;
         vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
         gl_Position = projectionMatrix * mvPosition;
-        gl_PointSize = (2.5 + hash(aSeed + 4.0) * 2.5) * vLife * (300.0 / -mvPosition.z);
+        // Previous constant (300.0) was miscalibrated for this scene's
+        // actual camera distance (~8-9 units from the portal): it produced
+        // 80-170px points — the oversized glowing blobs that looked like
+        // leftover mist. Recalibrated to a small multiplier, with a hard
+        // clamp so it can't balloon regardless of distance.
+        float baseSize = (1.1 + hash(aSeed + 4.0) * 1.3) * vLife;
+        gl_PointSize = clamp(baseSize * (40.0 / -mvPosition.z), 1.0, 6.0);
       }
     `,
     fragmentShader: `
@@ -164,7 +179,7 @@ export function createSparkMaterial(color: string) {
         float d = length(gl_PointCoord - 0.5);
         if (d > 0.5) discard;
         float glow = smoothstep(0.5, 0.0, d);
-        gl_FragColor = vec4(uColor, glow * vLife * 0.9);
+        gl_FragColor = vec4(uColor, glow * vLife * 0.6);
       }
     `,
     transparent: true,

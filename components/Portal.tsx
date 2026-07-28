@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Sparkles } from '@react-three/drei'
 import * as THREE from 'three'
-import { createPortalMaterial, createPortalMistMaterial, createSparkMaterial } from '../shaders/PortalMaterial'
+import { createPortalMaterial, createSparkMaterial } from '../shaders/PortalMaterial'
 import { createGlowMaterial } from '../shaders/GlowMaterial'
 
 // Small floating "glass shard" polygons scattered around the ring — per the
@@ -128,12 +128,22 @@ export default function Portal({
   const groupRef = useRef<THREE.Group>(null!)
   const ringMaterial = useMemo(() => createPortalMaterial('#00E5FF', '#8B5CF6'), [])
   const ringGeometry = useMemo(() => new THREE.TorusGeometry(radius, 0.035, 16, 220), [radius])
-  const mistMaterial = useMemo(() => createPortalMistMaterial('#00E5FF', '#8B5CF6'), [])
-  const mistGeometry = useMemo(() => new THREE.CircleGeometry(radius * 1.05, 64), [radius])
 
   useFrame((state, delta) => {
     ringMaterial.uniforms.uTime.value = state.clock.elapsedTime
-    mistMaterial.uniforms.uTime.value = state.clock.elapsedTime
+    // Proximity approximated from raw pointer distance to screen center
+    // rather than a true 3D→2D projection of the portal's world position —
+    // reasonable since the portal sits screen-centered by design, and much
+    // cheaper than projecting every frame.
+    const dist = Math.hypot(state.pointer.x, state.pointer.y)
+    const targetProximity = THREE.MathUtils.clamp(1 - dist / 0.6, 0, 1)
+    // eased toward the target rather than snapping, so it reads as the
+    // portal "responding" rather than flickering with raw mouse jitter
+    ringMaterial.uniforms.uProximity.value = THREE.MathUtils.lerp(
+      ringMaterial.uniforms.uProximity.value,
+      targetProximity,
+      Math.min(delta * 3, 1)
+    )
     if (!reducedMotion) {
       groupRef.current.rotation.z += delta * 0.045
     }
@@ -141,7 +151,6 @@ export default function Portal({
 
   return (
     <group position={center}>
-      <mesh geometry={mistGeometry} material={mistMaterial} />
       <group ref={groupRef}>
         <mesh geometry={ringGeometry} material={ringMaterial} />
       </group>

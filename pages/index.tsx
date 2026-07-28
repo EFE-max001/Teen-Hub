@@ -201,11 +201,11 @@ export default function LandingPage() {
           <section id="how-it-works" className="py-20 sm:py-28 px-4 sm:px-6 relative">
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
-                <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase">Initiation Protocol</span>
-                <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
-                  THE PATH FORWARD
+                <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Initiation Protocol</span>
+                <h2 className="glow-sweep-text font-cinzel font-semibold text-2xl sm:text-3xl md:text-4xl text-portal-moonlight mt-3 mb-4">
+                  The Path Forward
                 </h2>
-                <div className="w-20 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto" />
+                <OrnamentDivider color="#00FFA3" />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
@@ -213,18 +213,28 @@ export default function LandingPage() {
                   <div key={i} className="relative">
                     {/* Connector line */}
                     {i < STEPS.length - 1 && (
-                      <div className="hidden lg:block absolute top-10 left-full w-full h-px bg-gradient-to-r from-purple-500/30 to-transparent z-10 translate-x-[-50%]" style={{ width: 'calc(100% - 2.5rem)', left: '100%', transform: 'none', right: '-50%' }} />
+                      <div className="hidden lg:block absolute top-10 left-full w-full h-px bg-gradient-to-r from-portal-emerald/30 to-transparent z-10 translate-x-[-50%]" style={{ width: 'calc(100% - 2.5rem)', left: '100%', transform: 'none', right: '-50%' }} />
                     )}
-                    <div className="relative bg-black/60 border border-purple-500/20 p-5 sm:p-6 group hover:border-purple-500/50 hover:bg-purple-950/20 transition-all duration-300">
-                      <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-purple-500/50 group-hover:border-purple-400 transition-colors" />
-                      <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-purple-500/50 group-hover:border-purple-400 transition-colors" />
+                    <div className="relative rounded-2xl bg-white/[0.03] border border-portal-emerald/15 backdrop-blur-sm p-5 sm:p-6 group hover:border-portal-gold/40 hover:bg-portal-emerald/[0.04] transition-all duration-300 overflow-hidden">
+                      {/* Soft inner highlight sweeping in on hover, standing
+                          in for the "carved from crystal" reflection from
+                          the brief instead of flat glass */}
+                      <div className="absolute -inset-full bg-gradient-to-br from-white/[0.06] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-                      <div className="font-orbitron font-black text-5xl sm:text-6xl text-purple-500/15 group-hover:text-purple-500/30 transition-colors mb-3 leading-none">
-                        {item.step}
+                      {/* Step number as a small luminous crystal shard
+                          rather than a flat oversized numeral — a slowly
+                          rotating diamond glow ring behind Cinzel digits */}
+                      <div className="relative w-14 h-14 mb-4 flex items-center justify-center">
+                        <div className="absolute inset-0 border border-portal-gold/30 rounded-md rotate-45 animate-[spin_12s_linear_infinite] group-hover:border-portal-gold/60 transition-colors" />
+                        <div className="absolute inset-2 border border-portal-emerald/20 rounded-md rotate-45 animate-[spin_9s_linear_infinite_reverse]" />
+                        <span className="relative font-cinzel font-semibold text-xl text-portal-moonlight z-10">
+                          {item.step}
+                        </span>
                       </div>
-                      <div className="font-orbitron text-purple-400/60 text-xl mb-2">{item.icon}</div>
-                      <h3 className="font-orbitron font-bold text-sm sm:text-base text-white mb-2">{item.title}</h3>
-                      <p className="font-rajdhani text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+
+                      <div className="font-cinzel text-portal-emerald/70 text-lg mb-2">{item.icon}</div>
+                      <h3 className="font-cinzel font-semibold text-sm sm:text-base text-portal-moonlight mb-2">{item.title}</h3>
+                      <p className="font-cormorant text-slate-400 text-[15px] leading-relaxed">{item.desc}</p>
                     </div>
                   </div>
                 ))}

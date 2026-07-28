@@ -6,7 +6,6 @@ import Butterflies from './Butterflies'
 import Grid from './Grid'
 import Stars from './Stars'
 import Portal from './Portal'
-import GrassField from './GrassField'
 import HeartSeed from './HeartSeed'
 import Crystal from './Crystal'
 
@@ -101,7 +100,6 @@ export default function Scene({ reducedMotion = false }: { reducedMotion?: boole
 
       <CameraRig reducedMotion={reducedMotion} />
       <Stars isMobile={isMobile} />
-      <GrassField />
       <Grid color={COLORS.navy} />
 
       <Suspense fallback={null}>

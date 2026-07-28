@@ -27,6 +27,10 @@ type FlightConfig = {
   color: string
   colorB: string
   trail: boolean
+  // "Intelligent butterflies" — one instance in the flock ignores the
+  // procedural wander entirely and tracks the cursor instead. See the
+  // followCursor branch in Butterfly()'s useFrame below.
+  followCursor?: boolean
 }
 
 // Hand-placed so the flock reads as a loose, asymmetric cluster that
@@ -40,7 +44,7 @@ const FLOCK: Array<Omit<FlightConfig, 'color' | 'colorB' | 'trail'>> = [
   { home: new THREE.Vector3(-1.9, 2.2, 0.15), area: new THREE.Vector3(0.16, 0.1, 0.12), speed: 0.6, seed: 4.4, scale: 0.07, behavior: 'hover', orbitDir: 1 },
   { home: new THREE.Vector3(1.3, 4.0, -0.4), area: new THREE.Vector3(2.3, 0.55, 0.4), speed: 0.19, seed: 6.7, scale: 0.22, behavior: 'roam', orbitDir: -1 },
   { home: new THREE.Vector3(0.9, 1.9, 0.35), area: new THREE.Vector3(0.14, 0.08, 0.1), speed: 0.55, seed: 8.8, scale: 0.06, behavior: 'hover', orbitDir: 1 },
-  { home: new THREE.Vector3(-0.5, 4.4, -0.15), area: new THREE.Vector3(0.85, 0.3, 0.4), speed: 0.35, seed: 1.2, scale: 0.12, behavior: 'orbit', orbitDir: -1 },
+  { home: new THREE.Vector3(-0.5, 4.4, -0.15), area: new THREE.Vector3(0.85, 0.3, 0.4), speed: 0.35, seed: 1.2, scale: 0.12, behavior: 'orbit', orbitDir: -1, followCursor: true },
   { home: new THREE.Vector3(0.3, 1.75, 0.5), area: new THREE.Vector3(0.18, 0.1, 0.12), speed: 0.5, seed: 3.5, scale: 0.08, behavior: 'hover', orbitDir: 1 },
   { home: new THREE.Vector3(-0.8, 3.0, 0.2), area: new THREE.Vector3(1.8, 0.4, 0.35), speed: 0.28, seed: 5.9, scale: 0.13, behavior: 'roam', orbitDir: 1 },
   { home: new THREE.Vector3(2.1, 3.9, 0.2), area: new THREE.Vector3(0.13, 0.08, 0.1), speed: 0.62, seed: 7.3, scale: 0.065, behavior: 'hover', orbitDir: 1 },
@@ -101,6 +105,8 @@ function wanderOffset(t: number, seed: number, area: THREE.Vector3, out: THREE.V
 
 const _pos = new THREE.Vector3()
 const _tmp = new THREE.Vector3()
+const _cursorVec = new THREE.Vector3()
+const _cursorDir = new THREE.Vector3()
 
 // The wingtip isn't at a fixed offset we can hardcode — it's whichever
 // corner of the wing mesh's own bounding box sits farthest from the wing's
@@ -225,6 +231,9 @@ function Butterfly({ config }: { config: FlightConfig }) {
     }
   }, [cloned, actions, mixer, wingMaterial, config.trail])
 
+  const prevPos = useRef(new THREE.Vector3())
+  const hasPrevPos = useRef(false)
+
   useFrame((state, delta) => {
     wingMaterial.uniforms.uTime.value = state.clock.elapsedTime
     mixer.update(delta)
@@ -233,18 +242,57 @@ function Butterfly({ config }: { config: FlightConfig }) {
     if (!g) return
     const t = state.clock.elapsedTime
 
-    flightPosition(config, t, _pos)
-    g.position.copy(_pos)
+    let vx: number
+    let vy: number
+    let vz: number
 
-    // heading from a tiny central-difference sample of the same position
-    // function — real velocity-based banking instead of a fixed rotation
-    // formula, so turns actually look like turns and every butterfly's
-    // orientation is a consequence of where it's actually going.
-    const dt = 0.05
-    flightPosition(config, t - dt, _tmp)
-    const vx = _pos.x - _tmp.x
-    const vy = _pos.y - _tmp.y
-    const vz = _pos.z - _tmp.z
+    if (config.followCursor) {
+      // Unproject the cursor to a world-space point at a fixed depth near
+      // the portal, so the butterfly actually flies to where the cursor
+      // visually appears on screen rather than an approximate 2D offset.
+      _cursorVec.set(state.pointer.x, state.pointer.y, 0.5).unproject(state.camera)
+      _cursorDir.copy(_cursorVec).sub(state.camera.position).normalize()
+      const targetZ = 0.4
+      const dist = (targetZ - state.camera.position.z) / _cursorDir.z
+      _pos.copy(state.camera.position).addScaledVector(_cursorDir, dist)
+      // clamped so a grazing cursor angle can't send it flying wildly off
+      // to the sides — it should track the cursor, not chase it off-screen
+      _pos.x = THREE.MathUtils.clamp(_pos.x, -3.2, 3.2)
+      _pos.y = THREE.MathUtils.clamp(_pos.y, 1.2, 4.4)
+
+      // lags behind the cursor rather than snapping to it — "follows",
+      // not "teleports onto"
+      g.position.lerp(_pos, Math.min(delta * 2.2, 1))
+    } else {
+      flightPosition(config, t, _pos)
+      g.position.copy(_pos)
+    }
+
+    if (config.followCursor) {
+      // heading from actual frame-to-frame displacement, since there's no
+      // pure position-as-function-of-time to finite-difference here
+      if (hasPrevPos.current) {
+        vx = g.position.x - prevPos.current.x
+        vy = g.position.y - prevPos.current.y
+        vz = g.position.z - prevPos.current.z
+      } else {
+        vx = 0
+        vy = 0
+        vz = 0
+        hasPrevPos.current = true
+      }
+      prevPos.current.copy(g.position)
+    } else {
+      // heading from a tiny central-difference sample of the same position
+      // function — real velocity-based banking instead of a fixed rotation
+      // formula, so turns actually look like turns and every butterfly's
+      // orientation is a consequence of where it's actually going.
+      const dt = 0.05
+      flightPosition(config, t - dt, _tmp)
+      vx = _pos.x - _tmp.x
+      vy = _pos.y - _tmp.y
+      vz = _pos.z - _tmp.z
+    }
 
     const yaw = Math.atan2(vx, vz || 1e-4) + BASE_YAW
     // sharper turn response than a smooth glider — butterflies bank hard
@@ -306,7 +354,16 @@ export default function Butterflies({
     // is trimmed down — the text column sits near x≈0, so this keeps
     // butterflies framing the hero instead of flying through the headline.
     const sorted = [...FLOCK].sort((a, b) => Math.abs(b.home.x) - Math.abs(a.home.x))
-    return sorted.slice(0, n).map((f, i) => ({
+    // The cursor-follower's home position is small-|x| (it's irrelevant to
+    // its actual flight, which ignores `home` entirely) and would
+    // otherwise almost always get cut by the sort above — guarantee it
+    // survives the trim instead of leaving it to chance.
+    const follower = FLOCK.find(f => f.followCursor)
+    const rest = sorted.filter(f => !f.followCursor)
+    const picked = follower && !reducedMotion
+      ? [follower, ...rest.slice(0, Math.max(n - 1, 0))]
+      : rest.slice(0, n)
+    return picked.map((f, i) => ({
       ...f,
       color: colors[i % colors.length],
       colorB: colors[(i + 1) % colors.length],
@@ -315,7 +372,10 @@ export default function Butterflies({
       // trail on a tiny hovering butterfly just looks like noise
       trail: !reducedMotion && f.behavior !== 'hover' && f.scale > 0.09,
       // reduced motion keeps things alive (wings still flap via the baked
-      // clip, gentle hover stays on) but drops long-distance travel
+      // clip, gentle hover stays on) but drops long-distance travel — and
+      // disables cursor-following entirely, since chasing the mouse is
+      // exactly the kind of motion prefers-reduced-motion asks to avoid
+      followCursor: reducedMotion ? false : f.followCursor,
       behavior: reducedMotion ? ('hover' as Behavior) : f.behavior,
       area: reducedMotion ? f.area.clone().multiplyScalar(0.3) : f.area,
     }))

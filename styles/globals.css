@@ -105,3 +105,20 @@ h1, h2, h3, h4, h5, h6 {
 @media (prefers-reduced-motion: reduce) {
   .nav-pulse { animation: none; opacity: 0; }
 }
+
+/* ── Living typography — a soft glow sweeps across text on hover ── */
+.glow-sweep-text {
+  background-image: linear-gradient(100deg, currentColor 35%, #FFC65C 50%, currentColor 65%);
+  background-size: 250% 100%;
+  background-position: 200% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: background-position 1.1s ease;
+}
+.glow-sweep-text:hover {
+  background-position: -50% 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .glow-sweep-text { transition: none; }
+}
