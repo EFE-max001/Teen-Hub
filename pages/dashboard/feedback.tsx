@@ -1,3 +1,4 @@
+// Teen-Hub/pages/dashboard/feedback.tsx
 import { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/dashboard/DashboardLayout'
 import GlowButton from '@/components/ui/GlowButton'
@@ -95,7 +96,7 @@ export default function FeedbackPage() {
 
         {/* Header */}
         <div>
-          <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.4em] uppercase">Communications</span>
+          <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.4em] uppercase">Communications</span>
           <h1 className="font-orbitron font-black text-xl sm:text-2xl text-white mt-1">FEEDBACK</h1>
           <p className="font-rajdhani text-slate-400 text-sm mt-1">
             Send feedback, bug reports, or suggestions to the Founder. You'll get a reply here.
@@ -103,17 +104,17 @@ export default function FeedbackPage() {
         </div>
 
         {/* Submit form */}
-        <div className="relative bg-card-bg border border-purple-500/20 p-5 sm:p-6">
-          <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-purple-500/40" />
-          <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-purple-500/40" />
+        <div className="relative bg-portal-black/70 border border-portal-emerald/20 p-5 sm:p-6">
+          <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-portal-emerald/40" />
+          <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-portal-emerald/40" />
           <h2 className="font-orbitron font-bold text-sm text-white mb-4">SUBMIT FEEDBACK</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="font-orbitron text-[9px] text-purple-400 tracking-widest uppercase block mb-2">Type</label>
+              <label className="font-orbitron text-[9px] text-portal-emerald tracking-widest uppercase block mb-2">Type</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="w-full bg-black/60 border border-purple-500/20 text-white font-rajdhani text-sm px-3 py-2.5 focus:outline-none focus:border-purple-500/50"
+                className="w-full bg-black/60 border border-portal-emerald/20 text-white font-rajdhani text-sm px-3 py-2.5 focus:outline-none focus:border-portal-emerald/50"
               >
                 {TYPES.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -121,13 +122,13 @@ export default function FeedbackPage() {
               </select>
             </div>
             <div>
-              <label className="font-orbitron text-[9px] text-purple-400 tracking-widest uppercase block mb-2">Message</label>
+              <label className="font-orbitron text-[9px] text-portal-emerald tracking-widest uppercase block mb-2">Message</label>
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={5}
                 placeholder="Be specific and clear. The Founder reads every message."
-                className="w-full bg-black/60 border border-purple-500/20 text-white font-rajdhani text-sm px-3 py-2.5 resize-none focus:outline-none focus:border-purple-500/50 placeholder-slate-600"
+                className="w-full bg-black/60 border border-portal-emerald/20 text-white font-rajdhani text-sm px-3 py-2.5 resize-none focus:outline-none focus:border-portal-emerald/50 placeholder-slate-600"
               />
             </div>
             {error && <p className="font-rajdhani text-red-400 text-sm">{error}</p>}
@@ -148,11 +149,11 @@ export default function FeedbackPage() {
           ) : (
             <div className="space-y-4">
               {feedbacks.map((fb) => (
-                <div key={fb.id} className="relative bg-card-bg border border-purple-500/15 p-4 sm:p-5">
-                  <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/30" />
+                <div key={fb.id} className="relative bg-portal-black/70 border border-portal-emerald/15 p-4 sm:p-5">
+                  <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/30" />
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-orbitron text-[9px] text-purple-400 tracking-widest">{fb.type}</span>
+                      <span className="font-orbitron text-[9px] text-portal-emerald tracking-widest">{fb.type}</span>
                       <span className={`font-orbitron text-[8px] border px-1.5 py-0.5 ${STATUS_COLORS[fb.status] || STATUS_COLORS.OPEN}`}>
                         {fb.status}
                       </span>
@@ -165,11 +166,11 @@ export default function FeedbackPage() {
 
                   {/* Replies */}
                   {fb.replies.length > 0 && (
-                    <div className="border-t border-purple-500/15 pt-3 space-y-2">
+                    <div className="border-t border-portal-emerald/15 pt-3 space-y-2">
                       {fb.replies.map((r) => (
-                        <div key={r.id} className="bg-purple-950/20 border border-purple-500/20 p-3">
+                        <div key={r.id} className="bg-portal-black/40 border border-portal-emerald/20 p-3">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-orbitron text-[8px] text-purple-400">
+                            <span className="font-orbitron text-[8px] text-portal-emerald">
                               {roleLabel(r.author.role)} {r.author.nickname || r.author.name}
                             </span>
                             <span className="font-rajdhani text-[9px] text-slate-600">

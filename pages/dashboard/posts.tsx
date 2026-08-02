@@ -1,3 +1,4 @@
+// Teen-Hub/pages/dashboard/posts.tsx
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { useSession } from 'next-auth/react'
@@ -77,7 +78,7 @@ export default function PostsPage() {
           </div>
 
           {showForm && (
-            <div className="bg-[#0d0017] border border-purple-500/30 p-5 flex flex-col gap-4">
+            <div className="bg-[#03060A] border border-portal-emerald/30 p-5 flex flex-col gap-4">
               <h2 className="font-orbitron font-bold text-sm text-white tracking-widest">NEW POST</h2>
               <GlowInput
                 label="Title (optional)"
@@ -94,11 +95,11 @@ export default function PostsPage() {
               />
               <div className="flex flex-wrap gap-4 items-center">
                 <div>
-                  <label className="font-orbitron text-[9px] text-purple-400/60 tracking-widest uppercase block mb-1">Visibility</label>
+                  <label className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase block mb-1">Visibility</label>
                   <select
                     value={form.visibility}
                     onChange={e => setForm(f => ({ ...f, visibility: e.target.value }))}
-                    className="bg-[#0a0010] border border-purple-500/30 text-slate-300 font-rajdhani text-sm px-3 py-1.5"
+                    className="bg-[#0a0010] border border-portal-emerald/30 text-slate-300 font-rajdhani text-sm px-3 py-1.5"
                   >
                     <option value="PUBLIC">Public</option>
                     <option value="MEMBERS_ONLY">Members Only</option>
@@ -111,7 +112,7 @@ export default function PostsPage() {
                       type="checkbox"
                       checked={form.isAnonymous}
                       onChange={e => setForm(f => ({ ...f, isAnonymous: e.target.checked }))}
-                      className="w-4 h-4 accent-purple-500"
+                      className="w-4 h-4 accent-portal-emerald"
                     />
                     <span className="font-rajdhani text-sm text-slate-400">Post anonymously</span>
                   </label>
@@ -131,7 +132,7 @@ export default function PostsPage() {
 
           {loading ? (
             <div className="flex justify-center py-16">
-              <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-400 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-portal-emerald/30 border-t-portal-emerald rounded-full animate-spin" />
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-20">
@@ -147,8 +148,8 @@ export default function PostsPage() {
                 return (
                   <div
                     key={post.id}
-                    className={`bg-[#0d0017] border p-5 flex flex-col gap-3 ${
-                      post.isPinned ? 'border-amber-500/40' : 'border-purple-500/20'
+                    className={`bg-[#03060A] border p-5 flex flex-col gap-3 ${
+                      post.isPinned ? 'border-amber-500/40' : 'border-portal-emerald/20'
                     }`}
                   >
                     {post.isPinned && (
@@ -166,7 +167,7 @@ export default function PostsPage() {
                             {post.author?.nickname || 'Anonymous'}
                           </span>
                           {post.author?.activeTitle && (
-                            <span className="font-rajdhani text-xs text-purple-400 italic">
+                            <span className="font-rajdhani text-xs text-portal-emerald italic">
                               "{post.author.activeTitle}"
                             </span>
                           )}

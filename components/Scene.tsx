@@ -1,3 +1,4 @@
+// Teen-Hub/components/Scene.tsx
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
@@ -79,10 +80,25 @@ function CameraRig({ reducedMotion = false }: { reducedMotion?: boolean }) {
   return null
 }
 
-export default function Scene({ reducedMotion = false }: { reducedMotion?: boolean }) {
+export default function Scene({
+  reducedMotion = false,
+  progress = 0,
+}: {
+  reducedMotion?: boolean
+  progress?: number
+}) {
   const isMobile = useIsMobile()
 
   const dpr = useMemo<[number, number]>(() => (isMobile ? [1, 1.5] : [1, 2]), [isMobile])
+
+  // "The World Evolves" — per the brief, more butterflies inhabit the
+  // scene and crystals brighten as a member's rank climbs. Base counts
+  // stay exactly what they were for guests/rank F (progress = 0), so
+  // nothing changes for anyone who hasn't earned rank yet.
+  const baseButterflyCount = isMobile ? 6 : 11
+  const maxButterflyBonus = isMobile ? 4 : 6
+  const butterflyCount = Math.min(15, Math.round(baseButterflyCount + progress * maxButterflyBonus))
+  const crystalBrightness = 1 + progress * 0.6
 
   return (
     <Canvas
@@ -105,11 +121,11 @@ export default function Scene({ reducedMotion = false }: { reducedMotion?: boole
       <Suspense fallback={null}>
         <Portal center={[0, 2.4, -0.3]} radius={1.9} reducedMotion={reducedMotion} />
         <HeartSeed position={[0, 2.4, -0.3]} glowColor={COLORS.gold} reducedMotion={reducedMotion} />
-        <Crystal position={[2.6, 3.6, -0.8]} color={COLORS.cyan} scale={0.8} reducedMotion={reducedMotion} />
+        <Crystal position={[2.6, 3.6, -0.8]} color={COLORS.cyan} scale={0.8} reducedMotion={reducedMotion} brightness={crystalBrightness} />
         <Butterflies
           colors={[COLORS.cyan, COLORS.violet, COLORS.emerald, COLORS.gold]}
           reducedMotion={reducedMotion}
-          count={isMobile ? 6 : 11}
+          count={butterflyCount}
         />
       </Suspense>
 

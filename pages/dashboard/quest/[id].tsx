@@ -1,3 +1,4 @@
+// Teen-Hub/pages/dashboard/quest/[id].tsx
 import { useState } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
@@ -66,17 +67,15 @@ export default function QuestDetailPage({ quest, myClaim, slotsFilled, slotsTota
         <div className="max-w-3xl mx-auto flex flex-col gap-6">
 
           <div className="flex items-center gap-3">
-            <Link href="/dashboard/quests" className="font-rajdhani text-slate-600 hover:text-purple-400 text-sm transition-colors">
+            <Link href="/dashboard/quests" className="font-rajdhani text-slate-600 hover:text-portal-emerald text-sm transition-colors">
               ← Quest Board
             </Link>
           </div>
 
-          <div className="relative bg-[#0d0017] border border-purple-500/20 p-6 sm:p-8 overflow-hidden">
-            <span className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-purple-500/50" />
-            <span className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-purple-500/50" />
+          <div className="relative bg-portal-black/70 backdrop-blur-md rounded-xl border border-portal-emerald/20 p-6 sm:p-8 overflow-hidden">
 
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              <span className="font-orbitron text-[9px] border border-purple-500/30 bg-purple-900/20 text-purple-400 px-2 py-0.5 tracking-widest">
+              <span className="font-orbitron text-[9px] border border-portal-emerald/30 bg-portal-emerald/[0.020] text-portal-emerald px-2 py-0.5 tracking-widest">
                 {quest.category}
               </span>
               {quest.difficulty && (
@@ -96,7 +95,7 @@ export default function QuestDetailPage({ quest, myClaim, slotsFilled, slotsTota
                 myClaim ? (
                   myClaim.status === 'APPROVED' ? 'text-green-400 border-green-500/40' :
                   myClaim.status === 'REJECTED' ? 'text-red-400 border-red-500/40' :
-                  myClaim.status === 'SUBMITTED' ? 'text-purple-400 border-purple-500/40' :
+                  myClaim.status === 'SUBMITTED' ? 'text-portal-emerald border-portal-emerald/40' :
                   'text-yellow-400 border-yellow-500/40'
                 ) : quest.status === 'OPEN' ? 'text-green-400 border-green-500/40' : 'text-slate-500 border-slate-700'
               }`}>
@@ -106,10 +105,10 @@ export default function QuestDetailPage({ quest, myClaim, slotsFilled, slotsTota
 
             <h1 className="font-orbitron font-black text-xl sm:text-2xl text-white mb-4 leading-tight">{quest.title}</h1>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6 p-4 bg-black/30 border border-purple-500/10">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6 p-4 bg-black/30 border border-portal-emerald/10">
               <div>
                 <div className="font-orbitron text-[9px] text-slate-600 tracking-widest uppercase">XP Reward</div>
-                <div className="font-orbitron font-black text-lg text-purple-400 mt-1">+{quest.rewardXp}</div>
+                <div className="font-orbitron font-black text-lg text-portal-emerald mt-1">+{quest.rewardXp}</div>
               </div>
               {quest.cashReward != null && (
                 <div>
@@ -132,7 +131,7 @@ export default function QuestDetailPage({ quest, myClaim, slotsFilled, slotsTota
             </div>
 
             <div className="mb-6">
-              <h3 className="font-orbitron text-xs text-purple-400 tracking-widest uppercase mb-3">Mission Briefing</h3>
+              <h3 className="font-orbitron text-xs text-portal-emerald tracking-widest uppercase mb-3">Mission Briefing</h3>
               <div className="font-rajdhani text-slate-300 leading-relaxed whitespace-pre-wrap">{quest.instructions}</div>
             </div>
 
@@ -162,8 +161,8 @@ export default function QuestDetailPage({ quest, myClaim, slotsFilled, slotsTota
             )}
 
             {isSubmitted && (
-              <div className="mb-6 p-4 border border-purple-500/20 bg-purple-950/10">
-                <h3 className="font-orbitron text-xs text-purple-400 tracking-widest uppercase mb-2">Awaiting Review</h3>
+              <div className="mb-6 p-4 border border-portal-emerald/20 bg-portal-black/10">
+                <h3 className="font-orbitron text-xs text-portal-emerald tracking-widest uppercase mb-2">Awaiting Review</h3>
                 <p className="font-rajdhani text-sm text-slate-400">
                   Your submission was sent on {myClaim.submittedAt ? new Date(myClaim.submittedAt).toLocaleString() : 'recently'}. You'll be notified once it's reviewed.
                 </p>
@@ -202,7 +201,7 @@ export default function QuestDetailPage({ quest, myClaim, slotsFilled, slotsTota
               </div>
             )}
 
-            <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-purple-500/10">
+            <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-portal-emerald/10">
               {canClaim && (
                 <GlowButton variant="primary" size="md" loading={claiming} onClick={handleClaim}>
                   Apply for Quest

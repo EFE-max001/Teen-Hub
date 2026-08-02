@@ -1,3 +1,4 @@
+// Teen-Hub/components/dashboard/DashboardLayout.tsx
 import { ReactNode, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -168,24 +169,24 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-5 border-b border-purple-500/15">
+      <div className="px-4 py-5 border-b border-portal-emerald/15">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative w-7 h-7 flex-shrink-0">
-            <div className="absolute inset-0 bg-purple-600/30 rotate-45 group-hover:bg-purple-500/50 transition-all" />
-            <span className="absolute inset-0 flex items-center justify-center text-purple-300 font-orbitron font-black text-[10px]">Q</span>
+            <div className="absolute inset-0 bg-portal-emerald/20 rotate-45 group-hover:bg-portal-emerald/40 transition-all" />
+            <span className="absolute inset-0 flex items-center justify-center text-portal-emerald font-orbitron font-black text-[10px]">Q</span>
           </div>
           <div>
             <div className="font-orbitron font-black text-white text-xs tracking-widest">QUESTHUB</div>
-            <div className="font-rajdhani text-purple-400 text-[10px] tracking-[0.3em]">GUILD</div>
+            <div className="font-rajdhani text-portal-emerald text-[10px] tracking-[0.3em]">GUILD</div>
           </div>
         </Link>
       </div>
 
       {session?.user && (
-        <div className="px-4 py-4 border-b border-purple-500/15">
+        <div className="px-4 py-4 border-b border-portal-emerald/15">
           <div className="flex items-center gap-3">
             {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover border border-purple-500/40 flex-shrink-0" />
+              <img src={avatarUrl} alt="" className="w-9 h-9 rounded-full object-cover border border-portal-emerald/40 flex-shrink-0" />
             ) : (
               <RankBadge rank={session.user.rank} size="sm" />
             )}
@@ -226,7 +227,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
               <div
                 key={item.href}
                 title={item.lockReason}
-                className="flex items-center gap-3 px-3 py-2.5 border border-transparent text-slate-700 cursor-not-allowed relative group"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-transparent text-slate-700 cursor-not-allowed relative group"
               >
                 <span className="text-base flex-shrink-0 text-slate-800">{item.icon}</span>
                 <span className="font-rajdhani font-semibold text-sm tracking-wide line-through decoration-slate-800">
@@ -234,8 +235,8 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                 </span>
                 <span className="ml-auto text-slate-800 text-xs flex-shrink-0">🔒</span>
                 {item.lockReason && (
-                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 w-44 bg-[#0d0017] border border-purple-500/30 px-2.5 py-2 z-50 hidden group-hover:block shadow-xl">
-                    <p className="font-rajdhani text-xs text-purple-300/80 leading-snug">{item.lockReason}</p>
+                  <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 w-44 bg-portal-black/90 backdrop-blur-md rounded-lg border border-portal-emerald/30 px-2.5 py-2 z-50 hidden group-hover:block shadow-xl">
+                    <p className="font-rajdhani text-xs text-portal-emerald/80 leading-snug">{item.lockReason}</p>
                   </div>
                 )}
               </div>
@@ -248,17 +249,17 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
               href={item.href}
               onClick={() => setSidebarOpen(false)}
               className={`
-                flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group
+                flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group
                 ${active
-                  ? 'bg-purple-900/40 border border-purple-500/40 text-purple-200 shadow-[0_0_15px_rgba(168,85,247,0.1)]'
-                  : 'border border-transparent text-slate-500 hover:text-slate-300 hover:bg-purple-900/20 hover:border-purple-500/20'
+                  ? 'bg-portal-emerald/10 border border-portal-emerald/40 text-portal-moonlight shadow-[0_0_15px_rgba(0,255,163,0.12)]'
+                  : 'border border-transparent text-slate-500 hover:text-slate-300 hover:bg-portal-emerald/[0.06] hover:border-portal-emerald/20'
                 }
               `}
             >
               {active && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-purple-400" />
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-portal-emerald" />
               )}
-              <span className={`text-base flex-shrink-0 ${active ? 'text-purple-400' : 'text-slate-600 group-hover:text-slate-400'}`}>
+              <span className={`text-base flex-shrink-0 ${active ? 'text-portal-emerald' : 'text-slate-600 group-hover:text-slate-400'}`}>
                 {item.icon}
               </span>
               <span className="font-rajdhani font-semibold text-sm tracking-wide">{item.label}</span>
@@ -279,7 +280,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={`
-                    flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group
+                    flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 relative group
                     ${active
                       ? item.founderOnly
                         ? 'bg-amber-900/30 border border-amber-500/40 text-amber-200'
@@ -302,7 +303,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
         )}
       </nav>
 
-      <div className="px-3 py-4 border-t border-purple-500/15 flex flex-col gap-1">
+      <div className="px-3 py-4 border-t border-portal-emerald/15 flex flex-col gap-1">
         <Link
           href="/"
           className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-400 transition-colors"
@@ -322,7 +323,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
             the admin/founder login form instead of the public landing page. */}
         <button
           onClick={() => signOut({ callbackUrl: typeof window !== 'undefined' ? window.location.origin + '/admin-login' : '/admin-login', redirect: true })}
-          className="flex items-center gap-3 px-3 py-2 text-slate-800 hover:text-purple-500 transition-colors w-full text-left text-[10px] tracking-widest"
+          className="flex items-center gap-3 px-3 py-2 text-slate-800 hover:text-portal-emerald transition-colors w-full text-left text-[10px] tracking-widest"
           title="Switch account"
         >
           <span className="text-sm">⇄</span>
@@ -334,15 +335,15 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
 
   return (
     <div className="min-h-screen bg-transparent flex">
-      <aside className="hidden md:flex flex-col w-56 lg:w-60 bg-[#08000f] border-r border-purple-500/15 fixed top-0 left-0 bottom-0 z-40">
+      <aside className="hidden md:flex flex-col w-56 lg:w-60 crystal-glass bg-portal-black/85 backdrop-blur-md border-r border-portal-emerald/15 fixed top-0 left-0 bottom-0 z-40">
         <SidebarContent />
       </aside>
 
       {sidebarOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
-          <div className="w-60 bg-[#08000f] border-r border-purple-500/15 flex flex-col">
-            <div className="flex items-center justify-between px-4 py-4 border-b border-purple-500/15">
-              <span className="font-orbitron text-xs text-purple-400 tracking-widest">NAVIGATION</span>
+          <div className="w-60 bg-portal-black/85 backdrop-blur-md border-r border-portal-emerald/15 flex flex-col">
+            <div className="flex items-center justify-between px-4 py-4 border-b border-portal-emerald/15">
+              <span className="font-orbitron text-xs text-portal-emerald tracking-widest">NAVIGATION</span>
               <button onClick={() => setSidebarOpen(false)} className="text-slate-500 hover:text-white text-xl">✕</button>
             </div>
             <SidebarContent />
@@ -352,11 +353,11 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
       )}
 
       <div className="flex-1 md:ml-56 lg:ml-60 flex flex-col min-h-screen">
-        <header className="sticky top-0 z-30 bg-[#08000f]/90 backdrop-blur-md border-b border-purple-500/15 px-4 sm:px-6 h-14 flex items-center justify-between">
+        <header className="sticky top-0 z-30 bg-portal-black/80 backdrop-blur-md border-b border-portal-emerald/15 px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="md:hidden text-slate-500 hover:text-purple-300 transition-colors p-1"
+              className="md:hidden text-slate-500 hover:text-portal-emerald transition-colors p-1"
               aria-label="Open menu"
             >
               <div className="flex flex-col gap-1">
@@ -374,11 +375,11 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
           </div>
 
           <div className="flex items-center gap-3">
-            <Link href="/dashboard/feedback" className="text-slate-600 hover:text-purple-300 transition-colors" title="Feedback">
+            <Link href="/dashboard/feedback" className="text-slate-600 hover:text-portal-emerald transition-colors" title="Feedback">
               <span className="text-base">◍</span>
             </Link>
             {ROLE_LEVEL[userRole] >= ROLE_LEVEL['ACCEPTED_MEMBER'] && (
-              <Link href="/dashboard/messages" className="text-slate-500 hover:text-purple-300 transition-colors" title="Messages">
+              <Link href="/dashboard/messages" className="text-slate-500 hover:text-portal-emerald transition-colors" title="Messages">
                 <span className="text-lg">◎</span>
               </Link>
             )}
@@ -402,11 +403,11 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                 {bellOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setBellOpen(false)} />
-                    <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto bg-[#0d0017] border border-purple-500/30 shadow-xl z-50">
-                      <div className="flex items-center justify-between px-3 py-2.5 border-b border-purple-500/15 sticky top-0 bg-[#0d0017]">
-                        <span className="font-orbitron text-[10px] text-purple-400 tracking-widest uppercase">Notifications</span>
+                    <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto bg-portal-black/90 backdrop-blur-md rounded-xl border border-portal-emerald/30 shadow-xl z-50">
+                      <div className="flex items-center justify-between px-3 py-2.5 border-b border-portal-emerald/15 sticky top-0 bg-portal-black/90 backdrop-blur-md rounded-t-xl">
+                        <span className="font-orbitron text-[10px] text-portal-emerald tracking-widest uppercase">Notifications</span>
                         {unreadCount > 0 && (
-                          <button onClick={markAllRead} className="font-orbitron text-[9px] text-slate-500 hover:text-purple-300 tracking-wider">
+                          <button onClick={markAllRead} className="font-orbitron text-[9px] text-slate-500 hover:text-portal-emerald tracking-wider">
                             MARK ALL READ
                           </button>
                         )}
@@ -418,7 +419,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                           <button
                             key={n.id}
                             onClick={() => openNotification(n)}
-                            className={`w-full text-left px-3 py-2.5 border-b border-purple-500/5 last:border-0 transition-colors hover:bg-purple-900/15 ${!n.read ? 'bg-purple-900/10' : ''}`}
+                            className={`w-full text-left px-3 py-2.5 border-b border-portal-emerald/5 last:border-0 transition-colors hover:bg-portal-emerald/[0.05] ${!n.read ? 'bg-portal-emerald/[0.04]' : ''}`}
                           >
                             <div className="flex items-start gap-2">
                               {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 flex-shrink-0" />}

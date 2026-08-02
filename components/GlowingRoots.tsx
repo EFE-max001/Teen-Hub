@@ -1,3 +1,4 @@
+// Teen-Hub/components/GlowingRoots.tsx
 // components/GlowingRoots.tsx
 //
 // Layers Three & Four: organic glowing roots growing upward from the base
@@ -25,6 +26,21 @@ function buildRoots(w: number, h: number): RootPath[] {
   ]
 }
 
+// "The World Evolves" — per the brief: "more roots appear" as a member
+// progresses. These are extra branch offshoots layered on top of the base
+// five, unlocked in tiers as `growth` (0–1, driven by rank) climbs — so a
+// brand-new guest sees exactly the original five roots, and a top-ranked
+// member sees a noticeably fuller root system.
+function buildGrowthRoots(w: number, h: number): RootPath[] {
+  const [emerald, cyan, gold, violet] = ['#00FFA3', '#00E5FF', '#FFC65C', '#8B5CF6']
+  return [
+    { d: `M ${w * 0.15} ${h * 0.74} C ${w * 0.19} ${h * 0.68}, ${w * 0.22} ${h * 0.66}, ${w * 0.24} ${h * 0.58}`, color: gold, delay: 0.2, duration: 4 },
+    { d: `M ${w * 0.84} ${h * 0.73} C ${w * 0.8} ${h * 0.66}, ${w * 0.78} ${h * 0.63}, ${w * 0.76} ${h * 0.56}`, color: emerald, delay: 0.4, duration: 4.3 },
+    { d: `M ${w * 0.01} ${h * 0.76} C ${w * -0.01} ${h * 0.68}, ${w * 0.01} ${h * 0.64}, ${w * 0.03} ${h * 0.55}`, color: cyan, delay: 0.8, duration: 4.6 },
+    { d: `M ${w * 0.51} ${h * 0.82} C ${w * 0.53} ${h * 0.74}, ${w * 0.5} ${h * 0.7}, ${w * 0.52} ${h * 0.6}`, color: violet, delay: 1.5, duration: 5.2 },
+  ]
+}
+
 // Percentage-based viewBox (0–100) rather than a fixed 1200×800 one — with
 // preserveAspectRatio="none" this maps 1:1 to the actual container's own
 // width/height, so the curves stay anchored near the bottom edge on any
@@ -34,8 +50,21 @@ function buildRoots(w: number, h: number): RootPath[] {
 const W = 100
 const H = 100
 
-export default function GlowingRoots({ reducedMotion = false }: { reducedMotion?: boolean }) {
+export default function GlowingRoots({
+  reducedMotion = false,
+  growth = 0,
+}: {
+  reducedMotion?: boolean
+  growth?: number
+}) {
   const roots = useMemo(() => buildRoots(W, H), [])
+  const growthRoots = useMemo(() => buildGrowthRoots(W, H), [])
+  // Unlock the four bonus roots one at a time as growth climbs, rather
+  // than all-at-once at some threshold — feels like gradual progress
+  // instead of a single jarring change.
+  const unlockedCount = Math.round(growth * growthRoots.length)
+  const visibleGrowthRoots = growthRoots.slice(0, unlockedCount)
+  const baseOpacity = 0.35 + growth * 0.15
 
   return (
     <svg
@@ -53,7 +82,7 @@ export default function GlowingRoots({ reducedMotion = false }: { reducedMotion?
           </feMerge>
         </filter>
       </defs>
-      {roots.map((r, i) => (
+      {[...roots, ...visibleGrowthRoots].map((r, i) => (
         <g key={i}>
           <path
             d={r.d}
@@ -62,7 +91,7 @@ export default function GlowingRoots({ reducedMotion = false }: { reducedMotion?
             strokeWidth={0.18}
             strokeLinecap="round"
             filter="url(#root-glow)"
-            opacity={0.35}
+            opacity={baseOpacity}
             style={
               reducedMotion
                 ? undefined

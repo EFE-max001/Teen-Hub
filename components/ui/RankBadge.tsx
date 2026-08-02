@@ -1,3 +1,4 @@
+// Teen-Hub/components/ui/RankBadge.tsx
 interface RankBadgeProps {
   rank: string
   size?: 'sm' | 'md' | 'lg'
@@ -10,7 +11,7 @@ const RANK_CONFIG: Record<string, { color: string; glow: string; label: string; 
   D:   { color: 'text-blue-400',    glow: 'shadow-[0_0_10px_rgba(96,165,250,0.3)]',          label: 'Specialist',border: 'border-blue-600/50'  },
   C:   { color: 'text-yellow-400',  glow: 'shadow-[0_0_10px_rgba(250,204,21,0.3)]',          label: 'Vanguard',  border: 'border-yellow-600/50'},
   B:   { color: 'text-orange-400',  glow: 'shadow-[0_0_10px_rgba(251,146,60,0.3)]',          label: 'Commander', border: 'border-orange-600/50'},
-  A:   { color: 'text-purple-400',  glow: 'shadow-[0_0_15px_rgba(168,85,247,0.5)]',          label: 'Elite',     border: 'border-purple-500/60'},
+  A:   { color: 'text-portal-emerald',  glow: 'shadow-[0_0_15px_rgba(0,255,163,0.5)]',          label: 'Elite',     border: 'border-portal-emerald/60'},
   S:   { color: 'text-pink-400',    glow: 'shadow-[0_0_20px_rgba(244,114,182,0.6)]',         label: 'Sovereign', border: 'border-pink-500/60'  },
   SS:  { color: 'text-red-400',     glow: 'shadow-[0_0_25px_rgba(248,113,113,0.7)]',         label: 'Warlord',   border: 'border-red-500/60'   },
   SSS: { color: 'text-amber-300',   glow: 'shadow-[0_0_30px_rgba(252,211,77,0.8)]',          label: 'Mythic',    border: 'border-amber-400/70' },

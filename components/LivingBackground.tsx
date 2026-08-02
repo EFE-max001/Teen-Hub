@@ -1,3 +1,4 @@
+// Teen-Hub/components/LivingBackground.tsx
 // components/LivingBackground.tsx
 //
 // Phase 1 composite. Stacks the new lightweight atmosphere layers around
@@ -15,14 +16,20 @@ import ParticleNetwork from './ParticleNetwork'
 // R3F touches WebGL/canvas APIs that don't exist on the server.
 const Scene = dynamic(() => import('./Scene'), { ssr: false })
 
-export default function LivingBackground({ reducedMotion = false }: { reducedMotion?: boolean }) {
+export default function LivingBackground({
+  reducedMotion = false,
+  progress = 0,
+}: {
+  reducedMotion?: boolean
+  progress?: number
+}) {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       <FogLayer />
       <div className="absolute inset-0 pointer-events-auto">
-        <Scene reducedMotion={reducedMotion} />
+        <Scene reducedMotion={reducedMotion} progress={progress} />
       </div>
-      <GlowingRoots reducedMotion={reducedMotion} />
+      <GlowingRoots reducedMotion={reducedMotion} growth={progress} />
       <ParticleNetwork reducedMotion={reducedMotion} />
     </div>
   )

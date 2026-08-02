@@ -1,3 +1,4 @@
+// Teen-Hub/pages/admin-login.tsx
 import { useState } from 'react'
 import Link from 'next/link'
 import Head from 'next/head'
@@ -53,14 +54,10 @@ export default function AdminLoginPage() {
         <title>Admin Access — QuestHub Guild</title>
       </Head>
 
-      <div className="min-h-screen bg-deep-black grid-bg flex items-center justify-center px-4">
+      <div className="min-h-screen bg-portal-black grid-bg flex items-center justify-center px-4">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-64 bg-red-900/5 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative bg-[#08000f] border border-red-500/25 p-8 sm:p-10 w-full max-w-md">
-          <span className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-red-500/50" />
-          <span className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-red-500/50" />
-          <span className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-red-500/50" />
-          <span className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-red-500/50" />
+        <div className="relative crystal-glass bg-portal-black/70 backdrop-blur-md rounded-2xl border border-red-500/25 p-8 sm:p-10 w-full max-w-md">
 
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-red-900/20 border border-red-500/30 rotate-45 mb-4">
@@ -105,7 +102,7 @@ export default function AdminLoginPage() {
           <div className="mt-6 pt-5 border-t border-red-500/10 text-center">
             <p className="font-rajdhani text-xs text-slate-700">
               Not an admin?{' '}
-              <Link href="/auth/login" className="text-purple-500/60 hover:text-purple-400 transition-colors">
+              <Link href="/auth/login" className="text-portal-emerald/60 hover:text-portal-emerald transition-colors">
                 Member login →
               </Link>
             </p>

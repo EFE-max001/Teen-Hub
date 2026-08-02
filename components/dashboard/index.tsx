@@ -1,3 +1,4 @@
+// Teen-Hub/components/dashboard/index.tsx
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { useSession } from 'next-auth/react'
@@ -33,8 +34,8 @@ export default function DashboardPage() {
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-2 border-purple-500/30 border-t-purple-400 rounded-full animate-spin" />
-            <p className="font-orbitron text-xs text-purple-400 tracking-widest animate-pulse">
+            <div className="w-12 h-12 border-2 border-portal-emerald/30 border-t-portal-emerald rounded-full animate-spin" />
+            <p className="font-orbitron text-xs text-portal-emerald tracking-widest animate-pulse">
               LOADING OPERATIVE DATA...
             </p>
           </div>
@@ -61,17 +62,17 @@ export default function DashboardPage() {
         <div className="max-w-6xl mx-auto flex flex-col gap-6">
 
           {/* ── Welcome header ── */}
-          <div className="relative bg-[#0d0017] border border-purple-500/20 p-5 sm:p-6 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-900/10 to-transparent pointer-events-none" />
-            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600/5 rounded-full blur-2xl pointer-events-none" />
-            <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-purple-500/50" />
-            <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-purple-500/50" />
+          <div className="relative bg-portal-black/70 backdrop-blur-md rounded-xl border border-portal-emerald/20 p-5 sm:p-6 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-portal-emerald/[0.010] to-transparent pointer-events-none" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-portal-emerald/5 rounded-full blur-2xl pointer-events-none" />
+            <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-portal-emerald/50" />
+            <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-portal-emerald/50" />
 
             <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <RankBadge rank={rank} size="lg" showLabel />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-orbitron text-[10px] text-purple-400/70 tracking-[0.3em] uppercase">
+                  <span className="font-orbitron text-[10px] text-portal-emerald/70 tracking-[0.3em] uppercase">
                     Operative
                   </span>
                   {trialStatus && <StatusChip status={trialStatus} size="sm" />}
@@ -139,8 +140,8 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
 
             {/* Activity feed */}
-            <div className="lg:col-span-2 bg-[#0d0017] border border-purple-500/20 p-5">
-              <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/30" />
+            <div className="lg:col-span-2 bg-[#03060A] border border-portal-emerald/20 p-5">
+              <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/30" />
               <div className="flex items-center justify-between mb-5">
                 <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase">
                   Recent Activity
@@ -157,8 +158,8 @@ export default function DashboardPage() {
               ) : (
                 <div className="flex flex-col gap-2">
                   {recentActivity.map((log: any) => (
-                    <div key={log.id} className="flex items-start gap-3 py-2.5 border-b border-purple-500/10 last:border-0">
-                      <div className="w-1.5 h-1.5 rounded-full bg-purple-500/60 mt-1.5 flex-shrink-0" />
+                    <div key={log.id} className="flex items-start gap-3 py-2.5 border-b border-portal-emerald/10 last:border-0">
+                      <div className="w-1.5 h-1.5 rounded-full bg-portal-emerald/60 mt-1.5 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="font-rajdhani text-sm text-slate-300">{log.details || log.action}</p>
                         <p className="font-rajdhani text-xs text-slate-600 mt-0.5">
@@ -168,7 +169,7 @@ export default function DashboardPage() {
                           })}
                         </p>
                       </div>
-                      <span className="font-orbitron text-[9px] text-purple-500/60 tracking-widest flex-shrink-0">
+                      <span className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest flex-shrink-0">
                         {log.action}
                       </span>
                     </div>
@@ -181,7 +182,7 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-4">
 
               {/* XP log */}
-              <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+              <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
                 <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase mb-4">
                   XP Log
                 </h2>
@@ -190,7 +191,7 @@ export default function DashboardPage() {
                 ) : (
                   <div className="flex flex-col gap-2">
                     {recentXP.map((log: any) => (
-                      <div key={log.id} className="flex items-center justify-between py-2 border-b border-purple-500/10 last:border-0">
+                      <div key={log.id} className="flex items-center justify-between py-2 border-b border-portal-emerald/10 last:border-0">
                         <div className="min-w-0 flex-1">
                           <p className="font-rajdhani text-xs text-slate-400 truncate">{log.reason}</p>
                           <p className="font-rajdhani text-[11px] text-slate-600">
@@ -207,7 +208,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Quick links */}
-              <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+              <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
                 <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase mb-4">
                   Quick Access
                 </h2>
@@ -222,9 +223,9 @@ export default function DashboardPage() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="flex items-center gap-3 px-3 py-2.5 border border-purple-500/15 text-slate-400 hover:border-purple-400/40 hover:text-purple-300 hover:bg-purple-900/10 transition-all duration-200"
+                      className="flex items-center gap-3 px-3 py-2.5 border border-portal-emerald/15 text-slate-400 hover:border-portal-emerald/40 hover:text-portal-emerald hover:bg-portal-emerald/[0.010] transition-all duration-200"
                     >
-                      <span className="text-purple-500/60">{item.icon}</span>
+                      <span className="text-portal-emerald/60">{item.icon}</span>
                       <span className="font-rajdhani font-semibold text-sm">{item.label}</span>
                       <span className="ml-auto text-slate-700 text-xs">→</span>
                     </Link>

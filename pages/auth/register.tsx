@@ -1,3 +1,4 @@
+// Teen-Hub/pages/auth/register.tsx
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/router'
@@ -79,12 +80,12 @@ export default function RegisterPage() {
         <title>Register — QuestHub Guild</title>
       </Head>
 
-      <div className="min-h-screen bg-deep-black grid-bg flex items-center justify-center px-4 py-12">
+      <div className="min-h-screen bg-portal-black grid-bg flex items-center justify-center px-4 py-12">
 
         {/* Background glow */}
         <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-600/8 rounded-full blur-3xl" />
-          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-800/6 rounded-full blur-3xl" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-portal-emerald/[0.05] rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-portal-emerald/[0.03] rounded-full blur-3xl" />
         </div>
 
         <div className="relative w-full max-w-md z-10">
@@ -93,18 +94,18 @@ export default function RegisterPage() {
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex flex-col items-center gap-2 mb-6 group">
               <div className="relative w-12 h-12">
-                <div className="absolute inset-0 bg-purple-600/30 rotate-45 group-hover:bg-purple-500/40 transition-all duration-300" />
-                <div className="absolute inset-1.5 bg-purple-500/15 rotate-45" />
-                <span className="absolute inset-0 flex items-center justify-center text-purple-300 font-orbitron font-black text-lg">Q</span>
+                <div className="absolute inset-0 bg-portal-emerald/20 rotate-45 group-hover:bg-portal-emerald/30 transition-all duration-300" />
+                <div className="absolute inset-1.5 bg-portal-emerald/10 rotate-45" />
+                <span className="absolute inset-0 flex items-center justify-center text-portal-emerald font-orbitron font-black text-lg">Q</span>
               </div>
             </Link>
 
             <div className="inline-flex items-center gap-3 mb-3">
-              <div className="w-10 h-px bg-purple-500/40" />
-              <span className="font-orbitron text-[10px] text-purple-400 tracking-[0.4em] uppercase">
+              <div className="w-10 h-px bg-portal-emerald/30" />
+              <span className="font-orbitron text-[10px] text-portal-emerald tracking-[0.4em] uppercase">
                 New Operative
               </span>
-              <div className="w-10 h-px bg-purple-500/40" />
+              <div className="w-10 h-px bg-portal-emerald/30" />
             </div>
 
             <h1 className="font-orbitron font-black text-3xl sm:text-4xl text-white glow-text mb-2">
@@ -116,18 +117,14 @@ export default function RegisterPage() {
           </div>
 
           {/* Card */}
-          <div className="relative bg-card-bg glow-border p-6 sm:p-8">
-            <span className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-purple-500/60" />
-            <span className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-purple-500/60" />
-            <span className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-purple-500/60" />
-            <span className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-purple-500/60" />
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent" />
+          <div className="relative crystal-glass bg-portal-black/70 backdrop-blur-md rounded-2xl glow-border p-6 sm:p-8">
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-portal-emerald/50 to-transparent" />
 
             {/* Note */}
-            <div className="bg-purple-900/20 border border-purple-500/20 px-4 py-3 mb-6">
-              <p className="font-rajdhani text-purple-300/80 text-xs leading-relaxed">
-                ◈ This creates your account. To <span className="text-purple-200 font-semibold">join the guild</span> as a member, you must also{' '}
-                <Link href="/apply" className="text-purple-400 hover:text-purple-300 underline underline-offset-2">
+            <div className="bg-portal-emerald/[0.06] border border-portal-emerald/20 px-4 py-3 mb-6">
+              <p className="font-rajdhani text-portal-emerald/80 text-xs leading-relaxed">
+                ◈ This creates your account. To <span className="text-portal-moonlight font-semibold">join the guild</span> as a member, you must also{' '}
+                <Link href="/apply" className="text-portal-emerald hover:text-portal-emerald underline underline-offset-2">
                   submit an application
                 </Link>{' '}
                 after registering.
@@ -203,9 +200,9 @@ export default function RegisterPage() {
             </form>
 
             <div className="my-6 flex items-center gap-3">
-              <div className="flex-1 h-px bg-purple-500/10" />
+              <div className="flex-1 h-px bg-portal-emerald/10" />
               <span className="font-rajdhani text-xs text-slate-700 tracking-widest uppercase">or</span>
-              <div className="flex-1 h-px bg-purple-500/10" />
+              <div className="flex-1 h-px bg-portal-emerald/10" />
             </div>
 
             <div className="text-center">
@@ -213,7 +210,7 @@ export default function RegisterPage() {
                 Already have an account?{' '}
                 <Link
                   href="/auth/login"
-                  className="text-purple-400 hover:text-purple-300 transition-colors font-semibold"
+                  className="text-portal-emerald hover:text-portal-emerald transition-colors font-semibold"
                 >
                   Sign in here
                 </Link>

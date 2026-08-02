@@ -1,9 +1,9 @@
+// Teen-Hub/components/Butterflies.tsx
 // components/Butterflies.tsx
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useGLTF, useAnimations, Trail } from '@react-three/drei'
 import * as THREE from 'three'
-import { createTechButterflyMaterial } from '../shaders/TechButterflyMaterial'
 
 const MODEL_PATH = '/models/blue_butterfly.glb'
 
@@ -169,11 +169,6 @@ function Butterfly({ config }: { config: FlightConfig }) {
   const groupRef = useRef<THREE.Group>(null!)
   const { actions, mixer } = useAnimations(animations, cloned)
 
-  const wingMaterial = useMemo(
-    () => createTechButterflyMaterial(config.color, config.colorB),
-    [config.color, config.colorB]
-  )
-
   // per-instance wing-beat bob: frequency/phase/amplitude vary so 25
   // butterflies never bounce in lockstep. Kept separate from the position
   // used for heading/banking below so the bob doesn't make turns jittery.
@@ -204,7 +199,8 @@ function Butterfly({ config }: { config: FlightConfig }) {
         mesh.visible = false
         return
       }
-      mesh.material = wingMaterial
+      // No material edit at all now — the model's own material renders
+      // as authored, full stop.
     })
     // Only play the two real wing-flap clips. CubeAction is intentionally
     // skipped (see above) — playing it just animates the hidden stray cube
@@ -229,13 +225,12 @@ function Butterfly({ config }: { config: FlightConfig }) {
         setTipsReady(true)
       }
     }
-  }, [cloned, actions, mixer, wingMaterial, config.trail])
+  }, [cloned, actions, mixer, config.trail])
 
   const prevPos = useRef(new THREE.Vector3())
   const hasPrevPos = useRef(false)
 
   useFrame((state, delta) => {
-    wingMaterial.uniforms.uTime.value = state.clock.elapsedTime
     mixer.update(delta)
 
     const g = groupRef.current

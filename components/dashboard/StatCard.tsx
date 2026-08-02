@@ -1,3 +1,4 @@
+// Teen-Hub/components/dashboard/StatCard.tsx
 interface StatCardProps {
   label: string
   value: string | number
@@ -7,7 +8,7 @@ interface StatCardProps {
 }
 
 const COLOR_MAP = {
-  purple: 'border-purple-500/30 text-purple-400',
+  purple: 'border-portal-emerald/30 text-portal-emerald',
   green:  'border-green-500/30 text-green-400',
   blue:   'border-blue-500/30 text-blue-400',
   red:    'border-red-500/30 text-red-400',
@@ -18,9 +19,7 @@ export default function StatCard({ label, value, icon, sub, color = 'purple' }: 
   const colors = COLOR_MAP[color]
 
   return (
-    <div className={`relative bg-[#0d0017] border ${colors} p-4 sm:p-5 group hover:shadow-[0_0_25px_rgba(168,85,247,0.08)] transition-all duration-300`}>
-      <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-current opacity-40" />
-      <span className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-current opacity-40" />
+    <div className={`relative crystal-glass bg-portal-black/70 backdrop-blur-md rounded-xl border ${colors} p-4 sm:p-5 group hover:shadow-[0_0_25px_rgba(0,255,163,0.08)] transition-all duration-300`}>
 
       <div className="flex items-start justify-between mb-3">
         <span className="text-2xl">{icon}</span>

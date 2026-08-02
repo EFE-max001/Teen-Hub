@@ -1,3 +1,4 @@
+// Teen-Hub/components/dashboard/profile.tsx
 import { useState, useEffect, ChangeEvent } from 'react'
 import Link from 'next/link'
 import Head from 'next/head'
@@ -165,7 +166,7 @@ export default function ProfilePage() {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-10 h-10 border-2 border-purple-500/30 border-t-purple-400 rounded-full animate-spin" />
+          <div className="w-10 h-10 border-2 border-portal-emerald/30 border-t-portal-emerald rounded-full animate-spin" />
         </div>
       </DashboardLayout>
     )
@@ -182,21 +183,21 @@ export default function ProfilePage() {
         <div className="max-w-3xl mx-auto flex flex-col gap-5">
 
           {/* Profile hero card */}
-          <div className="relative bg-[#0d0017] border border-purple-500/20 p-5 sm:p-6 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 to-transparent pointer-events-none" />
-            <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-purple-500/50" />
-            <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-purple-500/50" />
+          <div className="relative bg-portal-black/70 backdrop-blur-md rounded-xl border border-portal-emerald/20 p-5 sm:p-6 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-portal-emerald/[0.010] to-transparent pointer-events-none" />
+            <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-portal-emerald/50" />
+            <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-portal-emerald/50" />
 
             <div className="relative z-10 flex flex-col sm:flex-row items-start gap-5">
               <div className="relative flex-shrink-0 group">
                 <label className="cursor-pointer block">
                   <input type="file" accept="image/*" className="hidden" onChange={handleAvatarSelect} disabled={uploadingAvatar} />
                   {userData.profilePicUrl ? (
-                    <img src={userData.profilePicUrl} alt="Profile" className="w-20 h-20 rounded-full object-cover border-2 border-purple-500/40" />
+                    <img src={userData.profilePicUrl} alt="Profile" className="w-20 h-20 rounded-full object-cover border-2 border-portal-emerald/40" />
                   ) : (
                     <RankBadge rank={userData.rank} size="lg" showLabel />
                   )}
-                  <div className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full bg-black/60 backdrop-blur-sm rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <span className="font-orbitron text-[9px] text-white text-center px-1">{uploadingAvatar ? '...' : 'CHANGE'}</span>
                   </div>
                 </label>
@@ -212,7 +213,7 @@ export default function ProfilePage() {
                   {userData.nickname}
                 </h1>
                 {activeTitle && (
-                  <p className="font-rajdhani text-purple-400 text-sm italic mb-1">"{activeTitle.name}"</p>
+                  <p className="font-rajdhani text-portal-emerald text-sm italic mb-1">"{activeTitle.name}"</p>
                 )}
                 <p className="font-rajdhani text-slate-500 text-sm mb-4">{userData.name} · {userData.email}</p>
                 <XPBar xp={userData.xp} rank={userData.rank} showNumbers />
@@ -220,8 +221,8 @@ export default function ProfilePage() {
 
               {/* Trust score */}
               {trustData && (
-                <div className="flex-shrink-0 text-center border border-purple-500/20 px-4 py-3 bg-black/30">
-                  <div className="font-orbitron text-[9px] text-purple-400/60 tracking-widest uppercase mb-1">Trust</div>
+                <div className="flex-shrink-0 text-center border border-portal-emerald/20 px-4 py-3 bg-black/30">
+                  <div className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase mb-1">Trust</div>
                   <div className="font-orbitron font-black text-2xl text-white">{trustData.trustScore}</div>
                   <div className={`font-orbitron text-[10px] tracking-widest mt-1 ${TRUST_COLORS[trustData.trustLevel] || 'text-slate-400'}`}>
                     {trustData.trustLevel}
@@ -233,11 +234,11 @@ export default function ProfilePage() {
 
           {/* Skills */}
           {userData.skills?.length > 0 && (
-            <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+            <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
               <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase mb-4">Skills</h2>
               <div className="flex flex-wrap gap-2">
                 {userData.skills.map((skill: string) => (
-                  <span key={skill} className="px-3 py-1 border border-purple-500/30 text-purple-300 font-rajdhani text-xs tracking-wide bg-purple-900/10">
+                  <span key={skill} className="px-3 py-1 border border-portal-emerald/30 text-portal-emerald font-rajdhani text-xs tracking-wide bg-portal-emerald/[0.010]">
                     {skill}
                   </span>
                 ))}
@@ -247,16 +248,16 @@ export default function ProfilePage() {
 
           {/* Achievements & Titles preview */}
           {(achievements.length > 0 || titles.length > 0) && (
-            <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+            <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase">Honours</h2>
-                <Link href="/dashboard/achievements" className="font-orbitron text-[10px] text-purple-400 hover:text-purple-300 tracking-widest">VIEW ALL →</Link>
+                <Link href="/dashboard/achievements" className="font-orbitron text-[10px] text-portal-emerald hover:text-portal-emerald tracking-widest">VIEW ALL →</Link>
               </div>
               <div className="flex flex-wrap gap-2">
                 {achievements.slice(0, 4).map((a: any) => (
-                  <div key={a.id} className="flex items-center gap-1.5 border border-purple-500/20 px-2 py-1">
+                  <div key={a.id} className="flex items-center gap-1.5 border border-portal-emerald/20 px-2 py-1">
                     <span className="text-sm">{a.icon}</span>
-                    <span className="font-orbitron text-[10px] text-purple-300">{a.name}</span>
+                    <span className="font-orbitron text-[10px] text-portal-emerald">{a.name}</span>
                   </div>
                 ))}
                 {titles.map((t: any) => (
@@ -270,7 +271,7 @@ export default function ProfilePage() {
           )}
 
           {/* About — editable */}
-          <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+          <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase">About</h2>
               {!editing && (
@@ -287,13 +288,13 @@ export default function ProfilePage() {
                 <GlowInput label="Portfolio / Website" placeholder="https://..."
                   value={form.portfolioUrl} onChange={e => setForm(f => ({ ...f, portfolioUrl: e.target.value }))} />
 
-                <div className="border-t border-purple-500/10 pt-4">
-                  <p className="font-orbitron text-[9px] text-purple-400/60 tracking-widest uppercase mb-3">Extended Profile</p>
+                <div className="border-t border-portal-emerald/10 pt-4">
+                  <p className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase mb-3">Extended Profile</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="font-orbitron text-[9px] text-purple-400/60 tracking-widest uppercase block mb-1.5">Timezone</label>
+                      <label className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase block mb-1.5">Timezone</label>
                       <select value={form.timezone} onChange={e => setForm(f => ({ ...f, timezone: e.target.value }))}
-                        className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70">
+                        className="w-full bg-black/50 border border-portal-emerald/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-portal-emerald/70">
                         <option value="">Select timezone</option>
                         {TIMEZONES.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
@@ -301,17 +302,17 @@ export default function ProfilePage() {
                     <GlowInput label="Country" placeholder="e.g. United States"
                       value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} />
                     <div>
-                      <label className="font-orbitron text-[9px] text-purple-400/60 tracking-widest uppercase block mb-1.5">Work Style</label>
+                      <label className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase block mb-1.5">Work Style</label>
                       <select value={form.workStyle} onChange={e => setForm(f => ({ ...f, workStyle: e.target.value }))}
-                        className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70">
+                        className="w-full bg-black/50 border border-portal-emerald/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-portal-emerald/70">
                         <option value="">Select work style</option>
                         {WORK_STYLES.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="font-orbitron text-[9px] text-purple-400/60 tracking-widest uppercase block mb-1.5">Preferred Task Type</label>
+                      <label className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase block mb-1.5">Preferred Task Type</label>
                       <select value={form.preferredTaskType} onChange={e => setForm(f => ({ ...f, preferredTaskType: e.target.value }))}
-                        className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/70">
+                        className="w-full bg-black/50 border border-portal-emerald/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-portal-emerald/70">
                         <option value="">Select type</option>
                         {TASK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
@@ -339,16 +340,16 @@ export default function ProfilePage() {
                 </p>
                 {userData.portfolioUrl && (
                   <a href={userData.portfolioUrl} target="_blank" rel="noopener noreferrer"
-                    className="font-rajdhani text-purple-400 hover:text-purple-300 text-sm underline underline-offset-2 transition-colors">
+                    className="font-rajdhani text-portal-emerald hover:text-portal-emerald text-sm underline underline-offset-2 transition-colors">
                     {userData.portfolioUrl}
                   </a>
                 )}
                 {(userData.timezone || userData.country || userData.workStyle || userData.preferredTaskType) && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-purple-500/10">
-                    {userData.timezone && <div><p className="font-orbitron text-[9px] text-purple-400/60 tracking-widest uppercase">Timezone</p><p className="font-rajdhani text-slate-300 text-sm">{userData.timezone}</p></div>}
-                    {userData.country && <div><p className="font-orbitron text-[9px] text-purple-400/60 tracking-widest uppercase">Country</p><p className="font-rajdhani text-slate-300 text-sm">{userData.country}</p></div>}
-                    {userData.workStyle && <div><p className="font-orbitron text-[9px] text-purple-400/60 tracking-widest uppercase">Work Style</p><p className="font-rajdhani text-slate-300 text-sm">{userData.workStyle}</p></div>}
-                    {userData.preferredTaskType && <div><p className="font-orbitron text-[9px] text-purple-400/60 tracking-widest uppercase">Speciality</p><p className="font-rajdhani text-slate-300 text-sm">{userData.preferredTaskType}</p></div>}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-portal-emerald/10">
+                    {userData.timezone && <div><p className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase">Timezone</p><p className="font-rajdhani text-slate-300 text-sm">{userData.timezone}</p></div>}
+                    {userData.country && <div><p className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase">Country</p><p className="font-rajdhani text-slate-300 text-sm">{userData.country}</p></div>}
+                    {userData.workStyle && <div><p className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase">Work Style</p><p className="font-rajdhani text-slate-300 text-sm">{userData.workStyle}</p></div>}
+                    {userData.preferredTaskType && <div><p className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase">Speciality</p><p className="font-rajdhani text-slate-300 text-sm">{userData.preferredTaskType}</p></div>}
                   </div>
                 )}
               </div>
@@ -356,11 +357,11 @@ export default function ProfilePage() {
           </div>
 
           {/* Identity Growth System — Trust Ladder */}
-          <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+          <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
             <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase mb-2">Identity & Trust Ladder</h2>
             <p className="font-rajdhani text-slate-600 text-xs mb-4">As you rank up, more verification is required — this increases your trust score, quest access, and payout eligibility.</p>
             {verifyMsg && (
-              <div className="bg-purple-900/20 border border-purple-500/30 px-3 py-2 font-rajdhani text-xs text-purple-300 mb-3">{verifyMsg}</div>
+              <div className="bg-portal-emerald/[0.020] border border-portal-emerald/30 px-3 py-2 font-rajdhani text-xs text-portal-emerald mb-3">{verifyMsg}</div>
             )}
             <div className="flex flex-col gap-2">
               {[
@@ -376,7 +377,7 @@ export default function ProfilePage() {
                   <div key={step.rank} className={`flex items-center gap-3 p-3 border ${
                     step.done ? 'border-green-500/30 bg-green-900/5' :
                     step.required ? 'border-yellow-500/30 bg-yellow-900/5' :
-                    'border-purple-500/10 opacity-50'
+                    'border-portal-emerald/10 opacity-50'
                   }`}>
                     <div className={`w-6 h-6 flex items-center justify-center text-xs font-orbitron font-black flex-shrink-0 ${
                       step.done ? 'bg-green-500/20 text-green-400' :
@@ -405,7 +406,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Guild Record */}
-          <div className="bg-[#0d0017] border border-purple-500/20 p-5">
+          <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
             <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase mb-3">Guild Record</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {[
@@ -417,7 +418,7 @@ export default function ProfilePage() {
                 { label: 'Achievements', value: achievements.length },
               ].map(item => (
                 <div key={item.label}>
-                  <p className="font-orbitron text-[9px] text-purple-400/60 tracking-widest uppercase mb-1">{item.label}</p>
+                  <p className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase mb-1">{item.label}</p>
                   <p className="font-rajdhani font-semibold text-slate-300 text-sm">{item.value}</p>
                 </div>
               ))}

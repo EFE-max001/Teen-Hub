@@ -1,3 +1,4 @@
+// Teen-Hub/pages/dashboard/quests.tsx
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -24,7 +25,7 @@ const QUEST_STATUS_COLOR: Record<string, string> = {
 const CLAIM_STATUS_COLOR: Record<string, string> = {
   CLAIMED:     'text-yellow-400',
   IN_PROGRESS: 'text-blue-400',
-  SUBMITTED:   'text-purple-400',
+  SUBMITTED:   'text-portal-emerald',
   APPROVED:    'text-green-300',
   REJECTED:    'text-red-400',
 }
@@ -64,8 +65,8 @@ export default function QuestsPage() {
                   onClick={() => setFilter(f)}
                   className={`font-orbitron text-[10px] tracking-widest uppercase px-3 py-1.5 border transition-all ${
                     filter === f
-                      ? 'border-purple-500/60 bg-purple-900/30 text-purple-300'
-                      : 'border-slate-700 text-slate-600 hover:border-purple-500/30 hover:text-slate-400'
+                      ? 'border-portal-emerald/60 bg-portal-emerald/[0.030] text-portal-emerald'
+                      : 'border-slate-700 text-slate-600 hover:border-portal-emerald/30 hover:text-slate-400'
                   }`}
                 >
                   {f}
@@ -77,12 +78,12 @@ export default function QuestsPage() {
           {loading ? (
             <div className="flex items-center justify-center min-h-[40vh]">
               <div className="flex flex-col items-center gap-4">
-                <div className="w-10 h-10 border-2 border-purple-500/30 border-t-purple-400 rounded-full animate-spin" />
-                <p className="font-orbitron text-xs text-purple-400 tracking-widest animate-pulse">SCANNING QUEST BOARD...</p>
+                <div className="w-10 h-10 border-2 border-portal-emerald/30 border-t-portal-emerald rounded-full animate-spin" />
+                <p className="font-orbitron text-xs text-portal-emerald tracking-widest animate-pulse">SCANNING QUEST BOARD...</p>
               </div>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="bg-[#0d0017] border border-purple-500/20 p-12 text-center">
+            <div className="bg-[#03060A] border border-portal-emerald/20 p-12 text-center">
               <div className="font-orbitron text-5xl text-slate-800 mb-4">◆</div>
               <p className="font-orbitron text-sm text-slate-600 tracking-widest mb-2">No Quests Available</p>
               <p className="font-rajdhani text-slate-700 text-sm">The Founder posts new quests regularly. Check back soon.</p>
@@ -94,9 +95,9 @@ export default function QuestsPage() {
                 const statusColor = quest.myClaim ? CLAIM_STATUS_COLOR[displayStatus] : QUEST_STATUS_COLOR[displayStatus]
                 return (
                   <Link href={`/dashboard/quest/${quest.id}`} key={quest.id}>
-                    <div className="relative bg-[#0d0017] border border-purple-500/20 p-5 hover:border-purple-400/50 hover:shadow-[0_0_25px_rgba(168,85,247,0.08)] transition-all duration-300 group cursor-pointer h-full">
-                      <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/40 group-hover:border-purple-400 transition-colors" />
-                      <span className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-purple-500/40 group-hover:border-purple-400 transition-colors" />
+                    <div className="relative bg-portal-black/70 backdrop-blur-md rounded-xl border border-portal-emerald/20 p-5 hover:border-portal-emerald/50 hover:shadow-[0_0_25px_rgba(0,255,163,0.08)] transition-all duration-300 group cursor-pointer h-full">
+                      <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/40 group-hover:border-portal-emerald transition-colors" />
+                      <span className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-portal-emerald/40 group-hover:border-portal-emerald transition-colors" />
 
                       {quest.aiRecommended && (
                         <div className="absolute -top-2.5 left-4 font-orbitron text-[8px] tracking-widest uppercase bg-amber-500 text-black px-2 py-0.5 flex items-center gap-1">
@@ -112,7 +113,7 @@ export default function QuestsPage() {
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2 mb-4">
-                        <span className="font-orbitron text-[9px] border border-purple-500/30 bg-purple-900/20 text-purple-400 px-2 py-0.5 tracking-widest">
+                        <span className="font-orbitron text-[9px] border border-portal-emerald/30 bg-portal-emerald/[0.020] text-portal-emerald px-2 py-0.5 tracking-widest">
                           {quest.category}
                         </span>
                         {quest.difficulty && (
@@ -133,7 +134,7 @@ export default function QuestsPage() {
                       <div className="grid grid-cols-2 gap-3 text-[11px]">
                         <div>
                           <div className="font-orbitron text-[8px] text-slate-700 tracking-widest uppercase">XP Reward</div>
-                          <div className="font-orbitron text-purple-400 font-bold mt-0.5">+{quest.rewardXp} XP</div>
+                          <div className="font-orbitron text-portal-emerald font-bold mt-0.5">+{quest.rewardXp} XP</div>
                         </div>
                         {quest.deadline && (
                           <div>
@@ -145,7 +146,7 @@ export default function QuestsPage() {
                         )}
                       </div>
 
-                      <div className="mt-4 pt-3 border-t border-purple-500/10 flex items-center justify-between">
+                      <div className="mt-4 pt-3 border-t border-portal-emerald/10 flex items-center justify-between">
                         <span className="font-rajdhani text-xs text-slate-600">View Details →</span>
                         {quest.status === 'OPEN' && !quest.myClaim && (
                           <span className="font-orbitron text-[9px] text-green-400 border border-green-500/30 px-2 py-0.5 tracking-widest">

@@ -1,3 +1,4 @@
+/* Teen-Hub/styles/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -34,6 +35,81 @@ h1, h2, h3, h4, h5, h6 {
     linear-gradient(rgba(0, 229, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 229, 255, 0.05) 1px, transparent 1px);
   background-size: 48px 48px;
+}
+
+/* ── Glass panel — the "Living Digital Forest" surface treatment.
+   Originally hand-rolled inline only on the landing page hero cards
+   (bg-white/[0.03] border border-portal-emerald/15 backdrop-blur-sm);
+   promoted to a shared class so the rest of the app (auth, dashboard
+   chrome, forms) can pick up the same look instead of falling back to
+   the old flat/solid panels. ── */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0, 255, 163, 0.15);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 1rem;
+}
+
+.glass-panel-strong {
+  background: rgba(3, 6, 10, 0.75);
+  border: 1px solid rgba(0, 255, 163, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Crystal glass — layered on top of any glass surface (add the class
+   alongside the existing background/border/backdrop-blur utilities).
+   Adds the "carved from crystal, not ordinary glass" depth the brief
+   asked for: a slow diagonal reflection sweep + a scatter of floating
+   dust motes in the brand colors, both purely decorative (pointer-events:
+   none) and z-indexed behind real content so nothing becomes unclickable. ── */
+.crystal-glass {
+  position: relative;
+  isolation: isolate;
+}
+.crystal-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.07) 45%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.07) 55%, transparent 70%);
+  background-size: 250% 250%;
+  animation: crystalSweep 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+.crystal-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image:
+    radial-gradient(circle at 18% 30%, rgba(0,255,163,0.55) 0, rgba(0,255,163,0.55) 1px, transparent 1.6px),
+    radial-gradient(circle at 72% 65%, rgba(0,229,255,0.45) 0, rgba(0,229,255,0.45) 1px, transparent 1.6px),
+    radial-gradient(circle at 42% 85%, rgba(255,198,92,0.45) 0, rgba(255,198,92,0.45) 1px, transparent 1.6px),
+    radial-gradient(circle at 88% 18%, rgba(139,92,246,0.4) 0, rgba(139,92,246,0.4) 1px, transparent 1.6px),
+    radial-gradient(circle at 55% 45%, rgba(217,237,230,0.35) 0, rgba(217,237,230,0.35) 1px, transparent 1.6px);
+  opacity: 0.7;
+  animation: crystalDust 10s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+.crystal-glass > * {
+  position: relative;
+  z-index: 2;
+}
+@keyframes crystalSweep {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+@keyframes crystalDust {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(-4px); opacity: 0.85; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crystal-glass::before, .crystal-glass::after { animation: none; }
 }
 
 /* ── Glow utilities ── */

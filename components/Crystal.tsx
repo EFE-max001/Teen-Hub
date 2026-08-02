@@ -1,3 +1,4 @@
+// Teen-Hub/components/Crystal.tsx
 // components/Crystal.tsx
 //
 // "The application's heart" per the redesign doc — reused across loading
@@ -29,6 +30,7 @@ type CrystalProps = {
   color?: string
   spin?: boolean
   reducedMotion?: boolean
+  brightness?: number
 }
 
 export default function Crystal({
@@ -38,10 +40,11 @@ export default function Crystal({
   color = '#00E5FF',
   spin = true,
   reducedMotion = false,
+  brightness = 1,
 }: CrystalProps) {
   const { scene } = useGLTF(MODEL_PATH)
   const cloned = useMemo(() => scene.clone(true), [scene])
-  const material = useMemo(() => createGlowMaterial(color), [color])
+  const material = useMemo(() => createGlowMaterial(color, brightness), [color, brightness])
   const groupRef = useRef<THREE.Group>(null!)
 
   useEffect(() => {

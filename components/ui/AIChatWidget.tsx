@@ -1,3 +1,4 @@
+// Teen-Hub/components/ui/AIChatWidget.tsx
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
@@ -145,7 +146,7 @@ export default function AIChatWidget() {
       {/* Floating button */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-5 right-5 z-50 w-12 h-12 sm:w-14 sm:h-14 bg-purple-700 border border-purple-400/50 shadow-[0_0_25px_rgba(168,85,247,0.5)] flex items-center justify-center hover:bg-purple-600 transition-all duration-200 hover:scale-105 animate-pulse-glow"
+        className="fixed bottom-5 right-5 z-50 w-12 h-12 sm:w-14 sm:h-14 bg-portal-emerald/15 border border-portal-emerald/50 shadow-[0_0_25px_rgba(168,85,247,0.5)] flex items-center justify-center hover:bg-portal-emerald/25 transition-all duration-200 hover:scale-105 animate-pulse-glow"
         title="SENTINEL AI"
       >
         <span className="font-orbitron font-black text-white text-xs sm:text-sm">AI</span>
@@ -153,16 +154,16 @@ export default function AIChatWidget() {
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-20 right-4 sm:right-5 z-50 w-[calc(100vw-2rem)] max-w-sm sm:max-w-md flex flex-col bg-deep-black border border-purple-500/30 shadow-[0_0_40px_rgba(168,85,247,0.15)] overflow-hidden"
+        <div className="fixed bottom-20 right-4 sm:right-5 z-50 w-[calc(100vw-2rem)] max-w-sm sm:max-w-md flex flex-col bg-portal-black border border-portal-emerald/30 shadow-[0_0_40px_rgba(168,85,247,0.15)] overflow-hidden"
           style={{ height: 'min(520px, calc(100vh - 100px))' }}>
 
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-purple-500/20 bg-black/60 flex-shrink-0">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-portal-emerald/20 bg-black/60 flex-shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span className="font-orbitron font-bold text-xs text-white tracking-wider">SENTINEL AI</span>
               {isFounder && (
-                <span className="font-orbitron text-[8px] text-purple-400 tracking-widest border border-purple-500/30 px-1.5 py-0.5">FOUNDER</span>
+                <span className="font-orbitron text-[8px] text-portal-emerald tracking-widest border border-portal-emerald/30 px-1.5 py-0.5">FOUNDER</span>
               )}
             </div>
             <button
@@ -179,11 +180,11 @@ export default function AIChatWidget() {
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] ${
                   m.role === 'user'
-                    ? 'bg-purple-700/30 border border-purple-500/30 text-slate-200'
-                    : 'bg-black/60 border border-purple-500/15 text-slate-300'
+                    ? 'bg-portal-emerald/[0.1] border border-portal-emerald/30 text-slate-200'
+                    : 'bg-black/60 border border-portal-emerald/15 text-slate-300'
                 } px-3 py-2`}>
                   {m.role === 'assistant' && (
-                    <div className="font-orbitron text-[8px] text-purple-400/60 mb-1 tracking-widest">SENTINEL</div>
+                    <div className="font-orbitron text-[8px] text-portal-emerald/60 mb-1 tracking-widest">SENTINEL</div>
                   )}
                   <p className="font-rajdhani text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>
 
@@ -197,15 +198,15 @@ export default function AIChatWidget() {
 
                   {/* Quest draft creation button — Founder only */}
                   {m.questDraft && isFounder && (
-                    <div className="mt-2 pt-2 border-t border-purple-500/20">
-                      <div className="font-orbitron text-[8px] text-purple-400 mb-1.5 tracking-widest">QUEST DRAFT READY</div>
+                    <div className="mt-2 pt-2 border-t border-portal-emerald/20">
+                      <div className="font-orbitron text-[8px] text-portal-emerald mb-1.5 tracking-widest">QUEST DRAFT READY</div>
                       <div className="font-rajdhani text-xs text-slate-400 mb-2">
                         <strong className="text-white">{String(m.questDraft.title)}</strong> · {String(m.questDraft.category)} · {String(m.questDraft.difficulty)}
                       </div>
                       <button
                         onClick={() => createQuestFromDraft(m.questDraft as Record<string, unknown>)}
                         disabled={creating}
-                        className="font-orbitron text-[9px] bg-purple-700/50 hover:bg-purple-600/60 border border-purple-500/40 text-white px-3 py-1.5 transition-all disabled:opacity-50"
+                        className="font-orbitron text-[9px] bg-portal-emerald/[0.15] hover:bg-portal-emerald/35 border border-portal-emerald/40 text-white px-3 py-1.5 transition-all disabled:opacity-50"
                       >
                         {creating ? 'CREATING...' : '+ CREATE QUEST'}
                       </button>
@@ -215,15 +216,15 @@ export default function AIChatWidget() {
                   {/* Quest draft suggestion button — everyone else who's an accepted member */}
                   {/* Locked hint for trial/guest members who see a quest draft */}
                   {m.questDraft && isTrial && (
-                    <div className="mt-2 pt-2 border-t border-purple-500/20">
+                    <div className="mt-2 pt-2 border-t border-portal-emerald/20">
                       <div className="font-orbitron text-[8px] text-slate-500 tracking-widest">QUEST SUGGESTION LOCKED</div>
                       <p className="font-rajdhani text-[11px] text-slate-600 mt-1">Get accepted into the guild first to suggest quests to the Founder.</p>
                     </div>
                   )}
 
                   {m.questDraft && canSuggest && !m.suggestionSent && (
-                    <div className="mt-2 pt-2 border-t border-purple-500/20">
-                      <div className="font-orbitron text-[8px] text-purple-400 mb-1.5 tracking-widest">QUEST IDEA READY</div>
+                    <div className="mt-2 pt-2 border-t border-portal-emerald/20">
+                      <div className="font-orbitron text-[8px] text-portal-emerald mb-1.5 tracking-widest">QUEST IDEA READY</div>
                       <div className="font-rajdhani text-xs text-slate-400 mb-2">
                         <strong className="text-white">{String(m.questDraft.title)}</strong> · {String(m.questDraft.category)} · {String(m.questDraft.difficulty)}
                       </div>
@@ -241,12 +242,12 @@ export default function AIChatWidget() {
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-black/60 border border-purple-500/15 px-3 py-2">
-                  <div className="font-orbitron text-[8px] text-purple-400/60 mb-1">SENTINEL</div>
+                <div className="bg-black/60 border border-portal-emerald/15 px-3 py-2">
+                  <div className="font-orbitron text-[8px] text-portal-emerald/60 mb-1">SENTINEL</div>
                   <div className="flex gap-1 items-center py-1">
-                    <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <div className="w-1.5 h-1.5 bg-portal-emerald rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-1.5 h-1.5 bg-portal-emerald rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-1.5 h-1.5 bg-portal-emerald rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </div>
@@ -261,7 +262,7 @@ export default function AIChatWidget() {
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="font-rajdhani text-[10px] text-purple-400 border border-purple-500/25 bg-purple-950/30 px-2 py-1 hover:border-purple-400/50 hover:text-purple-300 transition-all"
+                  className="font-rajdhani text-[10px] text-portal-emerald border border-portal-emerald/25 bg-portal-black/50 px-2 py-1 hover:border-portal-emerald/50 hover:text-portal-emerald transition-all"
                 >
                   {s}
                 </button>
@@ -278,7 +279,7 @@ export default function AIChatWidget() {
           )}
 
           {/* Input */}
-          <div className="border-t border-purple-500/20 p-3 flex-shrink-0 bg-black/40">
+          <div className="border-t border-portal-emerald/20 p-3 flex-shrink-0 bg-black/40">
             <div className="flex gap-2">
               <textarea
                 ref={inputRef}
@@ -292,13 +293,13 @@ export default function AIChatWidget() {
                 }}
                 placeholder="Ask SENTINEL..."
                 rows={1}
-                className="flex-1 bg-black/60 border border-purple-500/20 text-white placeholder-slate-600 font-rajdhani text-sm px-3 py-2 resize-none focus:outline-none focus:border-purple-500/50 transition-colors"
+                className="flex-1 bg-black/60 border border-portal-emerald/20 text-white placeholder-slate-600 font-rajdhani text-sm px-3 py-2 resize-none focus:outline-none focus:border-portal-emerald/50 transition-colors"
                 style={{ minHeight: '36px', maxHeight: '80px' }}
               />
               <button
                 onClick={() => send()}
                 disabled={!input.trim() || loading}
-                className="bg-purple-700/60 border border-purple-500/40 hover:bg-purple-600/70 text-white px-3 py-2 transition-all disabled:opacity-40 flex-shrink-0"
+                className="bg-portal-emerald/[0.18] border border-portal-emerald/40 hover:bg-portal-emerald/40 text-white px-3 py-2 transition-all disabled:opacity-40 flex-shrink-0"
               >
                 <span className="font-orbitron text-xs">▶</span>
               </button>

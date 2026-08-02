@@ -1,3 +1,4 @@
+// Teen-Hub/pages/index.tsx
 import Head from 'next/head'
 import Link from 'next/link'
 import { GetServerSideProps } from 'next'
@@ -14,7 +15,7 @@ const RANKS = [
   { rank: 'D',   label: 'Specialist', color: 'text-blue-400',   border: 'border-blue-600/40',   glow: 'shadow-[0_0_15px_rgba(96,165,250,0.15)]',  desc: 'Skilled contributor. Quest access widens.' },
   { rank: 'C',   label: 'Vanguard',   color: 'text-yellow-400', border: 'border-yellow-600/40', glow: 'shadow-[0_0_15px_rgba(250,204,21,0.15)]',  desc: 'Dependable force. High-value tasks open.' },
   { rank: 'B',   label: 'Commander',  color: 'text-orange-400', border: 'border-orange-500/50', glow: 'shadow-[0_0_15px_rgba(251,146,60,0.2)]',   desc: 'Strong track record. Leadership adjacent.' },
-  { rank: 'A',   label: 'Elite',      color: 'text-purple-400', border: 'border-purple-500/60', glow: 'shadow-[0_0_20px_rgba(168,85,247,0.25)]',  desc: 'Top performer. Guild\'s most trusted operatives.' },
+  { rank: 'A',   label: 'Elite',      color: 'text-portal-emerald', border: 'border-portal-emerald/60', glow: 'shadow-[0_0_20px_rgba(0,255,163,0.25)]',  desc: 'Top performer. Guild\'s most trusted operatives.' },
   { rank: 'S',   label: 'Sovereign',  color: 'text-pink-400',   border: 'border-pink-500/60',   glow: 'shadow-[0_0_20px_rgba(236,72,153,0.25)]',  desc: 'Living legend. Rare. Chosen by the council.' },
   { rank: 'SS',  label: 'Warlord',    color: 'text-red-400',    border: 'border-red-500/60',    glow: 'shadow-[0_0_25px_rgba(239,68,68,0.3)]',    desc: 'Mythic performer. One of the guild\'s pillars.' },
   { rank: 'SSS', label: 'Mythic',     color: 'text-amber-300',  border: 'border-amber-400/70',  glow: 'shadow-[0_0_30px_rgba(252,211,77,0.35)]',  desc: 'Ultra-rare. The absolute pinnacle. Unchallengeable.' },
@@ -28,7 +29,7 @@ const STEPS = [
 ]
 
 const QUEST_TYPES = [
-  { icon: '◈', label: 'Graphic Design',  color: 'text-purple-400', desc: 'Logos, banners, social visuals, brand identity work'  },
+  { icon: '◈', label: 'Graphic Design',  color: 'text-portal-emerald', desc: 'Logos, banners, social visuals, brand identity work'  },
   { icon: '◉', label: 'Writing & Copy',  color: 'text-blue-400',   desc: 'Captions, articles, scripts, ad copy, blog posts'      },
   { icon: '◍', label: 'Video Editing',   color: 'text-pink-400',   desc: 'Reels, short-form promos, YouTube edits, transitions'  },
   { icon: '◎', label: 'Research Ops',    color: 'text-yellow-400', desc: 'Market data, competitor analysis, sourcing, reports'   },
@@ -57,6 +58,11 @@ export default function LandingPage() {
 
           {/* ── HERO ──────────────────────────────────────────── */}
           <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4 py-20">
+            {/* Background video removed from here — it was landing on top
+                of (not behind) the interactive scene in testing and wasn't
+                rendering reliably. Kept only in the one-time PortalIntro
+                sequence, where it's confirmed working. */}
+
             {/* No local background mount here anymore — the Living Digital
                 Forest (fog + roots + particles + portal/butterflies/branch)
                 is mounted once, globally, via SentinelBackground in
@@ -152,19 +158,19 @@ export default function LandingPage() {
               </div>
 
               {/* Stats bar */}
-              <div className="inline-flex flex-col sm:flex-row items-center gap-0 sm:gap-px border border-purple-500/20 overflow-hidden">
+              <div className="inline-flex flex-col sm:flex-row items-center gap-0 sm:gap-px border border-portal-emerald/20 bg-portal-black/50 backdrop-blur-md overflow-hidden">
                 {[
                   ['9', 'Rank Tiers'],
                   ['∞', 'Operations'],
                   ['AI', 'Powered'],
-                  ['0', 'BS Tolerated'],
+                  ['0', 'Excuses Tolerated'],
                 ].map(([val, label], i) => (
                   <div
                     key={label}
-                    className="flex flex-row sm:flex-col items-center sm:items-center gap-3 sm:gap-0.5 px-6 sm:px-8 py-3 sm:py-4 border-b sm:border-b-0 sm:border-r border-purple-500/15 last:border-0 w-full sm:w-auto"
+                    className="flex flex-row sm:flex-col items-center sm:items-center gap-3 sm:gap-0.5 px-6 sm:px-8 py-3 sm:py-4 border-b sm:border-b-0 sm:border-r border-portal-emerald/15 last:border-0 w-full sm:w-auto"
                   >
-                    <span className="font-orbitron font-black text-lg sm:text-2xl text-purple-300 glow-text">{val}</span>
-                    <span className="font-rajdhani text-[10px] text-slate-600 tracking-[0.25em] uppercase">{label}</span>
+                    <span className="font-orbitron font-black text-lg sm:text-2xl text-portal-emerald glow-text">{val}</span>
+                    <span className="font-rajdhani text-[10px] text-slate-300/80 tracking-[0.25em] uppercase">{label}</span>
                   </div>
                 ))}
               </div>
@@ -172,13 +178,13 @@ export default function LandingPage() {
 
             {/* Scroll indicator */}
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce">
-              <div className="w-px h-8 bg-gradient-to-b from-purple-500/60 to-transparent" />
-              <div className="w-1.5 h-1.5 bg-purple-400 rotate-45" />
+              <div className="w-px h-8 bg-gradient-to-b from-portal-emerald/60 to-transparent" />
+              <div className="w-1.5 h-1.5 bg-portal-emerald rotate-45" />
             </div>
           </section>
 
           {/* ── TICKER ──────────────────────────────────────────── */}
-          <div className="border-y border-purple-500/20 bg-purple-950/20 overflow-hidden py-2.5">
+          <div className="border-y border-portal-emerald/20 bg-portal-black/75 backdrop-blur-sm overflow-hidden py-2.5">
             <div className="flex items-center gap-8 whitespace-nowrap animate-marquee">
               {Array.from({ length: 3 }).flatMap(() => [
                 '◈ GRAPHIC DESIGN OPS AVAILABLE',
@@ -190,7 +196,7 @@ export default function LandingPage() {
                 '◈ ZERO TOLERANCE FOR GHOSTING',
                 '◉ MERIT-BASED PROMOTIONS ONLY',
               ]).map((text, i) => (
-                <span key={i} className="font-orbitron text-[9px] text-purple-400/60 tracking-[0.3em] uppercase flex-shrink-0">
+                <span key={i} className="font-orbitron text-[9px] text-portal-emerald/85 tracking-[0.3em] uppercase flex-shrink-0">
                   {text}
                 </span>
               ))}
@@ -198,7 +204,7 @@ export default function LandingPage() {
           </div>
 
           {/* ── HOW IT WORKS ──────────────────────────────────────── */}
-          <section id="how-it-works" className="py-20 sm:py-28 px-4 sm:px-6 relative">
+          <section id="how-it-works" className="py-20 sm:py-28 px-4 sm:px-6 bg-portal-black/45 backdrop-blur-sm relative">
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
                 <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Initiation Protocol</span>
@@ -243,17 +249,17 @@ export default function LandingPage() {
           </section>
 
           {/* ── RANK SYSTEM ──────────────────────────────────────── */}
-          <section id="ranks" className="py-20 sm:py-28 px-4 sm:px-6 bg-black/40 relative overflow-hidden">
+          <section id="ranks" className="py-20 sm:py-28 px-4 sm:px-6 bg-black/40 backdrop-blur-sm rounded-lg relative overflow-hidden">
             <div className="absolute inset-0 bg-purple-glow opacity-20 pointer-events-none" />
             <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
 
             <div className="max-w-7xl mx-auto relative z-10">
               <div className="text-center mb-12 sm:mb-16">
-                <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase">Power Structure</span>
+                <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Power Structure</span>
                 <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
                   THE HIERARCHY
                 </h2>
-                <div className="w-20 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto mb-4" />
+                <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
                 <p className="font-rajdhani text-slate-500 text-sm sm:text-base max-w-lg mx-auto">
                   Nine tiers of power. F to SSS. Every rank is earned — never given.
                   SS and SSS are reserved for the legends.
@@ -267,7 +273,6 @@ export default function LandingPage() {
                     className={`relative bg-black/80 border ${r.border} ${r.glow} p-3 sm:p-4 text-center group hover:scale-105 transition-all duration-300 cursor-default`}
                     title={`${r.label}: ${r.desc}`}
                   >
-                    <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-current opacity-20" />
                     <span className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-current opacity-20" />
                     <div className={`font-orbitron font-black text-xl sm:text-2xl md:text-3xl ${r.color} mb-0.5 group-hover:glow-text transition-all`}>
                       {r.rank}
@@ -282,7 +287,7 @@ export default function LandingPage() {
               {/* Rank descriptions on hover — shown below on mobile */}
               <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {RANKS.slice(6).map((r) => (
-                  <div key={r.rank} className={`border ${r.border} bg-black/60 p-3 flex items-start gap-3`}>
+                  <div key={r.rank} className={`border ${r.border} bg-black/60 backdrop-blur-sm rounded-xl p-3 flex items-start gap-3`}>
                     <span className={`font-orbitron font-black text-lg ${r.color} flex-shrink-0`}>{r.rank}</span>
                     <div>
                       <div className={`font-orbitron text-xs ${r.color} mb-0.5`}>{r.label}</div>
@@ -295,28 +300,28 @@ export default function LandingPage() {
           </section>
 
           {/* ── SENTINEL AI ──────────────────────────────────────── */}
-          <section className="py-20 sm:py-28 px-4 sm:px-6 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent pointer-events-none" />
+          <section className="py-20 sm:py-28 px-4 sm:px-6 bg-portal-black/45 backdrop-blur-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-portal-emerald/30 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-portal-emerald/30 to-transparent pointer-events-none" />
 
             <div className="max-w-6xl mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                 {/* Left */}
                 <div>
-                  <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase">AI Automation Layer</span>
+                  <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.5em] uppercase">AI Automation Layer</span>
                   <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
                     SENTINEL AI
                   </h2>
-                  <div className="w-20 h-px bg-gradient-to-r from-purple-500 to-transparent mb-6" />
+                  <div className="w-20 h-px bg-gradient-to-r from-portal-emerald to-transparent mb-6" />
                   <p className="font-rajdhani text-slate-400 text-base sm:text-lg leading-relaxed mb-6">
                     Every operative is watched by SENTINEL — our AI layer that scores trials,
                     tracks trust, detects risk, and awards achievements in real-time.
                     You cannot fake your way to the top.
                   </p>
-                  <div className="bg-black/60 border border-purple-500/20 p-4 font-mono text-xs">
+                  <div className="bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-4 font-mono text-xs">
                     <div className="text-green-400/80 mb-1">{'>'} SENTINEL.evaluate(trial_submission)</div>
                     <div className="text-slate-500 mb-1">{'>'} Scoring quality... reliability... attitude...</div>
-                    <div className="text-purple-400 mb-1">{'>'} Trust delta: <span className="text-green-400">+12pts</span></div>
+                    <div className="text-portal-emerald mb-1">{'>'} Trust delta: <span className="text-green-400">+12pts</span></div>
                     <div className="text-slate-500">{'>'} Recommendation: <span className="text-green-400">ACCEPT</span></div>
                   </div>
                 </div>
@@ -324,9 +329,9 @@ export default function LandingPage() {
                 {/* Right */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {AI_FEATURES.map((f, i) => (
-                    <div key={i} className="relative bg-black/60 border border-purple-500/20 p-4 sm:p-5 group hover:border-purple-400/50 transition-all duration-300">
-                      <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/40 group-hover:border-purple-400 transition-colors" />
-                      <div className="font-orbitron font-bold text-xs sm:text-sm text-purple-400 mb-2">{f.title}</div>
+                    <div key={i} className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-4 sm:p-5 group hover:border-portal-emerald/50 transition-all duration-300">
+                      <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/40 group-hover:border-portal-emerald transition-colors" />
+                      <div className="font-orbitron font-bold text-xs sm:text-sm text-portal-emerald mb-2">{f.title}</div>
                       <p className="font-rajdhani text-slate-500 text-xs sm:text-sm leading-relaxed">{f.desc}</p>
                     </div>
                   ))}
@@ -336,24 +341,22 @@ export default function LandingPage() {
           </section>
 
           {/* ── ARENA / GHOST PROTOCOL / SENTINEL GRID ──────────────── */}
-          <section id="arena" className="py-20 sm:py-28 px-4 sm:px-6 relative overflow-hidden bg-black/30">
+          <section id="arena" className="py-20 sm:py-28 px-4 sm:px-6 relative overflow-hidden bg-portal-black/45 backdrop-blur-sm">
             <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
             <div className="max-w-6xl mx-auto relative z-10">
               <div className="text-center mb-12 sm:mb-16">
-                <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase">Beyond The Trial</span>
+                <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Beyond The Trial</span>
                 <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
                   THE PROTOCOLS
                 </h2>
-                <div className="w-20 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto mb-4" />
+                <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
                 <p className="font-rajdhani text-slate-500 text-sm sm:text-base max-w-xl mx-auto">
                   Compete, socialize, and watch the Grid come alive around you.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-                <div className="relative bg-black/60 border border-purple-500/20 p-6 group hover:border-amber-400/50 transition-all duration-300 overflow-hidden">
-                  <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-amber-500/40 group-hover:border-amber-400 transition-colors" />
-                  <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-amber-500/40 group-hover:border-amber-400 transition-colors" />
+                <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-amber-400/50 transition-all duration-300 overflow-hidden">
                   <div className="text-3xl mb-3">🕹️</div>
                   <h3 className="font-orbitron font-bold text-sm sm:text-base text-amber-400 mb-2 tracking-widest">ARENA PROTOCOL</h3>
                   <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">
@@ -362,20 +365,16 @@ export default function LandingPage() {
                   </p>
                 </div>
 
-                <div className="relative bg-black/60 border border-purple-500/20 p-6 group hover:border-purple-400/50 transition-all duration-300 overflow-hidden">
-                  <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-purple-500/40 group-hover:border-purple-400 transition-colors" />
-                  <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-purple-500/40 group-hover:border-purple-400 transition-colors" />
+                <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-portal-emerald/50 transition-all duration-300 overflow-hidden">
                   <div className="text-3xl mb-3">👻</div>
-                  <h3 className="font-orbitron font-bold text-sm sm:text-base text-purple-400 mb-2 tracking-widest">GHOST PROTOCOL</h3>
+                  <h3 className="font-orbitron font-bold text-sm sm:text-base text-portal-emerald mb-2 tracking-widest">GHOST PROTOCOL</h3>
                   <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">
                     Party games live in Guild Chat: Truth or Dare, Would You Rather, Two Truths
-                    and a Lie — triggered instantly with slash commands like <span className="text-purple-300">/party</span>.
+                    and a Lie — triggered instantly with slash commands like <span className="text-portal-emerald">/party</span>.
                   </p>
                 </div>
 
-                <div className="relative bg-black/60 border border-purple-500/20 p-6 group hover:border-cyan-400/50 transition-all duration-300 overflow-hidden">
-                  <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-500/40 group-hover:border-cyan-400 transition-colors" />
-                  <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-500/40 group-hover:border-cyan-400 transition-colors" />
+                <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-cyan-400/50 transition-all duration-300 overflow-hidden">
                   <div className="text-3xl mb-3">◈</div>
                   <h3 className="font-orbitron font-bold text-sm sm:text-base text-cyan-400 mb-2 tracking-widest">SENTINEL GRID</h3>
                   <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">
@@ -388,15 +387,15 @@ export default function LandingPage() {
           </section>
 
           {/* ── QUEST TYPES ──────────────────────────────────────── */}
-          <section id="quests" className="py-20 sm:py-28 px-4 sm:px-6 bg-black/30 relative">
+          <section id="quests" className="py-20 sm:py-28 px-4 sm:px-6 bg-portal-black/45 backdrop-blur-sm relative">
             <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
             <div className="max-w-6xl mx-auto relative z-10">
               <div className="text-center mb-12 sm:mb-16">
-                <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase">Active Operations</span>
+                <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Active Operations</span>
                 <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
                   QUEST TYPES
                 </h2>
-                <div className="w-20 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto mb-4" />
+                <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
                 <p className="font-rajdhani text-slate-500 text-sm sm:text-base max-w-xl mx-auto">
                   Real work. Real skills. Some quests pay cash. All quests pay XP.
                 </p>
@@ -406,10 +405,8 @@ export default function LandingPage() {
                 {QUEST_TYPES.map((q, i) => (
                   <div
                     key={i}
-                    className="relative bg-black/60 border border-purple-500/15 p-5 sm:p-6 group hover:border-purple-400/40 hover:bg-purple-950/10 transition-all duration-300"
+                    className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/15 p-5 sm:p-6 group hover:border-portal-emerald/40 hover:bg-portal-black/10 transition-all duration-300"
                   >
-                    <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-purple-500/30 group-hover:border-purple-400 transition-colors" />
-                    <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-purple-500/30 group-hover:border-purple-400 transition-colors" />
                     <div className={`font-orbitron text-3xl ${q.color} mb-3 group-hover:glow-text transition-all`}>{q.icon}</div>
                     <h3 className={`font-orbitron font-bold text-sm sm:text-base ${q.color} mb-2`}>{q.label}</h3>
                     <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">{q.desc}</p>
@@ -420,15 +417,15 @@ export default function LandingPage() {
           </section>
 
           {/* ── LEGITIMACY ──────────────────────────────────────── */}
-          <section className="py-20 sm:py-28 px-4 sm:px-6 relative overflow-hidden">
+          <section className="py-20 sm:py-28 px-4 sm:px-6 bg-portal-black/45 backdrop-blur-sm relative overflow-hidden">
             <div className="absolute inset-0 bg-purple-glow opacity-10 pointer-events-none" />
             <div className="max-w-5xl mx-auto relative z-10">
               <div className="text-center mb-10">
-                <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase">Legitimacy</span>
+                <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Legitimacy</span>
                 <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
                   THIS IS REAL.
                 </h2>
-                <div className="w-20 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto mb-4" />
+                <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
                 <p className="font-rajdhani text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
                   QuestHub Guild is not a game. Quests are real work with real consequences.
                   Every action is logged. Every rank is earned. The council is always watching.
@@ -441,8 +438,8 @@ export default function LandingPage() {
                   { icon: '⚡',  title: 'Merit-Only Ranking', desc: 'No shortcuts. No exceptions. Every rank is earned through consistent, quality output.' },
                   { icon: '🔒', title: 'Zero Tolerance',      desc: 'Ghosting, dishonesty, and low quality are actioned instantly. Warnings stack. Bans happen.' },
                 ].map((item, i) => (
-                  <div key={i} className="relative bg-black/60 border border-purple-500/20 p-5 sm:p-6 group hover:border-purple-400/40 transition-all duration-300">
-                    <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-purple-500/30" />
+                  <div key={i} className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-5 sm:p-6 group hover:border-portal-emerald/40 transition-all duration-300">
+                    <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/30" />
                     <div className="text-2xl sm:text-3xl mb-3">{item.icon}</div>
                     <h3 className="font-orbitron font-bold text-sm text-white mb-2">{item.title}</h3>
                     <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">{item.desc}</p>
@@ -456,17 +453,17 @@ export default function LandingPage() {
           <section className="py-24 sm:py-32 px-4 sm:px-6 relative overflow-hidden bg-black/50">
             <div className="absolute inset-0 grid-bg opacity-40 pointer-events-none" />
             <div className="absolute inset-0 bg-purple-glow opacity-20 pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-purple-500/50 to-transparent pointer-events-none" />
+            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-portal-emerald/50 to-transparent pointer-events-none" />
 
             <div className="max-w-3xl mx-auto text-center relative z-10">
-              <span className="font-orbitron text-[9px] text-purple-400 tracking-[0.5em] uppercase block mb-4">The Question Is Simple</span>
+              <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.5em] uppercase block mb-4">The Question Is Simple</span>
               <h2 className="font-orbitron font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-4 leading-none">
                 DO YOU HAVE
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-500 mt-1">
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-portal-emerald via-fuchsia-400 to-pink-500 mt-1">
                   WHAT IT TAKES?
                 </span>
               </h2>
-              <div className="w-24 h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent mx-auto my-6" />
+              <div className="w-24 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto my-6" />
               <p className="font-rajdhani text-slate-400 text-sm sm:text-base md:text-lg mb-10 leading-relaxed">
                 Create your account, submit your application, and let the Guild Council decide.
                 Most applicants don't make it. The ones who do don't forget it.

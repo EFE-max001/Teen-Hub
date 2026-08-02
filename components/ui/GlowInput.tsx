@@ -1,3 +1,4 @@
+// Teen-Hub/components/ui/GlowInput.tsx
 import { InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes } from 'react'
 
 interface GlowInputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -20,7 +21,7 @@ interface GlowSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 const inputBase = `
-  w-full bg-black/50 border text-slate-200 text-sm font-rajdhani
+  w-full bg-black/50 backdrop-blur-sm rounded-lg border text-slate-200 text-sm font-rajdhani
   px-4 py-3 transition-all duration-200
   focus:outline-none placeholder:text-slate-600
   appearance-none
@@ -28,17 +29,6 @@ const inputBase = `
 
 const inputNormal = `border-cyan-500/25 focus:border-cyan-400/70 focus:shadow-[0_0_18px_rgba(34,211,238,0.18),inset_0_0_10px_rgba(34,211,238,0.04)]`
 const inputError  = `border-red-500/60 focus:border-red-400 focus:shadow-[0_0_18px_rgba(220,38,38,0.2)]`
-
-function CornerAccents() {
-  return (
-    <>
-      <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-cyan-500/50 pointer-events-none" />
-      <span className="absolute top-0 right-0 w-2 h-2 border-t border-r border-cyan-500/50 pointer-events-none" />
-      <span className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-cyan-500/50 pointer-events-none" />
-      <span className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-cyan-500/50 pointer-events-none" />
-    </>
-  )
-}
 
 export function GlowInput({ label, error, hint, className = '', ...props }: GlowInputProps) {
   return (
@@ -53,7 +43,6 @@ export function GlowInput({ label, error, hint, className = '', ...props }: Glow
           className={`${inputBase} ${error ? inputError : inputNormal} ${className}`}
           {...props}
         />
-        <CornerAccents />
       </div>
       {hint && !error && (
         <p className="text-[11px] text-slate-600 font-rajdhani">{hint}</p>
@@ -80,7 +69,6 @@ export function GlowTextarea({ label, error, hint, className = '', ...props }: G
           className={`${inputBase} ${error ? inputError : inputNormal} resize-none ${className}`}
           {...props}
         />
-        <CornerAccents />
       </div>
       {hint && !error && (
         <p className="text-[11px] text-slate-600 font-rajdhani">{hint}</p>
@@ -108,14 +96,13 @@ export function GlowSelect({ label, error, hint, options, className = '', ...pro
           {...props}
         >
           {options.map(opt => (
-            <option key={opt.value} value={opt.value} className="bg-[#0d0017] text-slate-200">
+            <option key={opt.value} value={opt.value} className="bg-portal-black text-slate-200">
               {opt.label}
             </option>
           ))}
         </select>
         {/* Custom dropdown arrow */}
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-400/60 pointer-events-none text-xs">▼</span>
-        <CornerAccents />
       </div>
       {hint && !error && (
         <p className="text-[11px] text-slate-600 font-rajdhani">{hint}</p>

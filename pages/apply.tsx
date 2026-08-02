@@ -1,3 +1,4 @@
+// Teen-Hub/pages/apply.tsx
 import { useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -116,13 +117,9 @@ export default function ApplyPage() {
         <Head><title>Application Submitted — QuestHub Guild</title></Head>
         <Layout>
           <div className="min-h-screen flex items-center justify-center px-4 grid-bg">
-            <div className="relative bg-card-bg glow-border p-8 sm:p-12 max-w-lg w-full text-center">
-              <span className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-purple-500/70" />
-              <span className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-purple-500/70" />
-              <span className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-purple-500/70" />
-              <span className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-purple-500/70" />
+            <div className="relative crystal-glass bg-portal-black/70 backdrop-blur-md rounded-2xl glow-border p-8 sm:p-12 max-w-lg w-full text-center">
 
-              <div className="w-16 h-16 border-2 border-purple-500/60 rotate-45 flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 border-2 border-portal-emerald/60 rotate-45 flex items-center justify-center mx-auto mb-6">
                 <span className="text-2xl -rotate-45">✓</span>
               </div>
 
@@ -134,8 +131,8 @@ export default function ApplyPage() {
                 Your application has been submitted to the Guild Council. You will be contacted via the details you provided once your trial status has been reviewed.
               </p>
 
-              <div className="bg-black/40 border border-purple-500/20 px-4 py-3 mb-8">
-                <p className="font-orbitron text-xs text-purple-400 tracking-widest">
+              <div className="bg-black/40 border border-portal-emerald/20 rounded-lg px-4 py-3 mb-8">
+                <p className="font-orbitron text-xs text-portal-emerald tracking-widest">
                   STATUS: PENDING REVIEW
                 </p>
               </div>
@@ -165,11 +162,11 @@ export default function ApplyPage() {
             {/* Header */}
             <div className="text-center mb-10">
               <div className="inline-flex items-center gap-2 mb-4">
-                <div className="w-8 h-px bg-purple-500/50" />
-                <span className="font-orbitron text-xs text-purple-400 tracking-[0.3em] uppercase">
+                <div className="w-8 h-px bg-portal-emerald/50" />
+                <span className="font-orbitron text-xs text-portal-emerald tracking-[0.3em] uppercase">
                   Enrollment
                 </span>
-                <div className="w-8 h-px bg-purple-500/50" />
+                <div className="w-8 h-px bg-portal-emerald/50" />
               </div>
 
               <h1 className="font-orbitron font-black text-3xl sm:text-4xl text-white mb-3">
@@ -185,18 +182,18 @@ export default function ApplyPage() {
             <div className="flex items-center justify-center gap-3 mb-10">
               {[1, 2, 3].map((s) => (
                 <div key={s} className="flex items-center gap-3">
-                  <div className={`w-8 h-8 border flex items-center justify-center font-orbitron text-xs font-bold transition-all duration-300 ${
+                  <div className={`w-8 h-8 rounded-lg border flex items-center justify-center font-orbitron text-xs font-bold transition-all duration-300 ${
                     step === s
-                      ? 'border-purple-400 bg-purple-500/20 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.3)]'
+                      ? 'border-portal-emerald bg-portal-emerald/[0.08] text-portal-emerald shadow-[0_0_15px_rgba(0,255,163,0.3)]'
                       : step > s
-                      ? 'border-purple-600/50 bg-purple-900/20 text-purple-500'
+                      ? 'border-portal-emerald/50 bg-portal-emerald/[0.06] text-portal-emerald'
                       : 'border-slate-700 text-slate-600'
                   }`}>
                     {step > s ? '✓' : s}
                   </div>
                   {s < 3 && (
                     <div className={`w-12 sm:w-20 h-px transition-all duration-300 ${
-                      step > s ? 'bg-purple-500/60' : 'bg-slate-700'
+                      step > s ? 'bg-portal-emerald/60' : 'bg-slate-700'
                     }`} />
                   )}
                 </div>
@@ -209,7 +206,7 @@ export default function ApplyPage() {
                 <span
                   key={i}
                   className={`font-orbitron text-xs tracking-widest uppercase ${
-                    step === i + 1 ? 'text-purple-400' : 'text-slate-600'
+                    step === i + 1 ? 'text-portal-emerald' : 'text-slate-600'
                   }`}
                 >
                   {label}
@@ -218,16 +215,12 @@ export default function ApplyPage() {
             </div>
 
             {/* Form card */}
-            <div className="relative bg-card-bg glow-border p-6 sm:p-8">
-              <span className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-purple-500/70" />
-              <span className="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-purple-500/70" />
-              <span className="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-purple-500/70" />
-              <span className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-purple-500/70" />
+            <div className="relative crystal-glass bg-portal-black/70 backdrop-blur-md rounded-2xl glow-border p-6 sm:p-8">
 
               {/* Step 1 */}
               {step === 1 && (
                 <div className="flex flex-col gap-5">
-                  <h3 className="font-orbitron font-bold text-white text-sm tracking-widest uppercase border-b border-purple-500/20 pb-3">
+                  <h3 className="font-orbitron font-bold text-white text-sm tracking-widest uppercase border-b border-portal-emerald/20 pb-3">
                     Identity Clearance
                   </h3>
 
@@ -247,7 +240,7 @@ export default function ApplyPage() {
 
                   {/* DOB Added Here */}
                   <div className="flex flex-col gap-1.5 w-full">
-                    <label className="text-[10px] font-orbitron tracking-[0.25em] text-purple-300/70 uppercase">
+                    <label className="text-[10px] font-orbitron tracking-[0.25em] text-portal-emerald/70 uppercase">
                       Date of Birth *
                     </label>
                     <div className="relative">
@@ -257,16 +250,16 @@ export default function ApplyPage() {
                         min={new Date(Date.now() - 19 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                         value={form.dob}
                         onChange={e => update('dob', e.target.value)}
-                        className="w-full bg-black/50 border border-purple-500/25 text-slate-200 text-sm font-rajdhani px-4 py-3 focus:outline-none focus:border-purple-400/70 focus:shadow-[0_0_18px_rgba(168,85,247,0.18)] transition-all duration-200 appearance-none [color-scheme:dark]"
+                        className="w-full bg-black/50 border border-portal-emerald/25 text-slate-200 text-sm font-rajdhani px-4 py-3 focus:outline-none focus:border-portal-emerald/60 focus:shadow-[0_0_18px_rgba(0,255,163,0.18)] transition-all duration-200 appearance-none [color-scheme:dark]"
                       />
-                      <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-purple-500/50 pointer-events-none" />
-                      <span className="absolute top-0 right-0 w-2 h-2 border-t border-r border-purple-500/50 pointer-events-none" />
-                      <span className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-purple-500/50 pointer-events-none" />
-                      <span className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-purple-500/50 pointer-events-none" />
+                      <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-portal-emerald/50 pointer-events-none" />
+                      <span className="absolute top-0 right-0 w-2 h-2 border-t border-r border-portal-emerald/50 pointer-events-none" />
+                      <span className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-portal-emerald/50 pointer-events-none" />
+                      <span className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-portal-emerald/50 pointer-events-none" />
                     </div>
 
                     {form.dob && (
-                      <p className="text-[11px] text-purple-400/70 font-rajdhani">
+                      <p className="text-[11px] text-portal-emerald/70 font-rajdhani">
                         Age: {Math.floor(
                           (Date.now() - new Date(form.dob).getTime()) /
                           (365.25 * 24 * 60 * 60 * 1000)
@@ -289,12 +282,12 @@ export default function ApplyPage() {
               {/* Step 2 */}
               {step === 2 && (
                 <div className="flex flex-col gap-5">
-                  <h3 className="font-orbitron font-bold text-white text-sm tracking-widest uppercase border-b border-purple-500/20 pb-3">
+                  <h3 className="font-orbitron font-bold text-white text-sm tracking-widest uppercase border-b border-portal-emerald/20 pb-3">
                     Skills & Capabilities
                   </h3>
 
                   <div>
-                    <label className="block font-orbitron text-xs text-purple-300/80 tracking-widest uppercase mb-3">
+                    <label className="block font-orbitron text-xs text-portal-emerald/80 tracking-widest uppercase mb-3">
                       Select Your Skills *
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -305,8 +298,8 @@ export default function ApplyPage() {
                           onClick={() => toggleSkill(skill)}
                           className={`px-3 py-2 text-xs font-rajdhani font-semibold border transition-all duration-200 text-left ${
                             form.skills.includes(skill)
-                              ? 'border-purple-400 bg-purple-500/20 text-purple-200'
-                              : 'border-slate-700 text-slate-500 hover:border-purple-500/40 hover:text-slate-300'
+                              ? 'border-portal-emerald bg-portal-emerald/[0.08] text-portal-moonlight'
+                              : 'border-slate-700 text-slate-500 hover:border-portal-emerald/40 hover:text-slate-300'
                           }`}
                         >
                           {form.skills.includes(skill) ? '✓ ' : ''}{skill}
@@ -336,12 +329,12 @@ export default function ApplyPage() {
               {/* Step 3 */}
               {step === 3 && (
                 <div className="flex flex-col gap-5">
-                  <h3 className="font-orbitron font-bold text-white text-sm tracking-widest uppercase border-b border-purple-500/20 pb-3">
+                  <h3 className="font-orbitron font-bold text-white text-sm tracking-widest uppercase border-b border-portal-emerald/20 pb-3">
                     Deployment Details
                   </h3>
 
                   <div>
-                    <label className="block font-orbitron text-xs text-purple-300/80 tracking-widest uppercase mb-3">
+                    <label className="block font-orbitron text-xs text-portal-emerald/80 tracking-widest uppercase mb-3">
                       Weekly Availability *
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -352,8 +345,8 @@ export default function ApplyPage() {
                           onClick={() => update('availability', opt)}
                           className={`px-4 py-3 text-sm font-rajdhani font-semibold border transition-all duration-200 ${
                             form.availability === opt
-                              ? 'border-purple-400 bg-purple-500/20 text-purple-200'
-                              : 'border-slate-700 text-slate-500 hover:border-purple-500/40 hover:text-slate-300'
+                              ? 'border-portal-emerald bg-portal-emerald/[0.08] text-portal-moonlight'
+                              : 'border-slate-700 text-slate-500 hover:border-portal-emerald/40 hover:text-slate-300'
                           }`}
                         >
                           {opt}
@@ -393,7 +386,7 @@ export default function ApplyPage() {
               )}
 
               {/* Navigation */}
-              <div className="flex items-center justify-between mt-8 pt-6 border-t border-purple-500/10">
+              <div className="flex items-center justify-between mt-8 pt-6 border-t border-portal-emerald/10">
                 {step > 1 ? (
                   <GlowButton variant="ghost" size="sm" onClick={() => { setStep(s => s - 1); setError('') }}>
                     ← Back

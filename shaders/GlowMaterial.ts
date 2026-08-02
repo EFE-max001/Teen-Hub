@@ -1,3 +1,4 @@
+// Teen-Hub/shaders/GlowMaterial.ts
 import * as THREE from 'three'
 
 // Single emissive material used for every part of the AI Avatar (per the
@@ -5,11 +6,12 @@ import * as THREE from 'three'
 // intensity"). Combines a fresnel rim-glow (bright at silhouette edges, like
 // a hologram) with a soft pulse that travels upward through world-space Y —
 // the avatar's "energy veins".
-export function createGlowMaterial(color: string) {
+export function createGlowMaterial(color: string, brightness: number = 1) {
   return new THREE.ShaderMaterial({
     uniforms: {
       uColor: { value: new THREE.Color(color) },
       uTime: { value: 0 },
+      uBrightness: { value: brightness },
     },
     vertexShader: `
       varying vec3 vNormal;
@@ -27,6 +29,7 @@ export function createGlowMaterial(color: string) {
     fragmentShader: `
       uniform vec3 uColor;
       uniform float uTime;
+      uniform float uBrightness;
       varying vec3 vNormal;
       varying vec3 vViewDir;
       varying float vWorldY;
@@ -38,7 +41,7 @@ export function createGlowMaterial(color: string) {
         // was (0.32 + ...) with alpha baseline 0.32*0.6 ≈ 0.19 — too
         // reliant on the fresnel term, so only edge-on wings read; a flock
         // in mixed orientations mostly looked like it "wasn't showing".
-        float intensity = (0.6 + fresnel * 1.3 + vein * 0.9) * flicker;
+        float intensity = (0.6 + fresnel * 1.3 + vein * 0.9) * flicker * uBrightness;
         float alpha = clamp(0.55 + fresnel * 0.7 + vein * 0.5, 0.0, 1.0);
         gl_FragColor = vec4(uColor * intensity, alpha);
       }

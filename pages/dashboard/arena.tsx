@@ -1,3 +1,4 @@
+// Teen-Hub/pages/dashboard/arena.tsx
 import { useEffect, useState } from 'react'
 import Head from 'next/head'
 import { GetServerSideProps } from 'next'
@@ -33,15 +34,11 @@ function GameCard({ game, onOpen }: { game: any; onOpen: () => void }) {
       onClick={onOpen}
       className={`relative text-left border-2 aspect-[4/5] flex flex-col items-center justify-center gap-2 px-3 py-4 transition-all duration-300 group overflow-hidden rounded-sm ${
         game.isDaily
-          ? 'border-amber-400/70 bg-gradient-to-b from-amber-950/40 via-[#0d0017] to-[#0d0017] shadow-[0_0_30px_rgba(245,158,11,0.25)]'
-          : 'border-purple-500/40 bg-gradient-to-b from-purple-950/20 via-[#0d0017] to-[#0d0017] hover:border-purple-400/80 hover:shadow-[0_0_30px_rgba(168,85,247,0.25)]'
+          ? 'border-amber-400/70 bg-gradient-to-b from-amber-950/40 via-[#03060A] to-[#03060A] shadow-[0_0_30px_rgba(245,158,11,0.25)]'
+          : 'border-portal-emerald/40 bg-gradient-to-b from-portal-black/20 via-[#03060A] to-[#03060A] hover:border-portal-emerald/80 hover:shadow-[0_0_30px_rgba(0,255,163,0.25)]'
       }`}
     >
       {/* corner brackets */}
-      <span className={`absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2 ${game.isDaily ? 'border-amber-400/70' : 'border-purple-400/50'}`} />
-      <span className={`absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2 ${game.isDaily ? 'border-amber-400/70' : 'border-purple-400/50'}`} />
-      <span className={`absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 ${game.isDaily ? 'border-amber-400/70' : 'border-purple-400/50'}`} />
-      <span className={`absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 ${game.isDaily ? 'border-amber-400/70' : 'border-purple-400/50'}`} />
 
       {game.isDaily && (
         <span className="absolute top-2 left-1/2 -translate-x-1/2 font-orbitron text-[7px] text-amber-300 bg-amber-900/90 border border-amber-500/60 px-2 py-0.5 tracking-widest animate-pulse whitespace-nowrap">
@@ -50,13 +47,13 @@ function GameCard({ game, onOpen }: { game: any; onOpen: () => void }) {
       )}
 
       <div className={`relative w-14 h-14 rounded-full flex items-center justify-center text-3xl mt-3 transition-transform duration-300 group-hover:scale-110 ${
-        game.isDaily ? 'shadow-[0_0_25px_rgba(245,158,11,0.5)] bg-amber-500/10' : 'shadow-[0_0_20px_rgba(168,85,247,0.35)] bg-purple-500/10'
+        game.isDaily ? 'shadow-[0_0_25px_rgba(245,158,11,0.5)] bg-amber-500/10' : 'shadow-[0_0_20px_rgba(0,255,163,0.35)] bg-portal-emerald/10'
       }`}>
-        <span className={`absolute inset-0 rounded-full border ${game.isDaily ? 'border-amber-400/50' : 'border-purple-400/40'}`} />
+        <span className={`absolute inset-0 rounded-full border ${game.isDaily ? 'border-amber-400/50' : 'border-portal-emerald/40'}`} />
         {game.icon || '◆'}
       </div>
 
-      <h3 className={`font-orbitron font-bold text-[11px] text-center leading-snug tracking-wider uppercase mt-1 ${game.isDaily ? 'text-amber-200' : 'text-white group-hover:text-purple-200'}`}>
+      <h3 className={`font-orbitron font-bold text-[11px] text-center leading-snug tracking-wider uppercase mt-1 ${game.isDaily ? 'text-amber-200' : 'text-white group-hover:text-portal-emerald'}`}>
         {game.title}
       </h3>
 
@@ -67,12 +64,12 @@ function GameCard({ game, onOpen }: { game: any; onOpen: () => void }) {
       )}
 
       <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-2 text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">
-        <span className={`font-orbitron uppercase ${accent === 'amber' ? 'text-amber-400/70' : 'text-purple-400/70'}`}>{game.category}</span>
+        <span className={`font-orbitron uppercase ${accent === 'amber' ? 'text-amber-400/70' : 'text-portal-emerald/70'}`}>{game.category}</span>
         <span className="font-orbitron text-slate-600">· {game._count?.entries ?? 0} plays</span>
       </div>
 
       {myEntry && (
-        <div className="absolute top-2 right-2 font-orbitron text-[8px] text-purple-400 bg-black/60 px-1.5 py-0.5 border border-purple-500/30">
+        <div className="absolute top-2 right-2 font-orbitron text-[8px] text-portal-emerald bg-black/60 backdrop-blur-sm rounded-xl px-1.5 py-0.5 border border-portal-emerald/30">
           {myEntry.aiScore ?? '—'}
         </div>
       )}
@@ -128,7 +125,7 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
   return (
     <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
       <div
-        className="bg-[#0d0017] border border-purple-500/40 max-w-lg w-full p-6 shadow-[0_0_60px_rgba(168,85,247,0.15)] max-h-[85vh] overflow-y-auto"
+        className="bg-[#03060A] border border-portal-emerald/40 max-w-lg w-full p-6 shadow-[0_0_60px_rgba(0,255,163,0.15)] max-h-[85vh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-start justify-between mb-4">
@@ -160,7 +157,7 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
               <p className="font-rajdhani text-slate-500 text-xs mt-1">{result.entry.aiFeedback}</p>
             )}
             {typeof result.xpAwarded === 'number' && result.xpAwarded > 0 && (
-              <p className="font-orbitron text-purple-400 text-xs mt-2">+{result.xpAwarded} XP awarded</p>
+              <p className="font-orbitron text-portal-emerald text-xs mt-2">+{result.xpAwarded} XP awarded</p>
             )}
           </div>
         ) : (
@@ -170,7 +167,7 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
               onChange={e => setResponse(e.target.value)}
               placeholder="Type your answer / submission..."
               rows={4}
-              className="w-full bg-black/40 border border-purple-500/20 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-purple-400/50 mb-3"
+              className="w-full bg-black/40 backdrop-blur-sm rounded-lg border border-portal-emerald/20 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-portal-emerald/50 mb-3"
             />
             {error && <p className="font-rajdhani text-red-400 text-xs mb-2">{error}</p>}
             <GlowButton variant="primary" size="md" loading={submitting} onClick={submit} className="w-full">
@@ -180,11 +177,11 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
         )}
 
         {isVoteBattle && entries.length > 0 && (
-          <div className="mt-5 pt-4 border-t border-purple-500/15">
-            <p className="font-orbitron text-[10px] text-purple-400 tracking-widest uppercase mb-2">Vote for the best entry</p>
+          <div className="mt-5 pt-4 border-t border-portal-emerald/15">
+            <p className="font-orbitron text-[10px] text-portal-emerald tracking-widest uppercase mb-2">Vote for the best entry</p>
             <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
               {entries.map(e => (
-                <div key={e.id} className="border border-purple-500/10 p-2.5 flex items-center gap-3">
+                <div key={e.id} className="border border-portal-emerald/10 p-2.5 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-rajdhani text-slate-300 text-xs truncate">{e.response}</p>
                     <p className="font-orbitron text-[9px] text-slate-600">{e.user?.nickname || e.user?.name} · {e.votes || 0} votes</p>
@@ -192,7 +189,7 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
                   <button
                     onClick={() => vote(e.id)}
                     disabled={myVotes.includes(e.id)}
-                    className="font-orbitron text-[9px] text-purple-300 border border-purple-500/40 px-2 py-1 disabled:opacity-30 hover:bg-purple-900/30"
+                    className="font-orbitron text-[9px] text-portal-emerald border border-portal-emerald/40 px-2 py-1 disabled:opacity-30 hover:bg-portal-emerald/[0.030]"
                   >
                     {myVotes.includes(e.id) ? 'VOTED' : 'VOTE'}
                   </button>
@@ -232,26 +229,24 @@ export default function ArenaPage() {
           {/* Tournament-bracket header — angled purple panel with converging corner
               lines, echoing the arena_games_ui reference's "high-stakes bracket" feel
               instead of a plain title bar. */}
-          <div className="relative overflow-hidden border border-purple-500/30 bg-gradient-to-r from-purple-950/50 via-[#0d0017] to-[#0d0017] px-5 py-5">
+          <div className="relative overflow-hidden border border-portal-emerald/30 bg-gradient-to-r from-portal-black/50 via-[#03060A] to-[#03060A] px-5 py-5">
             {/* converging bracket lines, pure CSS */}
             <svg className="absolute inset-0 w-full h-full opacity-40 pointer-events-none" preserveAspectRatio="none">
-              <line x1="0%" y1="0%" x2="14%" y2="50%" stroke="rgba(168,85,247,0.5)" strokeWidth="1" />
-              <line x1="0%" y1="100%" x2="14%" y2="50%" stroke="rgba(168,85,247,0.5)" strokeWidth="1" />
+              <line x1="0%" y1="0%" x2="14%" y2="50%" stroke="rgba(0,255,163,0.5)" strokeWidth="1" />
+              <line x1="0%" y1="100%" x2="14%" y2="50%" stroke="rgba(0,255,163,0.5)" strokeWidth="1" />
               <line x1="100%" y1="0%" x2="86%" y2="50%" stroke="rgba(245,158,11,0.4)" strokeWidth="1" />
               <line x1="100%" y1="100%" x2="86%" y2="50%" stroke="rgba(245,158,11,0.4)" strokeWidth="1" />
             </svg>
-            <span className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-purple-400/60" />
-            <span className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-amber-400/60" />
 
             <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <div className="font-orbitron text-[10px] text-purple-400/70 tracking-[0.4em] uppercase">Compete · Earn · Prove Worth</div>
+                <div className="font-orbitron text-[10px] text-portal-emerald/70 tracking-[0.4em] uppercase">Compete · Earn · Prove Worth</div>
                 <h1 className="font-orbitron font-black text-2xl text-white tracking-widest uppercase glow-text">Arena Protocol</h1>
                 <p className="font-rajdhani text-slate-500 text-sm mt-1">Structured mini-game engine — rapid challenges, ranked entries, real XP</p>
               </div>
-              <div className="flex items-center gap-2 border border-purple-500/30 bg-black/30 px-3 py-1.5">
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
-                <span className="font-orbitron text-[10px] text-purple-400 tracking-widest">GRID ONLINE</span>
+              <div className="flex items-center gap-2 border border-portal-emerald/30 bg-black/30 px-3 py-1.5">
+                <div className="w-2 h-2 bg-portal-emerald rounded-full animate-pulse" />
+                <span className="font-orbitron text-[10px] text-portal-emerald tracking-widest">GRID ONLINE</span>
               </div>
             </div>
           </div>
@@ -260,10 +255,10 @@ export default function ArenaPage() {
             <div className="flex flex-col gap-6">
               {loading ? (
                 <div className="flex items-center justify-center min-h-[30vh]">
-                  <div className="w-10 h-10 border-2 border-purple-500/30 border-t-purple-400 rounded-full animate-spin" />
+                  <div className="w-10 h-10 border-2 border-portal-emerald/30 border-t-portal-emerald rounded-full animate-spin" />
                 </div>
               ) : games.length === 0 ? (
-                <div className="bg-[#0d0017] border border-purple-500/20 p-12 text-center">
+                <div className="bg-[#03060A] border border-portal-emerald/20 p-12 text-center">
                   <div className="text-5xl mb-4 opacity-20">◆</div>
                   <p className="font-orbitron text-sm text-slate-600 tracking-widest">No Active Games</p>
                   <p className="font-rajdhani text-slate-700 text-sm mt-1">The Founder will deploy new games soon.</p>
@@ -276,8 +271,8 @@ export default function ArenaPage() {
               )}
             </div>
 
-            <div className="bg-[#0d0017] border border-purple-500/20 p-4 h-fit sticky top-20">
-              <h3 className="font-orbitron text-[10px] text-purple-400 tracking-widest uppercase mb-3 pb-2 border-b border-purple-500/15">
+            <div className="bg-[#03060A] border border-portal-emerald/20 p-4 h-fit sticky top-20">
+              <h3 className="font-orbitron text-[10px] text-portal-emerald tracking-widest uppercase mb-3 pb-2 border-b border-portal-emerald/15">
                 Arena Leaderboard
               </h3>
               <div className="flex flex-col gap-1.5">
@@ -285,9 +280,9 @@ export default function ArenaPage() {
                   <p className="font-rajdhani text-slate-700 text-xs text-center py-4">No entries yet.</p>
                 ) : leaderboard.map((u: any, i: number) => (
                   <div key={u.id} className="flex items-center gap-2 py-1">
-                    <span className={`font-orbitron text-xs w-4 ${i === 0 ? 'text-amber-400' : i < 3 ? 'text-purple-300' : 'text-slate-600'}`}>{i + 1}</span>
+                    <span className={`font-orbitron text-xs w-4 ${i === 0 ? 'text-amber-400' : i < 3 ? 'text-portal-emerald' : 'text-slate-600'}`}>{i + 1}</span>
                     <span className="font-rajdhani text-slate-300 text-sm truncate flex-1">{u.nickname || u.name}</span>
-                    <span className="font-orbitron text-[10px] text-purple-400">{u.xp?.toLocaleString?.() ?? u.xp}</span>
+                    <span className="font-orbitron text-[10px] text-portal-emerald">{u.xp?.toLocaleString?.() ?? u.xp}</span>
                   </div>
                 ))}
               </div>

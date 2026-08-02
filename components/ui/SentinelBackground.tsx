@@ -1,5 +1,7 @@
+// Teen-Hub/components/ui/SentinelBackground.tsx
 import { Component, useEffect, useState, type ReactNode } from 'react'
 import dynamic from 'next/dynamic'
+import { useUserProgress } from '@/hooks/useUserProgress'
 
 const LivingBackground = dynamic(() => import('../LivingBackground'), { ssr: false })
 
@@ -65,6 +67,7 @@ export default function SentinelBackground() {
   const [attempt, setAttempt] = useState(0)
   const [permanentlyFailed, setPermanentlyFailed] = useState(false)
   const [lastError, setLastError] = useState<{ message: string; stack?: string } | null>(null)
+  const progress = useUserProgress()
 
   useEffect(() => {
     setMounted(true)
@@ -95,7 +98,7 @@ export default function SentinelBackground() {
         </>
       ) : (
         <WebGLErrorBoundary key={attempt} onFail={handleFail}>
-          <LivingBackground reducedMotion={reducedMotion} />
+          <LivingBackground reducedMotion={reducedMotion} progress={progress} />
         </WebGLErrorBoundary>
       )}
     </div>
