@@ -27,11 +27,20 @@ type ModelConfig = {
 const MODELS: ModelConfig[] = [
   // butterfly.glb — Sketchfab model, multi-mesh body (wings/legs/antennae
   // as separate primitives), single combined "ArmatureAction" clip.
+  // Native bounding box ≈ 1.94 units (max dimension) — close to the
+  // original blue_butterfly.glb's ≈2.63, so no correction needed.
   { path: '/models/butterfly.glb', scaleMultiplier: 1, yawOffset: 0 },
   // butterfly-loop.glb — fully rigged single-mesh model with a
   // "take_off_and_land" clip (this is the one uploaded as
-  // "animated_flying_fluttering_butterfly_loop.glb").
-  { path: '/models/butterfly-loop.glb', scaleMultiplier: 1, yawOffset: 0 },
+  // "animated_flying_fluttering_butterfly_loop.glb"). Authored at a
+  // completely different real-world scale than the other two models —
+  // its native bounding box is ≈0.0012 units (max dimension), roughly
+  // 1/2000th the size of butterfly.glb. Without this correction it renders
+  // at a few pixels and is effectively invisible at the scene's camera
+  // distance — this is why half the flock (every modelIndex===1 instance)
+  // wasn't showing up. 1600x brings its apparent size back in line with
+  // the other model's so both read as roughly the same-size butterfly.
+  { path: '/models/butterfly-loop.glb', scaleMultiplier: 1600, yawOffset: 0 },
 ]
 
 // Compensates for the model's own authored forward axis so "yaw 0" reads as
@@ -218,12 +227,41 @@ function Butterfly({ config }: { config: FlightConfig }) {
   const [tipsReady, setTipsReady] = useState(false)
 
   useEffect(() => {
-    // No material edit and no name-based hiding here — both GLBs render
-    // exactly as authored. (The old model had a stray Blender reference
-    // cube that needed hiding by name; neither of these two does, and
-    // butterfly.glb in particular has real body parts named "Cube*", so
-    // a generic "hide anything with cube in the name" rule would have
-    // deleted actual wings/legs.)
+    // Neither new GLB ships with emissiveFactor set (both are [0,0,0] —
+    // confirmed by inspecting the files directly), unlike the original
+    // blue_butterfly.glb which was authored fully emissive ([1,1,1]). This
+    // scene's lighting is deliberately dim (one soft ambient light plus a
+    // couple of low-intensity colored directional lights, per the "Living
+    // Digital Forest" mood) — a model that depends entirely on that
+    // lighting to be lit renders essentially black-on-black and is
+    // invisible, independent of scale or position. This was the actual
+    // cause of "I can't see any of the models", not the earlier scale bug.
+    //
+    // This sets each mesh's own base color texture as its emissive map too
+    // (emissive must start non-black for an emissiveMap to have any
+    // effect — it's multiplicative), so the butterfly becomes self-lit
+    // using its own real colors/pattern rather than an arbitrary tint.
+    // This is a visibility fix, not a recolor — "original models" still
+    // holds, this just makes the original texture read in the dark.
+    cloned.traverse(obj => {
+      const mesh = obj as THREE.Mesh
+      if (!mesh.isMesh) return
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+      for (const mat of materials) {
+        const std = mat as THREE.MeshStandardMaterial
+        if (!std.isMeshStandardMaterial) continue
+        std.emissive = new THREE.Color(0xffffff)
+        std.emissiveMap = std.map
+        std.emissiveIntensity = 0.7
+      }
+    })
+
+    // No name-based hiding here — both GLBs render exactly as authored.
+    // (The old model had a stray Blender reference cube that needed
+    // hiding by name; neither of these two does, and butterfly.glb in
+    // particular has real body parts named "Cube*", so a generic "hide
+    // anything with cube in the name" rule would have deleted actual
+    // wings/legs.)
 
     // Play every real animation clip on this model. Both source GLBs only
     // ship one meaningful clip each, so this just plays whatever's there.

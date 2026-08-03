@@ -12,11 +12,11 @@
 import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-type Clip = { src: string; poster: string }
+type Clip = { src: string }
 
 const CLIPS: Clip[] = [
-  { src: '/videos/portal-materializes.mp4', poster: '/videos/portal-materializes-poster.jpg' },
-  { src: '/videos/glowing-portal-forest.mp4', poster: '/videos/glowing-portal-forest-poster.jpg' },
+  { src: '/videos/portal-materializes.mp4' },
+  { src: '/videos/glowing-portal-forest.mp4' },
 ]
 
 export default function PortalIntro({ onDone }: { onDone: () => void }) {
@@ -54,7 +54,6 @@ export default function PortalIntro({ onDone }: { onDone: () => void }) {
           key={CLIPS[index].src}
           className="absolute inset-0 w-full h-full object-cover"
           src={CLIPS[index].src}
-          poster={CLIPS[index].poster}
           autoPlay
           muted
           playsInline
