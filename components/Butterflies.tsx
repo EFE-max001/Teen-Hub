@@ -5,10 +5,38 @@ import { useFrame } from '@react-three/fiber'
 import { useGLTF, useAnimations, Trail } from '@react-three/drei'
 import * as THREE from 'three'
 
-const MODEL_PATH = '/models/blue_butterfly.glb'
+// The flock now alternates between two real butterfly models rather than
+// one shared rig. The two source GLBs are authored completely differently
+// (different scale, different forward axis, different node names), so each
+// gets its own small config below instead of forcing them through one set
+// of assumptions.
+type ModelConfig = {
+  path: string
+  // Per-model scale correction. The two GLBs weren't authored at the same
+  // real-world scale as each other — tune this in one place if one model
+  // reads too big/small next to the other once you see it in the browser,
+  // rather than re-tuning every FLOCK entry's `scale`.
+  scaleMultiplier: number
+  // Compensates for this model's own authored forward axis, same idea as
+  // the old shared BASE_YAW — but per-model, since the two GLBs weren't
+  // rigged facing the same way. Start at 0 and nudge in ~Math.PI/2 steps
+  // if a model appears to fly sideways or backwards.
+  yawOffset: number
+}
+
+const MODELS: ModelConfig[] = [
+  // butterfly.glb — Sketchfab model, multi-mesh body (wings/legs/antennae
+  // as separate primitives), single combined "ArmatureAction" clip.
+  { path: '/models/butterfly.glb', scaleMultiplier: 1, yawOffset: 0 },
+  // butterfly-loop.glb — fully rigged single-mesh model with a
+  // "take_off_and_land" clip (this is the one uploaded as
+  // "animated_flying_fluttering_butterfly_loop.glb").
+  { path: '/models/butterfly-loop.glb', scaleMultiplier: 1, yawOffset: 0 },
+]
 
 // Compensates for the model's own authored forward axis so "yaw 0" reads as
-// "facing the direction of travel" rather than side-on.
+// "facing the direction of travel" rather than side-on. Applies on top of
+// each model's own yawOffset above.
 const BASE_YAW = Math.PI * 0.15
 
 type Behavior = 'hover' | 'orbit' | 'roam'
@@ -27,6 +55,9 @@ type FlightConfig = {
   color: string
   colorB: string
   trail: boolean
+  // Which entry in MODELS this instance uses — alternated across the flock
+  // (see the default export below) so both real models are represented.
+  modelIndex: 0 | 1
   // "Intelligent butterflies" — one instance in the flock ignores the
   // procedural wander entirely and tracks the cursor instead. See the
   // followCursor branch in Butterfly()'s useFrame below.
@@ -38,7 +69,7 @@ type FlightConfig = {
 // that travel far and wide, mid-size ones looping in slow orbits (some
 // clockwise, some not — they shouldn't all bank the same way), and small
 // ones just hovering close to center for texture.
-const FLOCK: Array<Omit<FlightConfig, 'color' | 'colorB' | 'trail'>> = [
+const FLOCK: Array<Omit<FlightConfig, 'color' | 'colorB' | 'trail' | 'modelIndex'>> = [
   { home: new THREE.Vector3(-1.7, 3.6, -0.5), area: new THREE.Vector3(2.6, 0.5, 0.5), speed: 0.22, seed: 0.3, scale: 0.26, behavior: 'roam', orbitDir: 1 },
   { home: new THREE.Vector3(1.9, 2.6, 0.1), area: new THREE.Vector3(0.9, 0.35, 0.45), speed: 0.4, seed: 2.1, scale: 0.15, behavior: 'orbit', orbitDir: 1 },
   { home: new THREE.Vector3(-1.9, 2.2, 0.15), area: new THREE.Vector3(0.16, 0.1, 0.12), speed: 0.6, seed: 4.4, scale: 0.07, behavior: 'hover', orbitDir: 1 },
@@ -161,7 +192,8 @@ function flightPosition(cfg: FlightConfig, t: number, out: THREE.Vector3) {
 }
 
 function Butterfly({ config }: { config: FlightConfig }) {
-  const { scene, animations } = useGLTF(MODEL_PATH)
+  const model = MODELS[config.modelIndex] ?? MODELS[0]
+  const { scene, animations } = useGLTF(model.path)
   // deep-clone the loaded hierarchy so each butterfly instance can animate
   // and flap independently — geometries/materials are shared by reference
   // until we override them below, so this stays cheap
@@ -169,9 +201,9 @@ function Butterfly({ config }: { config: FlightConfig }) {
   const groupRef = useRef<THREE.Group>(null!)
   const { actions, mixer } = useAnimations(animations, cloned)
 
-  // per-instance wing-beat bob: frequency/phase/amplitude vary so 25
-  // butterflies never bounce in lockstep. Kept separate from the position
-  // used for heading/banking below so the bob doesn't make turns jittery.
+  // per-instance wing-beat bob: frequency/phase/amplitude vary so butterflies
+  // never bounce in lockstep. Kept separate from the position used for
+  // heading/banking below so the bob doesn't make turns jittery.
   const bob = useMemo(
     () => ({
       freq: 7 + Math.random() * 5,
@@ -186,32 +218,25 @@ function Butterfly({ config }: { config: FlightConfig }) {
   const [tipsReady, setTipsReady] = useState(false)
 
   useEffect(() => {
-    cloned.traverse(obj => {
-      const mesh = obj as THREE.Mesh
-      if (!mesh.isMesh) return
-      // The source GLB carries a leftover Blender reference cube (node
-      // "Cube", mesh "Cube.001") parented alongside the two real wing
-      // pieces, offset ~1.8 units from the body with its own transform
-      // animation (CubeAction). It has nothing to do with the butterfly —
-      // hide it rather than material it, or every instance drags a stray
-      // glowing box through the scene.
-      if (/cube/i.test(obj.name)) {
-        mesh.visible = false
-        return
-      }
-      // No material edit at all now — the model's own material renders
-      // as authored, full stop.
-    })
-    // Only play the two real wing-flap clips. CubeAction is intentionally
-    // skipped (see above) — playing it just animates the hidden stray cube
-    // for no visual benefit.
-    Object.entries(actions).forEach(([name, action]) => {
-      if (!action || /cube/i.test(name)) return
+    // No material edit and no name-based hiding here — both GLBs render
+    // exactly as authored. (The old model had a stray Blender reference
+    // cube that needed hiding by name; neither of these two does, and
+    // butterfly.glb in particular has real body parts named "Cube*", so
+    // a generic "hide anything with cube in the name" rule would have
+    // deleted actual wings/legs.)
+
+    // Play every real animation clip on this model. Both source GLBs only
+    // ship one meaningful clip each, so this just plays whatever's there.
+    Object.entries(actions).forEach(([, action]) => {
+      if (!action) return
       action.reset().play()
       action.time = Math.random() * (action.getClip().duration || 1)
     })
     mixer.timeScale = 1.6 + Math.random() * 0.6
 
+    // Wing-tip trail anchors only exist for models that expose nodes named
+    // "wing_down"/"wing_up" — neither of the two new GLBs does, so trails
+    // simply don't render for them (tipsReady stays false, guarded below).
     if (config.trail) {
       const down = cloned.getObjectByName('wing_down') as THREE.Mesh | undefined
       const up = cloned.getObjectByName('wing_up') as THREE.Mesh | undefined
@@ -220,8 +245,6 @@ function Butterfly({ config }: { config: FlightConfig }) {
         down.add(downTipRef.current)
         upTipRef.current.position.copy(farthestCorner(up))
         up.add(upTipRef.current)
-        // parented directly to the wing nodes, so these inherit the flap
-        // rotation each frame automatically — no per-frame code needed
         setTipsReady(true)
       }
     }
@@ -289,7 +312,7 @@ function Butterfly({ config }: { config: FlightConfig }) {
       vz = _pos.z - _tmp.z
     }
 
-    const yaw = Math.atan2(vx, vz || 1e-4) + BASE_YAW
+    const yaw = Math.atan2(vx, vz || 1e-4) + BASE_YAW + model.yawOffset
     // sharper turn response than a smooth glider — butterflies bank hard
     // and quickly rather than easing into turns
     const bank = THREE.MathUtils.clamp(-vx * 7, -0.95, 0.95)
@@ -308,7 +331,7 @@ function Butterfly({ config }: { config: FlightConfig }) {
   const trailWidth = Math.max(0.4, config.scale * 3)
 
   return (
-    <group ref={groupRef} scale={config.scale}>
+    <group ref={groupRef} scale={config.scale * model.scaleMultiplier}>
       <primitive object={cloned} />
       {config.trail && tipsReady && (
         <>
@@ -334,6 +357,13 @@ function Butterfly({ config }: { config: FlightConfig }) {
   )
 }
 
+// TEMP DEBUG: while confirming the flock actually flies, ignore whatever
+// Scene.tsx passes in for reducedMotion/count and always render the full,
+// fully-animated flock. Set to false once movement is confirmed working —
+// leaving this on means a real visitor's reduced-motion preference (and
+// any perf-driven count trim) gets overridden.
+const FORCE_FULL_MOTION = true
+
 export default function Butterflies({
   colors,
   reducedMotion = false,
@@ -343,6 +373,11 @@ export default function Butterflies({
   reducedMotion?: boolean
   count?: number
 }) {
+  if (FORCE_FULL_MOTION) {
+    reducedMotion = false
+    count = undefined
+  }
+
   const flock = useMemo(() => {
     const n = count ?? FLOCK.length
     // Prefer peripheral homes (large |x|) over central ones when the count
@@ -363,7 +398,7 @@ export default function Butterflies({
       color: colors[i % colors.length],
       colorB: colors[(i + 1) % colors.length],
       // only the larger roam/orbit butterflies get a trail — keeps draw
-      // calls sane with a 25-strong flock and reads better anyway, since a
+      // calls sane with a large flock and reads better anyway, since a
       // trail on a tiny hovering butterfly just looks like noise
       trail: !reducedMotion && f.behavior !== 'hover' && f.scale > 0.09,
       // reduced motion keeps things alive (wings still flap via the baked
@@ -373,6 +408,11 @@ export default function Butterflies({
       followCursor: reducedMotion ? false : f.followCursor,
       behavior: reducedMotion ? ('hover' as Behavior) : f.behavior,
       area: reducedMotion ? f.area.clone().multiplyScalar(0.3) : f.area,
+      // Alternate between the two real models (see MODELS above) so the
+      // flock reads as mixed rather than N clones of one GLB. Indexed off
+      // position in the already-trimmed `picked` array (not FLOCK's
+      // original index) so a reduced `count` still gets an even split.
+      modelIndex: (i % 2) as 0 | 1,
     }))
   }, [colors, reducedMotion, count])
 
@@ -385,4 +425,5 @@ export default function Butterflies({
   )
 }
 
-useGLTF.preload(MODEL_PATH)
+useGLTF.preload('/models/butterfly.glb')
+useGLTF.preload('/models/butterfly-loop.glb')

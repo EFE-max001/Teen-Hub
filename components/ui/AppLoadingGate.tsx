@@ -18,6 +18,11 @@ const GATED_ROUTES = new Set(['/'])
 // moment rather than replaying every new tab/session.
 const INTRO_SEEN_KEY = 'questhub_intro_seen'
 
+// TEMP DEBUG: force the intro to play on every load while testing the new
+// videos, ignoring the once-per-device flag below. Flip back to false when
+// you're done — leaving this on means every visitor sees it every time.
+const FORCE_INTRO_EVERY_TIME = true
+
 export default function AppLoadingGate({ children }: { children: ReactNode }) {
   const router = useRouter()
   const isGated = GATED_ROUTES.has(router.pathname)
@@ -32,6 +37,10 @@ export default function AppLoadingGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isGated) return
+    if (FORCE_INTRO_EVERY_TIME) {
+      setIntroSeen(false)
+      return
+    }
     try {
       setIntroSeen(window.localStorage.getItem(INTRO_SEEN_KEY) === '1')
     } catch {
@@ -47,10 +56,12 @@ export default function AppLoadingGate({ children }: { children: ReactNode }) {
   const blocking = showLoader || introPending || showIntro
 
   function handleIntroDone() {
-    try {
-      window.localStorage.setItem(INTRO_SEEN_KEY, '1')
-    } catch {
-      // ignore — worst case the intro plays again next visit
+    if (!FORCE_INTRO_EVERY_TIME) {
+      try {
+        window.localStorage.setItem(INTRO_SEEN_KEY, '1')
+      } catch {
+        // ignore — worst case the intro plays again next visit
+      }
     }
     setIntroDone(true)
   }

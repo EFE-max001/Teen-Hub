@@ -1,140 +1,86 @@
 // Teen-Hub/components/ui/PortalIntro.tsx
 // components/ui/PortalIntro.tsx
 //
-// The "better portal introduction" from the redesign brief: black →
-// particles → butterfly → seed → portal forms → camera moves → homepage,
-// played once (see the localStorage flag in AppLoadingGate) as QuestHub's
-// signature arrival moment. Runs after the real scene's assets are already
-// ready — this sits on top of it as an opaque overlay and fades out at the
-// end to reveal the actual (already-loaded) homepage underneath, so there's
-// no additional wait beyond the sequence itself.
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+// QuestHub's arrival moment: after AppLoadingGate finishes loading assets,
+// this plays two videos back-to-back, full-screen and full-opacity —
+// portal-materializes.mp4, then glowing-portal-forest.mp4 — then fades out
+// to reveal the (already-loaded) homepage underneath. Shown once per
+// device (see the localStorage flag in AppLoadingGate).
+//
+// This is deliberately just the videos, foreground and full-strength — no
+// particle/butterfly/portal CSS choreography layered on or under them.
+import { useRef, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
-type Phase = 'black' | 'particles' | 'butterfly' | 'seed' | 'portal' | 'reveal'
+type Clip = { src: string; poster: string }
 
-// Weighted so the total lands close to the brief's "2 seconds" while still
-// giving each beat (particles → butterfly → seed → portal) room to read.
-const PHASE_DURATIONS: Record<Phase, number> = {
-  black: 200,
-  particles: 350,
-  butterfly: 450,
-  seed: 350,
-  portal: 900,
-  reveal: 550,
-}
-
-const PHASE_ORDER: Phase[] = ['black', 'particles', 'butterfly', 'seed', 'portal', 'reveal']
+const CLIPS: Clip[] = [
+  { src: '/videos/portal-materializes.mp4', poster: '/videos/portal-materializes-poster.jpg' },
+  { src: '/videos/glowing-portal-forest.mp4', poster: '/videos/glowing-portal-forest-poster.jpg' },
+]
 
 export default function PortalIntro({ onDone }: { onDone: () => void }) {
-  const [phaseIndex, setPhaseIndex] = useState(0)
-  const phase = PHASE_ORDER[phaseIndex]
+  const [index, setIndex] = useState(0)
+  const [revealing, setRevealing] = useState(false)
+  // guards against both the "last clip ends" path and the skip button
+  // firing the reveal twice
+  const revealStarted = useRef(false)
 
-  useEffect(() => {
-    if (phaseIndex >= PHASE_ORDER.length - 1) {
-      const id = setTimeout(onDone, PHASE_DURATIONS.reveal)
-      return () => clearTimeout(id)
+  function handleEnded() {
+    if (index < CLIPS.length - 1) {
+      setIndex(i => i + 1)
+    } else {
+      startReveal()
     }
-    const id = setTimeout(() => setPhaseIndex(i => i + 1), PHASE_DURATIONS[phase])
-    return () => clearTimeout(id)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phaseIndex])
+  }
 
-  const showParticles = phase !== 'black'
-  const showButterfly = phase === 'butterfly' || phase === 'seed' || phase === 'portal' || phase === 'reveal'
-  const showSeed = phase === 'seed' || phase === 'portal' || phase === 'reveal'
-  const showPortal = phase === 'portal' || phase === 'reveal'
-  const revealing = phase === 'reveal'
+  function startReveal() {
+    if (revealStarted.current) return
+    revealStarted.current = true
+    setRevealing(true)
+    // matches the container's fade-out transition below
+    setTimeout(onDone, 550)
+  }
 
   return (
     <motion.div
-      className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-[#03060A]"
+      className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-black"
       initial={{ opacity: 1 }}
       animate={{ opacity: revealing ? 0 : 1 }}
-      transition={{ duration: revealing ? 0.55 : 0.3, ease: 'easeInOut' }}
-      aria-hidden="true"
+      transition={{ duration: 0.55, ease: 'easeInOut' }}
     >
-      {/* Ambient particles drifting up — the "particles gather" beat */}
-      {showParticles && (
-        <div className="absolute inset-0">
-          {Array.from({ length: 18 }).map((_, i) => {
-            const left = 8 + ((i * 5.1) % 84)
-            const delay = (i % 6) * 0.09
-            const color = ['#00FFA3', '#00E5FF', '#FFC65C', '#8B5CF6', '#D9EDE6'][i % 5]
-            return (
-              <motion.span
-                key={i}
-                className="absolute bottom-0 rounded-full"
-                style={{ left: `${left}%`, width: 3, height: 3, background: color, boxShadow: `0 0 6px ${color}` }}
-                initial={{ y: 0, opacity: 0 }}
-                animate={{ y: -420, opacity: [0, 0.9, 0] }}
-                transition={{ duration: 2.6, delay, repeat: Infinity, ease: 'easeOut' }}
-              />
-            )
-          })}
-        </div>
+      <AnimatePresence mode="wait">
+        <motion.video
+          key={CLIPS[index].src}
+          className="absolute inset-0 w-full h-full object-cover"
+          src={CLIPS[index].src}
+          poster={CLIPS[index].poster}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          onEnded={handleEnded}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+        />
+      </AnimatePresence>
+
+      {/* Skip — two 10s clips back-to-back is a real wait on a first visit;
+          this lets an impatient visitor straight through instead of
+          forcing the full ~20s every time. */}
+      {!revealing && (
+        <motion.button
+          onClick={startReveal}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 0.4 }}
+          className="absolute bottom-6 right-6 z-10 text-[11px] tracking-wider text-white/50 hover:text-[#00E5FF] underline underline-offset-4 transition-colors"
+        >
+          Skip intro
+        </motion.button>
       )}
-
-      {/* Camera-move stand-in: the whole formation drifts inward/upward
-          slightly and settles as the portal completes, echoing "camera
-          moves" without needing an actual 3D camera for this overlay. */}
-      <motion.div
-        className="relative flex flex-col items-center justify-center"
-        animate={{ scale: showPortal ? 1 : 0.92, y: showPortal ? 0 : 10 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      >
-        {/* Butterfly — "one lands" per the brief's butterfly behavior notes */}
-        {showButterfly && (
-          <motion.div
-            className="absolute text-2xl"
-            initial={{ opacity: 0, x: -60, y: -30, rotate: -20 }}
-            animate={{ opacity: showSeed ? 0.85 : 1, x: 0, y: showSeed ? -70 : -20, rotate: 0 }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-            style={{ filter: 'drop-shadow(0 0 8px rgba(0,255,163,0.6))' }}
-          >
-            🦋
-          </motion.div>
-        )}
-
-        {/* Seed — a small glowing core the portal forms around */}
-        {showSeed && (
-          <motion.div
-            className="rounded-full"
-            initial={{ opacity: 0, scale: 0.3 }}
-            animate={{ opacity: 1, scale: showPortal ? 1.3 : 1 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-            style={{
-              width: 10,
-              height: 10,
-              background: '#FFC65C',
-              boxShadow: '0 0 18px 6px rgba(255,198,92,0.7)',
-            }}
-          />
-        )}
-
-        {/* Portal — the actual generated "portal materializes" footage,
-            circle-masked and sped up so its formation reads clearly in
-            the ~1s this phase has, rather than the hand-drawn SVG ring
-            this replaced. */}
-        {showPortal && (
-          <div
-            className="absolute rounded-full overflow-hidden"
-            style={{ width: 240, height: 240, boxShadow: '0 0 40px 12px rgba(0,229,255,0.35)' }}
-          >
-            <video
-              className="w-full h-full object-cover"
-              src="/videos/portal-materializes.mp4"
-              poster="/videos/portal-materializes-poster.jpg"
-              autoPlay
-              muted
-              playsInline
-              ref={el => {
-                if (el) el.playbackRate = 2.2
-              }}
-            />
-          </div>
-        )}
-      </motion.div>
     </motion.div>
   )
 }
