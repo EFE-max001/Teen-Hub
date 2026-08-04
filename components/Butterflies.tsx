@@ -13,11 +13,6 @@ import * as THREE from "three";
 // of assumptions.
 type ModelConfig = {
   path: string;
-  // Per-model scale correction. The two GLBs weren't authored at the same
-  // real-world scale as each other — tune this in one place if one model
-  // reads too big/small next to the other once you see it in the browser,
-  // rather than re-tuning every FLOCK entry's `scale`.
-  scaleMultiplier: number;
   // Compensates for this model's own authored forward axis, same idea as
   // the old shared BASE_YAW — but per-model, since the two GLBs weren't
   // rigged facing the same way. Start at 0 and nudge in ~Math.PI/2 steps
@@ -25,36 +20,40 @@ type ModelConfig = {
   yawOffset: number;
 };
 
+// Per-model size correction is no longer hand-guessed here — see
+// `autoScale` in Butterfly() below, which measures each clone's actual
+// bounding box at load time and normalizes it to butterfly.glb's own
+// native size. That's what keeps every model in this list reading as the
+// same apparent size, automatically, even though they're authored at
+// completely different native scales.
 const MODELS: ModelConfig[] = [
   // butterfly.glb — Sketchfab model, multi-mesh body (wings/legs/antennae
   // as separate primitives), single combined "ArmatureAction" clip.
-  // Native bounding box ≈ 1.94 units (max dimension) — close to the
-  // original blue_butterfly.glb's ≈2.63, so no correction needed.
-  { path: "/models/butterfly.glb", scaleMultiplier: 1, yawOffset: 0 },
-  // butterfly-loop.glb — fully rigged single-mesh model with a
-  // "take_off_and_land" clip (this is the one uploaded as
-  // "animated_flying_fluttering_butterfly_loop.glb"). Authored at a
-  // completely different real-world scale than the other two models —
-  // its native bounding box is ≈0.0012 units (max dimension), roughly
-  // 1/2000th the size of butterfly.glb. Without this correction it renders
-  // at a few pixels and is effectively invisible at the scene's camera
-  // distance — this is why half the flock (every modelIndex===1 instance)
-  // wasn't showing up. 1600x brings its apparent size back in line with
-  // the other model's so both read as roughly the same-size butterfly.
-  { path: "/models/butterfly-loop.glb", scaleMultiplier: 1600, yawOffset: 0 },
+  { path: "/models/butterfly.glb", yawOffset: 0 },
+  // butterfly-cartoon.glb — stylized low-poly cartoon butterfly. Animates
+  // via ~12 directly-keyframed parts (wings/body/antennae as separate
+  // rigid meshes), NOT a bone skeleton — deliberately chosen to replace
+  // butterfly-loop.glb, whose 59-joint skinned rig rendered as one
+  // enormous broken shape at runtime (root cause never fully isolated
+  // beyond "something in its posed skinning"; see git history). A model
+  // with no skinning at all can't hit that failure mode. Its wing/body
+  // materials also ship with a cyan/teal emissive glow already baked in —
+  // see the emissive useEffect below, which now preserves that instead of
+  // overwriting it.
+  { path: "/models/butterfly-cartoon.glb", yawOffset: 0 },
 ];
 
 // Compensates for the model's own authored forward axis so "yaw 0" reads as
 // "facing the direction of travel" rather than side-on. Applies on top of
 // each model's own yawOffset above.
-// Single global size knob — separate from each model's own scaleMultiplier
-// (which only corrects for the two models' different native authoring
-// scales relative to each other). Tune this one number to make the whole
-// flock uniformly bigger/smaller without disturbing that per-model
-// calibration. Original FLOCK `scale` values (0.05–0.26) were sized against
-// blue_butterfly.glb; 0.6 brings the new, larger-reading models down to a
-// comparable on-screen size — adjust up/down and eyeball it in the browser.
-const GLOBAL_SCALE = 0.6;
+// Single global size knob — applied on top of each model's auto-normalized
+// bounding box (see `autoScale` below) and each FLOCK entry's own `scale`.
+// Tune this one number to make the whole flock uniformly bigger/smaller.
+// Was 0.6 (sized against blue_butterfly.glb, then re-verified correct for
+// butterfly.glb via independent GLTF-level measurement). Bumped to 0.75 —
+// a modest ~25% increase — since the flock read too small at 0.6. Nudge
+// further in small steps rather than jumping if it still needs tuning.
+const GLOBAL_SCALE = 1.20;
 
 const BASE_YAW = Math.PI * 0.15;
 
@@ -413,8 +412,12 @@ function flightPosition(cfg: FlightConfig, t: number, out: THREE.Vector3) {
 function Butterfly({ config }: { config: FlightConfig }) {
   const model = MODELS[config.modelIndex] ?? MODELS[0];
   const { scene, animations } = useGLTF(model.path);
-  // Both butterfly.glb and butterfly-loop.glb use skeletal skinning
-  // (confirmed by inspecting the source files — each has one glTF "skin").
+  // butterfly.glb uses skeletal skinning (confirmed by inspecting the
+  // source file — it has one glTF "skin"). butterfly-cartoon.glb doesn't
+  // (verified via direct GLTF inspection — 0 skins, animates through
+  // direct per-part keyframes instead), but SkeletonUtils.clone() works
+  // correctly on non-skinned hierarchies too, so it's used unconditionally
+  // for both rather than branching per model.
   // Plain Object3D.clone(true) does NOT correctly clone SkinnedMesh bone
   // bindings — the clone ends up with a broken/degenerate bounding sphere,
   // which Three.js's frustum culling then silently treats as out of view.
@@ -428,6 +431,53 @@ function Butterfly({ config }: { config: FlightConfig }) {
     () => SkeletonUtils.clone(scene) as THREE.Group,
     [scene],
   );
+  // Normalize every model to butterfly.glb's own native size (measured via
+  // console.log: maxDim ≈ 1.93669) rather than an arbitrary "1 unit". This
+  // matters: GLOBAL_SCALE, every FLOCK `scale` value, and the trail-width
+  // formula below were all originally tuned assuming a butterfly renders
+  // at roughly this size. Normalizing to exactly 1 unit (an earlier
+  // version of this fix) silently shrank every butterfly's body to about
+  // half that — while trailWidth, unchanged, stayed calibrated to the
+  // larger original size. The result: a trail ribbon 3-5x wider than the
+  // (now smaller) body it was following — almost certainly the huge,
+  // static-looking, hazy shape reported in testing. Anchoring to this
+  // model's own real native size keeps every existing tuned constant
+  // (GLOBAL_SCALE, FLOCK scales, trailWidth) valid without retuning them.
+  const REFERENCE_MAX_DIM = 1.93669;
+  const autoScale = useMemo(() => {
+    const box = new THREE.Box3();
+    let hasMesh = false;
+    cloned.traverse((obj) => {
+      const mesh = obj as THREE.Mesh;
+      if (!mesh.isMesh || !mesh.geometry) return;
+      mesh.geometry.computeBoundingBox?.();
+      if (!mesh.geometry.boundingBox) return;
+      const meshBox = mesh.geometry.boundingBox.clone();
+      meshBox.applyMatrix4(mesh.matrixWorld);
+      box.union(meshBox);
+      hasMesh = true;
+    });
+    const size = new THREE.Vector3();
+    if (hasMesh) box.getSize(size);
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const raw =
+      maxDim > 0 && Number.isFinite(maxDim) ? REFERENCE_MAX_DIM / maxDim : 1;
+    // Expected range given the two known models (~1.94 and ~0.0012):
+    // roughly 1x to ~1650x. Clamp well outside that so a bad measurement
+    // can't blow a model up, without constraining legitimate values.
+    const clamped = THREE.MathUtils.clamp(raw, 0.3, 3000);
+    // eslint-disable-next-line no-console
+    console.log(
+      `[Butterflies] ${model.path} bbox size:`,
+      size.toArray().map((v) => v.toFixed(5)),
+      "maxDim:",
+      maxDim.toFixed(5),
+      "autoScale:",
+      clamped.toFixed(3),
+      raw !== clamped ? "(CLAMPED — raw was " + raw.toFixed(3) + ")" : "",
+    );
+    return clamped;
+  }, [cloned, model.path]);
   const groupRef = useRef<THREE.Group>(null!);
   const { actions, mixer } = useAnimations(animations, cloned);
 
@@ -448,22 +498,16 @@ function Butterfly({ config }: { config: FlightConfig }) {
   const [tipsReady, setTipsReady] = useState(false);
 
   useEffect(() => {
-    // Neither new GLB ships with emissiveFactor set (both are [0,0,0] —
-    // confirmed by inspecting the files directly), unlike the original
-    // blue_butterfly.glb which was authored fully emissive ([1,1,1]). This
-    // scene's lighting is deliberately dim (one soft ambient light plus a
-    // couple of low-intensity colored directional lights, per the "Living
-    // Digital Forest" mood) — a model that depends entirely on that
-    // lighting to be lit renders essentially black-on-black and is
-    // invisible, independent of scale or position. This was the actual
-    // cause of "I can't see any of the models", not the earlier scale bug.
-    //
-    // This sets each mesh's own base color texture as its emissive map too
-    // (emissive must start non-black for an emissiveMap to have any
-    // effect — it's multiplicative), so the butterfly becomes self-lit
-    // using its own real colors/pattern rather than an arbitrary tint.
-    // This is a visibility fix, not a recolor — "original models" still
-    // holds, this just makes the original texture read in the dark.
+    // Neither butterfly.glb nor the original butterfly-loop.glb shipped
+    // with emissiveFactor set (both were [0,0,0]), unlike the scene's
+    // deliberately dim lighting — a model relying only on that lighting
+    // renders essentially black-on-black. butterfly-cartoon.glb (the
+    // replacement for butterfly-loop.glb) is different: its wing/body
+    // materials already ship with a real cyan/teal emissiveFactor baked
+    // in by the artist, which happens to already match this scene's cyan
+    // palette — so this only applies the "borrow the base color as an
+    // emissive map" fix to materials that are still black-emissive, and
+    // leaves any material that already has its own authored glow alone.
     cloned.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
       if (!mesh.isMesh) return;
@@ -473,6 +517,12 @@ function Butterfly({ config }: { config: FlightConfig }) {
       for (const mat of materials) {
         const std = mat as THREE.MeshStandardMaterial;
         if (!std.isMeshStandardMaterial) continue;
+        const alreadyGlowing =
+          std.emissive &&
+          (std.emissive.r > 0.001 ||
+            std.emissive.g > 0.001 ||
+            std.emissive.b > 0.001);
+        if (alreadyGlowing) continue;
         std.emissive = new THREE.Color(0xffffff);
         std.emissiveMap = std.map;
         std.emissiveIntensity = 0.7;
@@ -493,7 +543,13 @@ function Butterfly({ config }: { config: FlightConfig }) {
       action.reset().play();
       action.time = Math.random() * (action.getClip().duration || 1);
     });
-    mixer.timeScale = 1.6 + Math.random() * 0.6;
+    // Wing-flap animation playback speed. Was 1.6 + random*0.6 (1.6x-2.2x
+    // the clip's authored speed) — too fast, especially on larger/closer
+    // butterflies where the same flap rate reads as more frantic simply
+    // because it covers more screen space. 1.0 = the clip's natural
+    // authored speed. Steadier now: 0.85x-1.05x, much less variance
+    // between individual butterflies too.
+    mixer.timeScale = 0.85 + Math.random() * 0.2;
 
     // Wing-tip trail anchors only exist for models that expose nodes named
     // "wing_down"/"wing_up" — neither of the two new GLBs does, so trails
@@ -608,7 +664,7 @@ function Butterfly({ config }: { config: FlightConfig }) {
   return (
     <group
       ref={groupRef}
-      scale={config.scale * model.scaleMultiplier * GLOBAL_SCALE}
+      scale={config.scale * autoScale * GLOBAL_SCALE}
     >
       <primitive object={cloned} />
       {config.trail && tipsReady && (
@@ -681,6 +737,10 @@ export default function Butterflies({
       // only the larger roam/orbit butterflies get a trail — keeps draw
       // calls sane with a large flock and reads better anyway, since a
       // trail on a tiny hovering butterfly just looks like noise
+      //
+      // only the larger roam/orbit butterflies get a trail — keeps draw
+      // calls sane with a large flock and reads better anyway, since a
+      // trail on a tiny hovering butterfly just looks like noise
       trail: !reducedMotion && f.behavior !== "hover" && f.scale > 0.09,
       // reduced motion keeps things alive (wings still flap via the baked
       // clip, gentle hover stays on) but drops long-distance travel — and
@@ -707,4 +767,4 @@ export default function Butterflies({
 }
 
 useGLTF.preload("/models/butterfly.glb");
-useGLTF.preload("/models/butterfly-loop.glb");
+useGLTF.preload("/models/butterfly-cartoon.glb");
