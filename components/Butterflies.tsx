@@ -1,7 +1,7 @@
 // Teen-Hub/components/Butterflies.tsx
 // components/Butterflies.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, useAnimations, Trail } from "@react-three/drei";
 import { SkeletonUtils } from "three-stdlib";
 import * as THREE from "three";
@@ -113,7 +113,7 @@ const FLOCK: Array<
     area: new THREE.Vector3(0.16, 0.1, 0.12),
     speed: 0.6,
     seed: 4.4,
-    scale: 0.07,
+    scale: 0.12,
     behavior: "hover",
     orbitDir: 1,
   },
@@ -131,7 +131,7 @@ const FLOCK: Array<
     area: new THREE.Vector3(0.14, 0.08, 0.1),
     speed: 0.55,
     seed: 8.8,
-    scale: 0.06,
+    scale: 0.11,
     behavior: "hover",
     orbitDir: 1,
   },
@@ -150,7 +150,7 @@ const FLOCK: Array<
     area: new THREE.Vector3(0.18, 0.1, 0.12),
     speed: 0.5,
     seed: 3.5,
-    scale: 0.08,
+    scale: 0.13,
     behavior: "hover",
     orbitDir: 1,
   },
@@ -168,7 +168,7 @@ const FLOCK: Array<
     area: new THREE.Vector3(0.13, 0.08, 0.1),
     speed: 0.62,
     seed: 7.3,
-    scale: 0.065,
+    scale: 0.11,
     behavior: "hover",
     orbitDir: 1,
   },
@@ -186,7 +186,7 @@ const FLOCK: Array<
     area: new THREE.Vector3(0.12, 0.07, 0.09),
     speed: 0.58,
     seed: 0.9,
-    scale: 0.05,
+    scale: 0.10,
     behavior: "hover",
     orbitDir: -1,
   },
@@ -213,7 +213,7 @@ const FLOCK: Array<
     area: new THREE.Vector3(0.5, 0.2, 0.25),
     speed: 0.42,
     seed: 15.1,
-    scale: 0.09,
+    scale: 0.13,
     behavior: "orbit",
     orbitDir: 1,
   },
@@ -222,7 +222,7 @@ const FLOCK: Array<
     area: new THREE.Vector3(0.45, 0.22, 0.25),
     speed: 0.47,
     seed: 17.8,
-    scale: 0.08,
+    scale: 0.13,
     behavior: "orbit",
     orbitDir: -1,
   },
@@ -240,7 +240,7 @@ const FLOCK: Array<
     area: new THREE.Vector3(0.2, 0.1, 0.12),
     speed: 0.53,
     seed: 21.0,
-    scale: 0.06,
+    scale: 0.11,
     behavior: "hover",
     orbitDir: -1,
   },
@@ -249,7 +249,7 @@ const FLOCK: Array<
     area: new THREE.Vector3(0.18, 0.09, 0.1),
     speed: 0.57,
     seed: 23.3,
-    scale: 0.055,
+    scale: 0.10,
     behavior: "hover",
     orbitDir: 1,
   },
@@ -294,7 +294,7 @@ const FLOCK: Array<
     area: new THREE.Vector3(0.2, 0.12, 0.12),
     speed: 0.51,
     seed: 33.8,
-    scale: 0.065,
+    scale: 0.11,
     behavior: "hover",
     orbitDir: 1,
   },
@@ -303,7 +303,7 @@ const FLOCK: Array<
     area: new THREE.Vector3(0.19, 0.11, 0.12),
     speed: 0.49,
     seed: 35.2,
-    scale: 0.06,
+    scale: 0.11,
     behavior: "hover",
     orbitDir: -1,
   },
@@ -496,6 +496,7 @@ function Butterfly({ config }: { config: FlightConfig }) {
   const downTipRef = useRef<THREE.Object3D>(new THREE.Object3D());
   const upTipRef = useRef<THREE.Object3D>(new THREE.Object3D());
   const [tipsReady, setTipsReady] = useState(false);
+  const { gl } = useThree();
 
   useEffect(() => {
     // Neither butterfly.glb nor the original butterfly-loop.glb shipped
@@ -517,15 +518,53 @@ function Butterfly({ config }: { config: FlightConfig }) {
       for (const mat of materials) {
         const std = mat as THREE.MeshStandardMaterial;
         if (!std.isMeshStandardMaterial) continue;
+
+        // Wing meshes in both GLBs are thin single-layer planes with only
+        // one face wound outward. THREE defaults to FrontSide, which
+        // backface-culls the other side — so depending on which way a
+        // given wing is banked/turned mid-flight (see the bank/yaw/pitch
+        // rotation in useFrame below), that wing can flicker to fully
+        // invisible for part of the animation. DoubleSide keeps both
+        // faces of every wing rendering no matter which way it's turned.
+        std.side = THREE.DoubleSide;
+
+        // The wing texture itself is a real 2048x2048 source image — plenty
+        // of detail. But GLTFLoader/three.js leaves texture.anisotropy at
+        // its default of 1 unless told otherwise, and at anisotropy 1 the
+        // GPU aggressively blurs a texture whenever it's viewed at a
+        // shallow angle rather than dead-on — exactly the situation a wing
+        // is in for most of every flap/bank/turn. Raising it to the GPU's
+        // actual max (usually 8 or 16, capped per-device) makes the GPU
+        // sample the texture properly at those angles instead of mip-blurring
+        // it into a soft blob, independent of the on-screen pixel size fix.
+        if (std.map) {
+          std.map.anisotropy = gl.capabilities.getMaxAnisotropy();
+          std.map.needsUpdate = true;
+        }
+
         const alreadyGlowing =
           std.emissive &&
           (std.emissive.r > 0.001 ||
             std.emissive.g > 0.001 ||
             std.emissive.b > 0.001);
         if (alreadyGlowing) continue;
+
+        // Previously: emissive = white, emissiveMap = the diffuse map
+        // itself, intensity 0.7. Emissive output isn't affected by light
+        // direction or the material's normal map, so stacking a
+        // full-strength copy of the diffuse map on top of the diffuse map
+        // it was already showing didn't just "lift it out of the dark" —
+        // it flattened every bit of real shading (normal-map detail,
+        // roughness response, the light/dark modeling that makes a wing
+        // read as a textured surface instead of a paper cutout). That's
+        // the "can't see the surface" look. Dropping intensity to just
+        // enough to keep the wing visible against the dark background,
+        // while leaving the base map/normalMap/roughness alone, lets the
+        // actual scene lighting keep doing its job so wing texture and
+        // pattern detail stays visible instead of getting blown out.
         std.emissive = new THREE.Color(0xffffff);
         std.emissiveMap = std.map;
-        std.emissiveIntensity = 0.7;
+        std.emissiveIntensity = 0.18;
       }
     });
 

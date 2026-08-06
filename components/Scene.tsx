@@ -9,6 +9,7 @@ import Stars from './Stars'
 import Portal from './Portal'
 import HeartSeed from './HeartSeed'
 import Crystal from './Crystal'
+import Trees from './Trees'
 
 // "Living Digital Forest" palette — tech + magic + nature. Cyan carries
 // the tech read, gold carries magic, emerald carries nature, violet
@@ -119,9 +120,24 @@ export default function Scene({
       <Grid color={COLORS.navy} />
 
       <Suspense fallback={null}>
+        {/* Was built but never rendered anywhere — this is the actual "3D
+            forest" layer the scene has been missing. Purely procedural
+            (glowing trunk/branch/node geometry, no external GLB), so it
+            costs nothing to load and matches the fresnel-glow material
+            already used on the portal and crystals. */}
+        <Trees reducedMotion={reducedMotion} />
         <Portal center={[0, 2.4, -0.3]} radius={1.9} reducedMotion={reducedMotion} />
         <HeartSeed position={[0, 2.4, -0.3]} glowColor={COLORS.gold} reducedMotion={reducedMotion} />
         <Crystal position={[2.6, 3.6, -0.8]} color={COLORS.cyan} scale={0.8} reducedMotion={reducedMotion} brightness={crystalBrightness} />
+        {/* Mirrors the original crystal onto the left side, smaller and
+            further back, so the scene doesn't read as lopsided/empty when
+            the camera drifts. Uses the emerald palette color to reinforce
+            the "nature" half of the tech+magic+nature read, and a lower
+            brightness multiplier since it's meant to recede, not compete. */}
+        <Crystal position={[-2.9, 3.1, -2.2]} color={COLORS.emerald} scale={0.5} reducedMotion={reducedMotion} brightness={crystalBrightness * 0.7} />
+        {/* A third, small and deep in the background — gives the scene a
+            sense of extending past the portal instead of stopping at it. */}
+        <Crystal position={[0.6, 1.6, -4.5]} color={COLORS.violet} scale={0.35} reducedMotion={reducedMotion} brightness={crystalBrightness * 0.5} />
         <Butterflies
           colors={[COLORS.cyan, COLORS.violet, COLORS.emerald, COLORS.gold]}
           reducedMotion={reducedMotion}
@@ -134,11 +150,11 @@ export default function Scene({
           budget. */}
       <EffectComposer multisampling={isMobile ? 0 : 4}>
         <Bloom
-          luminanceThreshold={0.12}
+          luminanceThreshold={0.2}
           luminanceSmoothing={0.4}
-          intensity={isMobile ? 0.9 : 1.4}
+          intensity={isMobile ? 0.7 : 1.05}
           mipmapBlur
-          radius={0.65}
+          radius={0.6}
         />
         <Vignette eskil={false} offset={0.25} darkness={0.9} />
       </EffectComposer>
