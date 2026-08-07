@@ -9,7 +9,6 @@ import Stars from './Stars'
 import Portal from './Portal'
 import HeartSeed from './HeartSeed'
 import Crystal from './Crystal'
-import Trees from './Trees'
 
 // "Living Digital Forest" palette — tech + magic + nature. Cyan carries
 // the tech read, gold carries magic, emerald carries nature, violet
@@ -120,12 +119,6 @@ export default function Scene({
       <Grid color={COLORS.navy} />
 
       <Suspense fallback={null}>
-        {/* Was built but never rendered anywhere — this is the actual "3D
-            forest" layer the scene has been missing. Purely procedural
-            (glowing trunk/branch/node geometry, no external GLB), so it
-            costs nothing to load and matches the fresnel-glow material
-            already used on the portal and crystals. */}
-        <Trees reducedMotion={reducedMotion} />
         <Portal center={[0, 2.4, -0.3]} radius={1.9} reducedMotion={reducedMotion} />
         <HeartSeed position={[0, 2.4, -0.3]} glowColor={COLORS.gold} reducedMotion={reducedMotion} />
         <Crystal position={[2.6, 3.6, -0.8]} color={COLORS.cyan} scale={0.8} reducedMotion={reducedMotion} brightness={crystalBrightness} />
