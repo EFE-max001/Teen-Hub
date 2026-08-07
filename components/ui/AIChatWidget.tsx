@@ -11,6 +11,19 @@ interface Message {
   suggestionSent?: boolean
 }
 
+// SENTINEL's replies are written with **bold** markdown, but this widget is
+// plain text — so those asterisks were rendering literally. This renders just
+// the **bold** spans (no need to pull in a full markdown library for one tag).
+function renderContent(content: string) {
+  const parts = content.split(/(\*\*[^*]+\*\*)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+      return <strong key={i} className="font-semibold text-white">{part.slice(2, -2)}</strong>
+    }
+    return <span key={i}>{part}</span>
+  })
+}
+
 const SUGGESTIONS = [
   'How do I rank up?',
   'What is the trust score?',
@@ -186,7 +199,7 @@ export default function AIChatWidget() {
                   {m.role === 'assistant' && (
                     <div className="font-orbitron text-[8px] text-portal-emerald/60 mb-1 tracking-widest">SENTINEL</div>
                   )}
-                  <p className="font-rajdhani text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>
+                  <p className="font-rajdhani text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">{renderContent(m.content)}</p>
 
                   {/* Founder-only raw error detail — never shown to regular members */}
                   {m.debug && isFounder && (
