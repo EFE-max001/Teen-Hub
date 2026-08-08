@@ -13,6 +13,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const myId = session.user.id
 
   if (req.method === 'GET') {
+    // Check friendship (founders can always message anyone)
+    if (session.user.role !== 'FOUNDER') {
+      const friendship = await prisma.friendRequest.findFirst({
+        where: { status: 'ACCEPTED', OR: [{ fromId: myId, toId: otherId }, { fromId: otherId, toId: myId }] },
+      })
+      if (!friendship) return res.status(403).json({ error: 'You must be friends to read this conversation.' })
+    }
+
     const messages = await prisma.message.findMany({
       where: { OR: [{ fromId: myId, toId: otherId }, { fromId: otherId, toId: myId }] },
       orderBy: { createdAt: 'asc' },
@@ -24,6 +32,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'POST') {
     const { content } = req.body
     if (!content?.trim()) return res.status(400).json({ error: 'Empty message' })
+
+    // Enforce friend-only DMs (founders can message anyone in either mode)
+    if (session.user.role !== 'FOUNDER') {
+      const friendship = await prisma.friendRequest.findFirst({
+        where: { status: 'ACCEPTED', OR: [{ fromId: myId, toId: otherId }, { fromId: otherId, toId: myId }] },
+      })
+      if (!friendship) return res.status(403).json({ error: 'You can only message friends. Send a friend request first.' })
+    }
+
+    // Check if blocked
+    const block = await prisma.userBlock.findFirst({
+      where: { OR: [{ blockerId: myId, blockedId: otherId }, { blockerId: otherId, blockedId: myId }] },
+    })
+    if (block) return res.status(403).json({ error: 'Cannot send message — blocked.' })
+
+    // Resolve ghost mode for founder
+    let isGhost = false
+    let ghostDisplayName: string | null = null
+    if (session.user.role === 'FOUNDER') {
+      const ghostId = await prisma.founderGhostIdentity.findUnique({ where: { founderId: myId } })
+      if (ghostId?.isActive) {
+        isGhost = true
+        ghostDisplayName = ghostId.ghostName
+      }
+    }
 
     // EchoScan: real AI moderation pipeline (HF → Risk → Mistral), not a regex toy
     const moderation = await moderateMessage(content)
@@ -57,7 +90,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const message = await prisma.message.create({
-      data: { fromId: myId, toId: otherId, content: content.trim() },
+      data: { fromId: myId, toId: otherId, content: content.trim(), isGhost, ghostDisplayName },
       include: { from: { select: { id: true, name: true, nickname: true } } },
     })
     return res.json({ message })

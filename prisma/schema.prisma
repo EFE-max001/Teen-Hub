@@ -123,6 +123,9 @@ model User {
   // Active title
   activeTitle        String?
 
+  // Nickname cooldown
+  lastNicknameChange DateTime?
+
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
@@ -154,6 +157,15 @@ model User {
   feedbacks          Feedback[]
   feedbackReplies    FeedbackReply[]
   featureUnlocks     UserFeatureUnlock[]
+
+  // Friend system
+  friendRequestsSent     FriendRequest[] @relation("FriendRequestFrom")
+  friendRequestsReceived FriendRequest[] @relation("FriendRequestTo")
+  blocksGiven            UserBlock[]     @relation("BlocksBy")
+  blocksReceived         UserBlock[]     @relation("BlockedBy")
+
+  // Founder ghost identity
+  ghostIdentity      FounderGhostIdentity?
 }
 
 model Account {
@@ -286,27 +298,32 @@ model Notification {
 }
 
 model Message {
-  id        String   @id @default(cuid())
-  fromId    String
-  toId      String
-  content   String
-  read      Boolean  @default(false)
-  flagged   Boolean  @default(false)
-  flagReason String?
-  createdAt DateTime @default(now())
-  from      User     @relation("MessageFrom", fields: [fromId], references: [id])
-  to        User     @relation("MessageTo", fields: [toId], references: [id])
+  id               String   @id @default(cuid())
+  fromId           String
+  toId             String
+  content          String
+  read             Boolean  @default(false)
+  flagged          Boolean  @default(false)
+  flagReason       String?
+  isGhost          Boolean  @default(false)
+  ghostDisplayName String?
+  createdAt        DateTime @default(now())
+  from             User     @relation("MessageFrom", fields: [fromId], references: [id])
+  to               User     @relation("MessageTo", fields: [toId], references: [id])
 }
 
 model ChatMessage {
-  id        String   @id @default(cuid())
-  userId    String
-  channel   String   @default("general")
-  content   String
-  flagged   Boolean  @default(false)
-  flagReason String?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  id               String   @id @default(cuid())
+  userId           String
+  channel          String   @default("general")
+  content          String
+  flagged          Boolean  @default(false)
+  flagReason       String?
+  isGhost          Boolean  @default(false)
+  ghostDisplayName String?
+  ghostRank        String?
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id])
 }
 
 model XpLog {
@@ -586,4 +603,44 @@ model ProfileVerification {
   submittedAt DateTime @default(now())
   reviewedAt  DateTime?
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Friend System ─────────────────────────────────────────────────────────
+
+model FriendRequest {
+  id        String   @id @default(cuid())
+  fromId    String
+  toId      String
+  status    String   @default("PENDING") // PENDING | ACCEPTED | DECLINED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  from      User     @relation("FriendRequestFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  to        User     @relation("FriendRequestTo", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId])
+  @@index([toId, status])
+}
+
+model UserBlock {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+  blocker   User     @relation("BlocksBy", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("BlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+}
+
+// ─── Founder Ghost Identity ────────────────────────────────────────────────
+
+model FounderGhostIdentity {
+  id        String   @id @default(cuid())
+  founderId String   @unique
+  ghostName String   @unique
+  ghostRank Rank     @default(B)
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  founder   User     @relation(fields: [founderId], references: [id], onDelete: Cascade)
 }

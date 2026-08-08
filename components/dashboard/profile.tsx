@@ -50,6 +50,13 @@ export default function ProfilePage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [avatarError, setAvatarError] = useState('')
 
+  // Nickname change
+  const [nicknameEdit, setNicknameEdit] = useState(false)
+  const [nicknameInput, setNicknameInput] = useState('')
+  const [nicknameSaving, setNicknameSaving] = useState(false)
+  const [nicknameError, setNicknameError] = useState('')
+  const [nicknameSuccess, setNicknameSuccess] = useState('')
+
   const [form, setForm] = useState({
     bio: '', portfolioUrl: '',
     timezone: '', country: '', workStyle: '',
@@ -87,6 +94,28 @@ export default function ProfilePage() {
     if (t) setTrustData(t)
     setAchievements((a.achievements || []).filter((a: any) => a.awardedTo?.length > 0))
     setTitles((ti.titles || []).filter((t: any) => t.awardedTo?.length > 0))
+  }
+
+  async function saveNickname() {
+    if (!nicknameInput.trim()) return
+    setNicknameSaving(true)
+    setNicknameError('')
+    setNicknameSuccess('')
+    const res = await fetch('/api/nickname/change', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname: nicknameInput }),
+    })
+    const data = await res.json()
+    setNicknameSaving(false)
+    if (res.ok) {
+      setNicknameSuccess('Name updated!')
+      setNicknameEdit(false)
+      setNicknameInput('')
+      await loadAll()
+    } else {
+      setNicknameError(data.error || 'Failed to update name.')
+    }
   }
 
   async function saveProfile() {
@@ -211,7 +240,50 @@ export default function ProfilePage() {
                 </div>
                 <h1 className="font-orbitron font-black text-xl sm:text-2xl text-white mb-0.5">
                   {userData.nickname}
+                  <button
+                    onClick={() => { setNicknameEdit(true); setNicknameInput(userData.nickname || ''); setNicknameError(''); setNicknameSuccess('') }}
+                    className="ml-2 font-orbitron text-[9px] text-slate-600 hover:text-portal-emerald transition-colors align-middle"
+                    title="Change display name"
+                  >✏</button>
                 </h1>
+
+                {/* Nickname inline editor */}
+                {nicknameEdit && (
+                  <div className="mb-3 flex items-center gap-2 flex-wrap">
+                    <input
+                      autoFocus
+                      value={nicknameInput}
+                      onChange={e => setNicknameInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') saveNickname(); if (e.key === 'Escape') setNicknameEdit(false) }}
+                      maxLength={24}
+                      placeholder="New display name"
+                      className="bg-black/60 border border-portal-emerald/30 text-white font-orbitron text-sm px-3 py-1.5 focus:outline-none focus:border-portal-emerald/60 w-44 transition-colors"
+                    />
+                    <button
+                      onClick={saveNickname}
+                      disabled={nicknameSaving}
+                      className="font-orbitron text-[9px] tracking-widest text-portal-emerald border border-portal-emerald/40 px-3 py-1.5 hover:bg-portal-emerald/10 transition-colors disabled:opacity-40"
+                    >{nicknameSaving ? '…' : 'SAVE'}</button>
+                    <button
+                      onClick={() => setNicknameEdit(false)}
+                      className="font-orbitron text-[9px] tracking-widest text-slate-600 hover:text-white transition-colors"
+                    >✕</button>
+                    {nicknameError && <p className="font-rajdhani text-red-400 text-xs w-full">{nicknameError}</p>}
+                  </div>
+                )}
+                {nicknameSuccess && !nicknameEdit && (
+                  <p className="font-rajdhani text-portal-emerald text-xs mb-1">{nicknameSuccess}</p>
+                )}
+
+                {/* Cooldown note for non-founders */}
+                {!nicknameEdit && userData.role !== 'FOUNDER' && userData.lastNicknameChange && (() => {
+                  const daysSince = (Date.now() - new Date(userData.lastNicknameChange).getTime()) / (1000 * 60 * 60 * 24)
+                  const daysLeft = Math.ceil(7 - daysSince)
+                  if (daysLeft > 0) {
+                    return <p className="font-rajdhani text-slate-700 text-[10px] mb-1">Next name change in {daysLeft} day{daysLeft === 1 ? '' : 's'}</p>
+                  }
+                  return null
+                })()}
                 {activeTitle && (
                   <p className="font-rajdhani text-portal-emerald text-sm italic mb-1">"{activeTitle.name}"</p>
                 )}

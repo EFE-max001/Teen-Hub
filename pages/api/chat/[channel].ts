@@ -32,13 +32,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { content } = req.body
     if (!content?.trim()) return res.status(400).json({ error: 'Empty message' })
 
+    // Resolve ghost identity for founder
+    let isGhost = false
+    let ghostDisplayName: string | null = null
+    let ghostRank: string | null = null
+    if (session.user.role === 'FOUNDER') {
+      const ghostId = await prisma.founderGhostIdentity.findUnique({ where: { founderId: session.user.id } })
+      if (ghostId?.isActive) {
+        isGhost = true
+        ghostDisplayName = ghostId.ghostName
+        ghostRank = ghostId.ghostRank
+      }
+    }
+
     if (content.trim().startsWith('/')) {
-      const userLabel = (session.user as any).nickname || session.user.name || 'A guild member'
+      const userLabel = isGhost ? ghostDisplayName! : ((session.user as any).nickname || session.user.name || 'A guild member')
       const result = await handleGhostCommand(channel, session.user.id, userLabel, content)
       if (result.handled) {
         if (result.error) return res.status(400).json({ error: result.error })
         const message = await prisma.chatMessage.create({
-          data: { userId: session.user.id, channel, content: result.systemContent || '' },
+          data: { userId: session.user.id, channel, content: result.systemContent || '', isGhost, ghostDisplayName, ghostRank },
           include: { user: { select: { id: true, name: true, nickname: true, rank: true } } },
         })
         return res.json({ message, ghostProtocol: true })
@@ -62,14 +75,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Milder flags get posted but marked, so moderators can see them in channel
       const stored = await prisma.chatMessage.create({
-        data: { userId: session.user.id, channel, content: content.trim(), flagged: true, flagReason: moderation.reason || moderation.stage },
+        data: { userId: session.user.id, channel, content: content.trim(), flagged: true, flagReason: moderation.reason || moderation.stage, isGhost, ghostDisplayName, ghostRank },
         include: { user: { select: { id: true, name: true, nickname: true, rank: true } } },
       })
       return res.json({ message: stored, flagged: true })
     }
 
     const message = await prisma.chatMessage.create({
-      data: { userId: session.user.id, channel, content: content.trim() },
+      data: { userId: session.user.id, channel, content: content.trim(), isGhost, ghostDisplayName, ghostRank },
       include: { user: { select: { id: true, name: true, nickname: true, rank: true } } },
     })
     return res.json({ message })

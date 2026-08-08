@@ -7,6 +7,7 @@ import RankBadge from '@/components/ui/RankBadge'
 import dynamic from 'next/dynamic'
 
 const AIChatWidget = dynamic(() => import('@/components/ui/AIChatWidget'), { ssr: false })
+const GhostModePanel = dynamic(() => import('@/components/ui/GhostModePanel'), { ssr: false })
 
 const RANK_LEVEL: Record<string, number> = {
   F: 0, E: 1, D: 2, C: 3, B: 4, A: 5, S: 6, SS: 7, SSS: 8,
@@ -383,6 +384,9 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                 <span className="text-lg">◎</span>
               </Link>
             )}
+
+            {/* Ghost Mode — founder only */}
+            {userRole === 'FOUNDER' && <GhostModePanel />}
 
             {/* Notification bell */}
             {session?.user && (

@@ -45,12 +45,21 @@ export default function ChatPage() {
   }, [messages])
 
   async function send() {
-    if (!text.trim()) return
+    const trimmed = text.trim()
+    if (!trimmed) return
     setError('')
+
+    // Show help panel when user just types "/" alone
+    if (trimmed === '/') {
+      setShowHelp(true)
+      setText('')
+      return
+    }
+
     const res = await fetch(`/api/chat/${channel}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: text }),
+      body: JSON.stringify({ content: trimmed }),
     })
     const data = await res.json()
     if (res.ok) {
@@ -203,20 +212,25 @@ export default function ChatPage() {
                 </div>
               )}
 
-              <div className="px-4 py-3 border-t border-purple-500/15 flex items-center gap-3">
-                <input
-                  value={text}
-                  onChange={e => setText(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && send()}
-                  placeholder={`Message #${CHANNELS.find(c => c.id === channel)?.label || channel}… (try /party truth-or-dare)`}
-                  className="flex-1 bg-black/40 border border-purple-500/20 text-slate-200 text-sm font-rajdhani px-4 py-2.5 focus:outline-none focus:border-purple-400/50 transition-colors"
-                />
-                <button
-                  onClick={send}
-                  className="bg-purple-600/30 border border-purple-500/40 text-purple-300 hover:bg-purple-600/50 transition-colors px-4 py-2.5 font-orbitron text-xs tracking-widest"
-                >
-                  SEND
-                </button>
+              <div className="px-4 pt-3 pb-2 border-t border-purple-500/15">
+                <div className="flex items-center gap-3">
+                  <input
+                    value={text}
+                    onChange={e => setText(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && send()}
+                    placeholder={`Message #${CHANNELS.find(c => c.id === channel)?.label || channel}…`}
+                    className="flex-1 bg-black/40 border border-purple-500/20 text-slate-200 text-sm font-rajdhani px-4 py-2.5 focus:outline-none focus:border-purple-400/50 transition-colors"
+                  />
+                  <button
+                    onClick={send}
+                    className="bg-purple-600/30 border border-purple-500/40 text-purple-300 hover:bg-purple-600/50 transition-colors px-4 py-2.5 font-orbitron text-xs tracking-widest"
+                  >
+                    SEND
+                  </button>
+                </div>
+                <p className="font-rajdhani text-[10px] text-slate-700 mt-1.5 pl-1">
+                  Type <span className="text-purple-500/70 font-mono">/</span> and press Enter, or click 👻 <span className="text-purple-500/70">GHOST PROTOCOL</span> for party game commands
+                </p>
               </div>
             </div>
           </div>

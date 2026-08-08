@@ -319,7 +319,10 @@ export async function moderateMessage(text: string): Promise<{
     }
   } catch {}
 
-  return { safe: false, toxicityScore, stage: 'Mistral', reason: 'Severe content detected', notifyFounder: true }
+  // All AI stages failed or timed out — fail open so users aren't silently
+  // blocked just because the moderation APIs are down/slow. Log for review.
+  console.warn('[ECHOSCAN] All moderation stages failed; failing open for message.')
+  return { safe: true, toxicityScore, stage: 'Fallback', reason: null, notifyFounder: false }
 }
 
 // ─── TRIAL EVALUATION ─────────────────────────────────────────────────────
