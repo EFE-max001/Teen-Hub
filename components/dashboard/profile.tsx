@@ -57,6 +57,10 @@ export default function ProfilePage() {
   const [nicknameError, setNicknameError] = useState('')
   const [nicknameSuccess, setNicknameSuccess] = useState('')
 
+  // Verification evidence
+  const [verifyEvidence, setVerifyEvidence] = useState<Record<string, string>>({})
+  const [verifyExpanded, setVerifyExpanded] = useState<string | null>(null)
+
   const [form, setForm] = useState({
     bio: '', portfolioUrl: '',
     timezone: '', country: '', workStyle: '',
@@ -179,16 +183,27 @@ export default function ProfilePage() {
   }
 
   async function submitVerification(type: string) {
+    const evidence = verifyEvidence[type] || ''
+    if (!evidence.trim()) {
+      setVerifyExpanded(type)
+      return
+    }
     setVerifying(type)
     const r = await fetch('/api/profile/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type }),
+      body: JSON.stringify({ type, evidence: evidence.trim() }),
     })
     const d = await r.json()
     setVerifying(null)
-    setVerifyMsg(r.ok ? `${type} verification submitted for review.` : d.error)
-    setTimeout(() => setVerifyMsg(''), 4000)
+    if (r.ok) {
+      setVerifyMsg(`${type} verification submitted for review.`)
+      setVerifyExpanded(null)
+      setVerifyEvidence(prev => ({ ...prev, [type]: '' }))
+    } else {
+      setVerifyMsg(d.error || 'Failed to submit.')
+    }
+    setTimeout(() => setVerifyMsg(''), 5000)
   }
 
   if (!session || !userData) {
@@ -444,32 +459,63 @@ export default function ProfilePage() {
                 { rank:'A', label:'Identity Verification',     desc:'Government ID for elite access',        required: rankNum >= 5, done: userData.identityVerified },
               ].map(step => {
                 const typeMap: Record<string, string> = { 'Social Verification': 'social', 'Location Verification': 'location', 'Face Verification': 'face', 'Identity Verification': 'identity' }
+                const evidencePlaceholders: Record<string, string> = {
+                  social: 'Paste your social profile URL (e.g. instagram.com/yourhandle)',
+                  location: 'Enter your country and region (e.g. Nigeria, Lagos)',
+                  face: 'Paste a link to your photo (ensure it is publicly viewable)',
+                  identity: 'Enter your government ID type and last 4 digits only (e.g. Passport - 4521)',
+                }
                 const vType = typeMap[step.label]
+                const isExpanded = verifyExpanded === vType
                 return (
-                  <div key={step.rank} className={`flex items-center gap-3 p-3 border ${
+                  <div key={step.rank} className={`flex flex-col gap-2 p-3 border ${
                     step.done ? 'border-green-500/30 bg-green-900/5' :
                     step.required ? 'border-yellow-500/30 bg-yellow-900/5' :
                     'border-portal-emerald/10 opacity-50'
                   }`}>
-                    <div className={`w-6 h-6 flex items-center justify-center text-xs font-orbitron font-black flex-shrink-0 ${
-                      step.done ? 'bg-green-500/20 text-green-400' :
-                      step.required ? 'bg-yellow-500/20 text-yellow-400' :
-                      'bg-slate-800 text-slate-600'
-                    }`}>
-                      {step.done ? '✓' : step.rank}
+                    <div className="flex items-center gap-3">
+                      <div className={`w-6 h-6 flex items-center justify-center text-xs font-orbitron font-black flex-shrink-0 ${
+                        step.done ? 'bg-green-500/20 text-green-400' :
+                        step.required ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-slate-800 text-slate-600'
+                      }`}>
+                        {step.done ? '✓' : step.rank}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-orbitron text-[10px] text-white tracking-widest">{step.label}</p>
+                        <p className="font-rajdhani text-xs text-slate-500">{step.desc}</p>
+                      </div>
+                      {vType && !step.done && step.required && (
+                        <button
+                          onClick={() => setVerifyExpanded(isExpanded ? null : vType)}
+                          className="font-orbitron text-[9px] tracking-widest px-2 py-1 border border-yellow-500/40 text-yellow-400 hover:bg-yellow-900/20 transition-colors flex-shrink-0"
+                        >
+                          {isExpanded ? '✕' : 'SUBMIT'}
+                        </button>
+                      )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-orbitron text-[10px] text-white tracking-widest">{step.label}</p>
-                      <p className="font-rajdhani text-xs text-slate-500">{step.desc}</p>
-                    </div>
-                    {vType && !step.done && step.required && (
-                      <button
-                        disabled={verifying === vType}
-                        onClick={() => submitVerification(vType)}
-                        className="font-orbitron text-[9px] tracking-widest px-2 py-1 border border-yellow-500/40 text-yellow-400 hover:bg-yellow-900/20 transition-colors flex-shrink-0"
-                      >
-                        {verifying === vType ? '...' : 'SUBMIT'}
-                      </button>
+                    {/* Evidence input — shown when expanded */}
+                    {vType && !step.done && step.required && isExpanded && (
+                      <div className="flex flex-col gap-2 pl-9 pt-1">
+                        <input
+                          autoFocus
+                          value={verifyEvidence[vType] || ''}
+                          onChange={e => setVerifyEvidence(prev => ({ ...prev, [vType]: e.target.value }))}
+                          onKeyDown={e => e.key === 'Enter' && submitVerification(vType)}
+                          placeholder={evidencePlaceholders[vType] || 'Enter your evidence…'}
+                          className="w-full bg-black/50 border border-yellow-500/30 text-white font-rajdhani text-xs px-3 py-2 focus:outline-none focus:border-yellow-400/60 transition-colors"
+                        />
+                        <p className="font-rajdhani text-[10px] text-slate-600">
+                          Your submission will be reviewed manually. Do not share sensitive personal info beyond what is asked.
+                        </p>
+                        <button
+                          disabled={verifying === vType || !verifyEvidence[vType]?.trim()}
+                          onClick={() => submitVerification(vType)}
+                          className="self-start font-orbitron text-[9px] tracking-widest px-3 py-1.5 border border-yellow-500/50 text-yellow-300 hover:bg-yellow-900/20 transition-colors disabled:opacity-40"
+                        >
+                          {verifying === vType ? 'SUBMITTING…' : 'CONFIRM SUBMIT'}
+                        </button>
+                      </div>
                     )}
                   </div>
                 )

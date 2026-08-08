@@ -75,9 +75,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await notify(
           founder.id,
           'NAME_CHANGE',
-          'Member name changed',
-          `${oldName} → ${trimmed}`,
-          `/admin`
+          '🔔 Member name changed',
+          `${oldName} → ${trimmed} (${new Date().toLocaleString()})`,
+          `/founder`
         )
       }
     } catch {

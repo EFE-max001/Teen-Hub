@@ -90,7 +90,7 @@ export default function ChatPage() {
                   return (
                     <button
                       key={ch.id}
-                      onClick={() => accessible && setChannel(ch.id)}
+                      onClick={() => accessible && (setChannel(ch.id), setText(''))}
                       disabled={!accessible}
                       className={`w-full px-4 py-2.5 text-left flex items-center gap-2 transition-colors ${
                         !accessible
@@ -186,12 +186,14 @@ export default function ChatPage() {
                     return (
                       <div key={msg.id} className="flex items-start gap-3">
                         <div className="flex-shrink-0 mt-0.5">
-                          <RankBadge rank={msg.user?.rank || 'F'} size="sm" />
+                          <RankBadge rank={(msg.isGhost && msg.ghostRank) ? msg.ghostRank : (msg.user?.rank || 'F')} size="sm" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-orbitron text-[11px] text-purple-300">
-                              {msg.user?.nickname || msg.user?.name || 'Unknown'}
+                              {msg.isGhost && msg.ghostDisplayName
+                                ? msg.ghostDisplayName
+                                : (msg.user?.nickname || msg.user?.name || 'Unknown')}
                             </span>
                             <span className="font-rajdhani text-[10px] text-slate-600">
                               {new Date(msg.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
@@ -219,6 +221,8 @@ export default function ChatPage() {
                     onChange={e => setText(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && send()}
                     placeholder={`Message #${CHANNELS.find(c => c.id === channel)?.label || channel}…`}
+                    autoComplete="off"
+                    spellCheck={false}
                     className="flex-1 bg-black/40 border border-purple-500/20 text-slate-200 text-sm font-rajdhani px-4 py-2.5 focus:outline-none focus:border-purple-400/50 transition-colors"
                   />
                   <button
