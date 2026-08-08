@@ -1,3 +1,4 @@
+// Teen-Hub/pages/api/nickname/change.ts
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -63,6 +64,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     },
     select: { id: true, nickname: true, lastNicknameChange: true },
   })
+
+  // Always log the change to Activity — this is what shows up in the Founder
+  // War Room's Recent Activity feed, including when the Founder changes their
+  // own name (we don't send a Notification for that case, since notifying
+  // yourself about your own action isn't useful, but it should still be
+  // visible on the activity log rather than leaving no trace at all).
+  try {
+    await prisma.activityLog.create({
+      data: {
+        userId: myId,
+        action: 'NAME_CHANGE',
+        details: `${oldName} → ${trimmed}`,
+      },
+    })
+  } catch {
+    // Non-critical — don't fail the request
+  }
 
   // Notify the founder (unless they changed their own name)
   if (!isFounder) {

@@ -1,3 +1,4 @@
+// Teen-Hub/pages/api/founder/user/[id]/detail.ts
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -10,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { id } = req.query as { id: string }
 
-  const [user, trial, claims, warnings] = await Promise.all([
+  const [user, trial, claims, warnings, messagesSent, messagesReceived, chatMessageCount] = await Promise.all([
     prisma.user.findUnique({ where: { id } }),
     prisma.trial.findUnique({ where: { userId: id }, include: { assignedTask: true } }),
     prisma.questClaim.findMany({
@@ -19,6 +20,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       include: { quest: { select: { id: true, title: true } } },
     }),
     prisma.warning.findMany({ where: { userId: id }, orderBy: { createdAt: 'desc' } }),
+    prisma.message.count({ where: { fromId: id } }),
+    prisma.message.count({ where: { toId: id } }),
+    prisma.chatMessage.count({ where: { userId: id } }),
   ])
 
   if (!user) return res.status(404).json({ error: 'User not found' })
@@ -51,6 +55,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       completionRate,
       avgRating,
       ratedCount: ratedClaims.length,
+      messagesSent,
+      messagesReceived,
+      chatMessageCount,
     },
   })
 }

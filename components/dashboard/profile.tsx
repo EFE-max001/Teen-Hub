@@ -45,6 +45,7 @@ export default function ProfilePage() {
   const [titles, setTitles] = useState<any[]>([])
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [profileError, setProfileError] = useState('')
   const [verifying, setVerifying] = useState<string | null>(null)
   const [verifyMsg, setVerifyMsg] = useState('')
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
@@ -62,7 +63,7 @@ export default function ProfilePage() {
   const [verifyExpanded, setVerifyExpanded] = useState<string | null>(null)
 
   const [form, setForm] = useState({
-    bio: '', portfolioUrl: '',
+    name: '', bio: '', portfolioUrl: '',
     timezone: '', country: '', workStyle: '',
     preferredTaskType: '', experience: '', availabilityText: '',
   })
@@ -85,6 +86,7 @@ export default function ProfilePage() {
     if (u) {
       setUserData(u)
       setForm({
+        name: u.name || '',
         bio: u.bio || '',
         portfolioUrl: u.portfolioUrl || '',
         timezone: u.timezone || '',
@@ -124,12 +126,18 @@ export default function ProfilePage() {
 
   async function saveProfile() {
     setSaving(true)
-    await fetch('/api/profile/update', {
+    setProfileError('')
+    const res = await fetch('/api/profile/update', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     })
     setSaving(false)
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setProfileError(data.error || 'Could not save changes.')
+      return
+    }
     setEditing(false)
     await loadAll()
   }
@@ -302,7 +310,12 @@ export default function ProfilePage() {
                 {activeTitle && (
                   <p className="font-rajdhani text-portal-emerald text-sm italic mb-1">"{activeTitle.name}"</p>
                 )}
-                <p className="font-rajdhani text-slate-500 text-sm mb-4">{userData.name} · {userData.email}</p>
+                <p className="font-rajdhani text-slate-500 text-sm mb-1">{userData.name} · {userData.email}</p>
+                {userData.name === userData.nickname && (
+                  <div className="bg-amber-900/20 border border-amber-500/30 px-3 py-2 font-rajdhani text-xs text-amber-300 mb-3">
+                    ⚠ Your full name is the same as your nickname. Click Edit below and add your real name — it's kept private from other members and used only for identity verification.
+                  </div>
+                )}
                 <XPBar xp={userData.xp} rank={userData.rank} showNumbers />
               </div>
 
@@ -370,6 +383,13 @@ export default function ProfilePage() {
 
             {editing ? (
               <div className="flex flex-col gap-4">
+                <div>
+                  <GlowInput label="Full Name (private — used for identity verification only)" placeholder="Your real name"
+                    value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                  <p className="font-rajdhani text-[10px] text-slate-600 mt-1">
+                    This is different from your nickname — other members never see it. Your nickname is what shows in chat, quests, and leaderboards.
+                  </p>
+                </div>
                 <GlowTextarea label="Bio" placeholder="Tell the guild about yourself..." rows={4}
                   value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} />
                 <GlowInput label="Portfolio / Website" placeholder="https://..."
@@ -419,6 +439,9 @@ export default function ProfilePage() {
                     Cancel
                   </GlowButton>
                 </div>
+                {profileError && (
+                  <p className="font-rajdhani text-xs text-red-400">{profileError}</p>
+                )}
               </div>
             ) : (
               <div className="flex flex-col gap-4">

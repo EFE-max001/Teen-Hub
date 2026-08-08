@@ -1,3 +1,4 @@
+// Teen-Hub/pages/founder/index.tsx
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -100,9 +101,13 @@ export default function FounderDashboard() {
     mechanicsType:'puzzle', validationType:'auto',
     difficulty:'medium', timeLimitSeconds:'120',
     entryLimit:'1', cooldownMinutes:'1440',
-    xpReward:'50', coinReward:'0', cashReward:'', badge:'',
+    xpReward:'50', coinReward:'0', cashReward:'', badges:[] as string[],
     endsAt:'', isDaily:false,
   })
+  // Rendered inline in the Arena form itself — the top-of-page actionMsg toast
+  // scrolls out of view on this long form, so validation errors here were
+  // effectively invisible and the Deploy button looked like it did nothing.
+  const [arenaError, setArenaError] = useState('')
   const ARENA_CATEGORIES: Record<string, { icon: string; mechanicsOptions: string[] }> = {
     Logic:    { icon: '🧩', mechanicsOptions: ['puzzle'] },
     Typing:   { icon: '⌨️', mechanicsOptions: ['typing'] },
@@ -365,7 +370,17 @@ export default function FounderDashboard() {
   }
 
   async function postArena() {
-    if (!arenaForm.title || !arenaForm.endsAt) return msg('Title and end date required')
+    setArenaError('')
+    if (!arenaForm.title || !arenaForm.endsAt) {
+      setArenaError(
+        !arenaForm.title && !arenaForm.endsAt
+          ? 'Game Title and Closes At date are both required.'
+          : !arenaForm.title
+            ? 'Game Title is required.'
+            : 'Closes At date is required.'
+      )
+      return
+    }
     setSaving(true)
     const config = {
       game_id: arenaForm.title.toLowerCase().replace(/\s+/g, '_'),
@@ -392,7 +407,7 @@ export default function FounderDashboard() {
       rewards: {
         coins: parseInt(arenaForm.coinReward) || 0,
         xp: parseInt(arenaForm.xpReward) || 0,
-        badge: arenaForm.badge || '',
+        badges: arenaForm.badges,
       },
       ranking: { enabled: true, score_type: arenaForm.mechanicsType === 'creative' ? 'points' : 'accuracy' },
       anti_cheat: { ip_limit: true, device_lock: false, answer_shuffling: arenaForm.mechanicsType === 'quiz' },
@@ -414,8 +429,8 @@ export default function FounderDashboard() {
       }),
     })
     setSaving(false)
-    if (!r.ok) { const d = await r.json(); return msg('Error: ' + d.error) }
-    setArenaForm(p => ({ ...p, title:'', description:'', endsAt:'', isDaily:false }))
+    if (!r.ok) { const d = await r.json(); setArenaError(d.error || 'Could not deploy game.'); return }
+    setArenaForm(p => ({ ...p, title:'', description:'', endsAt:'', isDaily:false, badges:[] }))
     msg('Arena game deployed to the grid.')
     loadAll()
   }
@@ -1259,7 +1274,6 @@ export default function FounderDashboard() {
                         <GlowInput label="Time Limit (seconds)" type="number" placeholder="120" value={arenaForm.timeLimitSeconds} onChange={e=>setArenaForm(p=>({...p,timeLimitSeconds:e.target.value}))} />
                         <GlowInput label="Entry Limit" type="number" placeholder="1" value={arenaForm.entryLimit} onChange={e=>setArenaForm(p=>({...p,entryLimit:e.target.value}))} />
                         <GlowInput label="Cooldown (minutes)" type="number" placeholder="1440" value={arenaForm.cooldownMinutes} onChange={e=>setArenaForm(p=>({...p,cooldownMinutes:e.target.value}))} />
-                        <GlowInput label="Badge (optional)" placeholder="🏅 Speed Demon" value={arenaForm.badge} onChange={e=>setArenaForm(p=>({...p,badge:e.target.value}))} />
                         <GlowInput label="XP Reward" type="number" placeholder="50" value={arenaForm.xpReward} onChange={e=>setArenaForm(p=>({...p,xpReward:e.target.value}))} />
                         <GlowInput label="Coin Reward" type="number" placeholder="0" value={arenaForm.coinReward} onChange={e=>setArenaForm(p=>({...p,coinReward:e.target.value}))} />
                         <GlowInput label="Cash Reward ($, optional)" type="number" placeholder="0" value={arenaForm.cashReward} onChange={e=>setArenaForm(p=>({...p,cashReward:e.target.value}))} />
@@ -1270,10 +1284,46 @@ export default function FounderDashboard() {
                         </div>
                       </div>
 
+                      <div>
+                        <label className="font-orbitron text-[9px] text-purple-300/70 tracking-widest uppercase block mb-1.5">
+                          Badges Awarded (optional — pick any number)
+                        </label>
+                        {achievements.length === 0 ? (
+                          <p className="font-rajdhani text-xs text-slate-600">
+                            No achievements created yet — add one in the Achievements tab first.
+                          </p>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-1.5 max-h-32 overflow-y-auto border border-purple-500/15 p-2">
+                            {achievements.map((a: any) => (
+                              <label key={a.id} className="flex items-center gap-1.5 cursor-pointer font-rajdhani text-xs text-slate-300">
+                                <input
+                                  type="checkbox"
+                                  checked={arenaForm.badges.includes(a.name)}
+                                  onChange={e => setArenaForm(p => ({
+                                    ...p,
+                                    badges: e.target.checked
+                                      ? [...p.badges, a.name]
+                                      : p.badges.filter(b => b !== a.name),
+                                  }))}
+                                  className="w-3.5 h-3.5 accent-amber-500 flex-shrink-0"
+                                />
+                                <span className="truncate">{a.icon} {a.name}</span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" checked={arenaForm.isDaily} onChange={e=>setArenaForm(p=>({...p,isDaily:e.target.checked}))} className="w-4 h-4 accent-amber-500" />
                         <span className="font-rajdhani text-sm text-amber-300">Flag as today's Daily Challenge (pulsing badge)</span>
                       </label>
+
+                      {arenaError && (
+                        <div className="bg-red-900/20 border border-red-500/40 px-3 py-2 font-rajdhani text-xs text-red-400">
+                          ✗ {arenaError}
+                        </div>
+                      )}
 
                       <GlowButton variant="primary" size="md" loading={saving} onClick={postArena}>Deploy Game</GlowButton>
                     </div>
@@ -2075,7 +2125,8 @@ export default function FounderDashboard() {
                     <div className="grid sm:grid-cols-2 gap-2 text-sm">
                       {[
                         ['Email', userDetail.user.email],
-                        ['Name', userDetail.user.name],
+                        ['Full Name', userDetail.user.name],
+                        ['Nickname', userDetail.user.nickname],
                         ['Country', userDetail.user.country],
                         ['Timezone', userDetail.user.timezone],
                         ['Work Style', userDetail.user.workStyle],
@@ -2096,6 +2147,31 @@ export default function FounderDashboard() {
                           <p className="font-rajdhani text-slate-300 mt-0.5">{userDetail.user.bio}</p>
                         </div>
                       )}
+                      {userDetail.user.name === userDetail.user.nickname && (
+                        <div className="sm:col-span-2 mt-1 bg-amber-900/20 border border-amber-500/30 px-3 py-2 font-rajdhani text-xs text-amber-300">
+                          ⚠ Full name and nickname are identical — this member hasn't set a distinct real name yet.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Account & activity — login, join date, and platform usage */}
+                  <div>
+                    <h4 className="font-orbitron text-[10px] text-purple-400 tracking-widest uppercase mb-2">Account & Activity</h4>
+                    <div className="grid sm:grid-cols-2 gap-2 text-sm">
+                      {[
+                        ['Joined', userDetail.user.createdAt ? new Date(userDetail.user.createdAt).toLocaleString() : null],
+                        ['Last Name Change', userDetail.user.lastNicknameChange ? new Date(userDetail.user.lastNicknameChange).toLocaleString() : 'Never'],
+                        ['Email Verified', userDetail.user.emailVerified ? new Date(userDetail.user.emailVerified).toLocaleDateString() : 'No'],
+                        ['Identity Verified', userDetail.user.identityVerified ? 'Yes' : 'No'],
+                        ['Direct Messages', `${userDetail.stats.messagesSent ?? 0} sent · ${userDetail.stats.messagesReceived ?? 0} received`],
+                        ['Guild Chat Messages', userDetail.stats.chatMessageCount ?? 0],
+                      ].filter(([, v]) => v != null).map(([k, v]) => (
+                        <div key={k} className="flex justify-between gap-2 border-b border-purple-500/5 py-1">
+                          <span className="font-rajdhani text-slate-500">{k}</span>
+                          <span className="font-rajdhani text-slate-300 text-right break-all">{v}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
