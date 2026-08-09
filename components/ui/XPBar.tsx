@@ -39,17 +39,17 @@ export default function XPBar({ xp, rank, showNumbers = true }: XPBarProps) {
     <div className="w-full flex flex-col gap-1.5">
       {showNumbers && (
         <div className="flex items-center justify-between">
-          <span className="font-orbitron text-[10px] text-purple-300/70 tracking-widest uppercase">
+          <span className="font-cinzel text-[10px] text-portal-emerald/70 tracking-widest uppercase">
             XP Progress
           </span>
-          <span className="font-orbitron text-[10px] text-slate-500 tracking-widest">
+          <span className="font-cinzel text-[10px] text-slate-500 tracking-widest">
             {xp.toLocaleString()} / {threshold.max.toLocaleString()}
           </span>
         </div>
       )}
 
       {/* Track */}
-      <div className="relative h-2 w-full bg-black/60 border border-purple-500/20 overflow-hidden">
+      <div className="relative h-2 w-full rounded-full bg-black/60 border border-portal-emerald/20 overflow-hidden">
         {/* Fill */}
         <div
           className={`h-full bg-gradient-to-r ${gradient} transition-all duration-700 ease-out relative`}
@@ -70,7 +70,7 @@ export default function XPBar({ xp, rank, showNumbers = true }: XPBarProps) {
       </div>
 
       {showNumbers && threshold.next && (
-        <p className="font-rajdhani text-[11px] text-slate-600">
+        <p className="font-cormorant text-[11px] text-slate-600">
           {threshold.max - xp > 0
             ? `${(threshold.max - xp).toLocaleString()} XP until rank ${threshold.next}`
             : `Ready for rank-up to ${threshold.next}!`}

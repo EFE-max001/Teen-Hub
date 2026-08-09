@@ -48,8 +48,8 @@ export default function AchievementsPage() {
         <div className="max-w-4xl mx-auto flex flex-col gap-5">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="font-orbitron font-black text-xl text-white">HONOURS</h1>
-              <p className="font-rajdhani text-slate-500 text-sm mt-0.5">
+              <h1 className="font-cinzel font-black text-xl text-white">HONOURS</h1>
+              <p className="font-cormorant text-slate-500 text-sm mt-0.5">
                 {earnedAchievements.length} achievements · {earnedTitles.length} titles earned
               </p>
             </div>
@@ -58,7 +58,7 @@ export default function AchievementsPage() {
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`font-orbitron text-xs tracking-widest px-4 py-2 transition-colors ${
+                  className={`font-cinzel text-xs tracking-widest px-4 py-2 transition-colors ${
                     tab === t
                       ? 'bg-portal-emerald/30 text-portal-emerald border border-portal-emerald/50'
                       : 'text-slate-500 hover:text-slate-300'
@@ -78,26 +78,26 @@ export default function AchievementsPage() {
             <div className="flex flex-col gap-4">
               {earnedAchievements.length > 0 && (
                 <div>
-                  <h2 className="font-orbitron text-xs text-portal-emerald tracking-widest uppercase mb-3">Earned</h2>
+                  <h2 className="font-cinzel text-xs text-portal-emerald tracking-widest uppercase mb-3">Earned</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {earnedAchievements.map(a => (
                       <div key={a.id} className="bg-[#03060A] border border-portal-emerald/30 p-4 flex gap-3 items-start">
                         <span className="text-2xl">{a.icon}</span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-orbitron font-bold text-sm text-white">{a.name}</span>
-                            <span className={`text-[9px] font-orbitron tracking-widest px-1.5 py-0.5 border ${
+                            <span className="font-cinzel font-bold text-sm text-white">{a.name}</span>
+                            <span className={`text-[9px] font-cinzel tracking-widest px-1.5 py-0.5 border ${
                               a.type === 'PERMANENT' ? 'border-portal-emerald/40 text-portal-emerald' :
                               a.type === 'COMPETITIVE' ? 'border-yellow-500/40 text-yellow-400' :
                               'border-blue-500/40 text-blue-400'
                             }`}>{a.type}</span>
                           </div>
-                          <p className="font-rajdhani text-slate-400 text-xs mt-1">{a.description}</p>
+                          <p className="font-cormorant text-slate-400 text-xs mt-1">{a.description}</p>
                           {a.xpBonus > 0 && (
-                            <p className="font-orbitron text-[10px] text-portal-emerald mt-1">+{a.xpBonus} XP</p>
+                            <p className="font-cinzel text-[10px] text-portal-emerald mt-1">+{a.xpBonus} XP</p>
                           )}
                           {a.awardedTo[0]?.awardedByAI && (
-                            <p className="font-rajdhani text-[10px] text-slate-500 mt-1">⚡ AI Awarded</p>
+                            <p className="font-cormorant text-[10px] text-slate-500 mt-1">⚡ AI Awarded</p>
                           )}
                         </div>
                       </div>
@@ -108,14 +108,14 @@ export default function AchievementsPage() {
 
               {lockedAchievements.length > 0 && (
                 <div>
-                  <h2 className="font-orbitron text-xs text-slate-600 tracking-widest uppercase mb-3">Locked</h2>
+                  <h2 className="font-cinzel text-xs text-slate-600 tracking-widest uppercase mb-3">Locked</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {lockedAchievements.map(a => (
                       <div key={a.id} className="bg-[#0a0010] border border-slate-700/30 p-4 flex gap-3 items-start opacity-50">
                         <span className="text-2xl grayscale">{a.icon}</span>
                         <div className="flex-1 min-w-0">
-                          <span className="font-orbitron font-bold text-sm text-slate-500">{a.name}</span>
-                          <p className="font-rajdhani text-slate-600 text-xs mt-1">{a.condition}</p>
+                          <span className="font-cinzel font-bold text-sm text-slate-500">{a.name}</span>
+                          <p className="font-cormorant text-slate-600 text-xs mt-1">{a.condition}</p>
                         </div>
                       </div>
                     ))}
@@ -125,8 +125,8 @@ export default function AchievementsPage() {
 
               {achievements.length === 0 && (
                 <div className="text-center py-16">
-                  <p className="font-orbitron text-slate-600 text-sm">No achievements configured yet</p>
-                  <p className="font-rajdhani text-slate-700 text-xs mt-1">Complete quests and rank up to earn achievements</p>
+                  <p className="font-cinzel text-slate-600 text-sm">No achievements configured yet</p>
+                  <p className="font-cormorant text-slate-700 text-xs mt-1">Complete quests and rank up to earn achievements</p>
                 </div>
               )}
             </div>
@@ -134,7 +134,7 @@ export default function AchievementsPage() {
             <div className="flex flex-col gap-4">
               {earnedTitles.length > 0 ? (
                 <div>
-                  <h2 className="font-orbitron text-xs text-portal-emerald tracking-widest uppercase mb-3">Your Titles</h2>
+                  <h2 className="font-cinzel text-xs text-portal-emerald tracking-widest uppercase mb-3">Your Titles</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {earnedTitles.map(t => {
                       const ut = t.awardedTo[0]
@@ -147,16 +147,16 @@ export default function AchievementsPage() {
                           <span className="text-2xl">{t.icon}</span>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-orbitron font-bold text-sm text-white">{t.name}</span>
-                              {isActive && <span className="text-[9px] font-orbitron bg-portal-emerald/30 text-portal-emerald px-1.5 py-0.5">ACTIVE</span>}
-                              {expired && <span className="text-[9px] font-orbitron text-red-400 border border-red-500/30 px-1.5 py-0.5">EXPIRED</span>}
+                              <span className="font-cinzel font-bold text-sm text-white">{t.name}</span>
+                              {isActive && <span className="text-[9px] font-cinzel bg-portal-emerald/30 text-portal-emerald px-1.5 py-0.5">ACTIVE</span>}
+                              {expired && <span className="text-[9px] font-cinzel text-red-400 border border-red-500/30 px-1.5 py-0.5">EXPIRED</span>}
                             </div>
-                            <p className="font-rajdhani text-slate-400 text-xs mt-1">{t.description}</p>
+                            <p className="font-cormorant text-slate-400 text-xs mt-1">{t.description}</p>
                             {!expired && (
                               <button
                                 disabled={settingTitle}
                                 onClick={() => setActiveTitle(isActive ? null : t.id)}
-                                className={`mt-2 font-orbitron text-[10px] tracking-widest px-2 py-1 border transition-colors ${
+                                className={`mt-2 font-cinzel text-[10px] tracking-widest px-2 py-1 border transition-colors ${
                                   isActive
                                     ? 'border-slate-600 text-slate-500 hover:border-red-500/40 hover:text-red-400'
                                     : 'border-portal-emerald/40 text-portal-emerald hover:bg-portal-emerald/20'
@@ -173,8 +173,8 @@ export default function AchievementsPage() {
                 </div>
               ) : (
                 <div className="text-center py-16">
-                  <p className="font-orbitron text-slate-600 text-sm">No titles earned yet</p>
-                  <p className="font-rajdhani text-slate-700 text-xs mt-1">Titles are awarded by the Founder for special achievements</p>
+                  <p className="font-cinzel text-slate-600 text-sm">No titles earned yet</p>
+                  <p className="font-cormorant text-slate-700 text-xs mt-1">Titles are awarded by the Founder for special achievements</p>
                 </div>
               )}
             </div>

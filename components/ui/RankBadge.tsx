@@ -34,14 +34,14 @@ export default function RankBadge({ rank, size = 'md', showLabel = false }: Rank
         rotate-45 flex items-center justify-center
         bg-black/60 flex-shrink-0
       `}>
-        <span className={`-rotate-45 font-orbitron font-black ${s.text} ${cfg.color}`}>
+        <span className={`-rotate-45 font-cinzel font-black ${s.text} ${cfg.color}`}>
           {rank}
         </span>
         {/* Inner glow */}
         <span className="absolute inset-0 bg-current opacity-5 rounded-sm" />
       </div>
       {showLabel && (
-        <span className={`font-orbitron ${s.label} ${cfg.color} tracking-widest uppercase`}>
+        <span className={`font-cinzel ${s.label} ${cfg.color} tracking-widest uppercase`}>
           {cfg.label}
         </span>
       )}

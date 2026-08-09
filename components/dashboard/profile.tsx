@@ -250,10 +250,10 @@ export default function ProfilePage() {
                     <RankBadge rank={userData.rank} size="lg" showLabel />
                   )}
                   <div className="absolute inset-0 rounded-full bg-black/60 backdrop-blur-sm rounded-xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="font-orbitron text-[9px] text-white text-center px-1">{uploadingAvatar ? '...' : 'CHANGE'}</span>
+                    <span className="font-cinzel text-[9px] text-white text-center px-1">{uploadingAvatar ? '...' : 'CHANGE'}</span>
                   </div>
                 </label>
-                {avatarError && <p className="font-rajdhani text-[10px] text-red-400 mt-1 max-w-[90px] text-center">{avatarError}</p>}
+                {avatarError && <p className="font-cormorant text-[10px] text-red-400 mt-1 max-w-[90px] text-center">{avatarError}</p>}
               </div>
 
               <div className="flex-1 min-w-0">
@@ -261,11 +261,11 @@ export default function ProfilePage() {
                   <StatusChip status={userData.status} size="sm" />
                   <StatusChip status={userData.role.replace(/_/g, ' ')} size="sm" />
                 </div>
-                <h1 className="font-orbitron font-black text-xl sm:text-2xl text-white mb-0.5">
+                <h1 className="font-cinzel font-black text-xl sm:text-2xl text-white mb-0.5">
                   {userData.nickname}
                   <button
                     onClick={() => { setNicknameEdit(true); setNicknameInput(userData.nickname || ''); setNicknameError(''); setNicknameSuccess('') }}
-                    className="ml-2 font-orbitron text-[9px] text-slate-600 hover:text-portal-emerald transition-colors align-middle"
+                    className="ml-2 font-cinzel text-[9px] text-slate-600 hover:text-portal-emerald transition-colors align-middle"
                     title="Change display name"
                   >✏</button>
                 </h1>
@@ -280,22 +280,22 @@ export default function ProfilePage() {
                       onKeyDown={e => { if (e.key === 'Enter') saveNickname(); if (e.key === 'Escape') setNicknameEdit(false) }}
                       maxLength={24}
                       placeholder="New display name"
-                      className="bg-black/60 border border-portal-emerald/30 text-white font-orbitron text-sm px-3 py-1.5 focus:outline-none focus:border-portal-emerald/60 w-44 transition-colors"
+                      className="bg-black/60 border border-portal-emerald/30 text-white font-cinzel text-sm px-3 py-1.5 focus:outline-none focus:border-portal-emerald/60 w-44 transition-colors"
                     />
                     <button
                       onClick={saveNickname}
                       disabled={nicknameSaving}
-                      className="font-orbitron text-[9px] tracking-widest text-portal-emerald border border-portal-emerald/40 px-3 py-1.5 hover:bg-portal-emerald/10 transition-colors disabled:opacity-40"
+                      className="font-cinzel text-[9px] tracking-widest text-portal-emerald border border-portal-emerald/40 px-3 py-1.5 hover:bg-portal-emerald/10 transition-colors disabled:opacity-40"
                     >{nicknameSaving ? '…' : 'SAVE'}</button>
                     <button
                       onClick={() => setNicknameEdit(false)}
-                      className="font-orbitron text-[9px] tracking-widest text-slate-600 hover:text-white transition-colors"
+                      className="font-cinzel text-[9px] tracking-widest text-slate-600 hover:text-white transition-colors"
                     >✕</button>
-                    {nicknameError && <p className="font-rajdhani text-red-400 text-xs w-full">{nicknameError}</p>}
+                    {nicknameError && <p className="font-cormorant text-red-400 text-xs w-full">{nicknameError}</p>}
                   </div>
                 )}
                 {nicknameSuccess && !nicknameEdit && (
-                  <p className="font-rajdhani text-portal-emerald text-xs mb-1">{nicknameSuccess}</p>
+                  <p className="font-cormorant text-portal-emerald text-xs mb-1">{nicknameSuccess}</p>
                 )}
 
                 {/* Cooldown note for non-founders */}
@@ -303,16 +303,16 @@ export default function ProfilePage() {
                   const daysSince = (Date.now() - new Date(userData.lastNicknameChange).getTime()) / (1000 * 60 * 60 * 24)
                   const daysLeft = Math.ceil(7 - daysSince)
                   if (daysLeft > 0) {
-                    return <p className="font-rajdhani text-slate-700 text-[10px] mb-1">Next name change in {daysLeft} day{daysLeft === 1 ? '' : 's'}</p>
+                    return <p className="font-cormorant text-slate-700 text-[10px] mb-1">Next name change in {daysLeft} day{daysLeft === 1 ? '' : 's'}</p>
                   }
                   return null
                 })()}
                 {activeTitle && (
-                  <p className="font-rajdhani text-portal-emerald text-sm italic mb-1">"{activeTitle.name}"</p>
+                  <p className="font-cormorant text-portal-emerald text-sm italic mb-1">"{activeTitle.name}"</p>
                 )}
-                <p className="font-rajdhani text-slate-500 text-sm mb-1">{userData.name} · {userData.email}</p>
+                <p className="font-cormorant text-slate-500 text-sm mb-1">{userData.name} · {userData.email}</p>
                 {userData.name === userData.nickname && (
-                  <div className="bg-amber-900/20 border border-amber-500/30 px-3 py-2 font-rajdhani text-xs text-amber-300 mb-3">
+                  <div className="bg-amber-900/20 border border-amber-500/30 px-3 py-2 font-cormorant text-xs text-amber-300 mb-3">
                     ⚠ Your full name is the same as your nickname. Click Edit below and add your real name — it's kept private from other members and used only for identity verification.
                   </div>
                 )}
@@ -322,9 +322,9 @@ export default function ProfilePage() {
               {/* Trust score */}
               {trustData && (
                 <div className="flex-shrink-0 text-center border border-portal-emerald/20 px-4 py-3 bg-black/30">
-                  <div className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase mb-1">Trust</div>
-                  <div className="font-orbitron font-black text-2xl text-white">{trustData.trustScore}</div>
-                  <div className={`font-orbitron text-[10px] tracking-widest mt-1 ${TRUST_COLORS[trustData.trustLevel] || 'text-slate-400'}`}>
+                  <div className="font-cinzel text-[9px] text-portal-emerald/60 tracking-widest uppercase mb-1">Trust</div>
+                  <div className="font-cinzel font-black text-2xl text-white">{trustData.trustScore}</div>
+                  <div className={`font-cinzel text-[10px] tracking-widest mt-1 ${TRUST_COLORS[trustData.trustLevel] || 'text-slate-400'}`}>
                     {trustData.trustLevel}
                   </div>
                 </div>
@@ -335,10 +335,10 @@ export default function ProfilePage() {
           {/* Skills */}
           {userData.skills?.length > 0 && (
             <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
-              <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase mb-4">Skills</h2>
+              <h2 className="font-cinzel font-bold text-sm text-white tracking-widest uppercase mb-4">Skills</h2>
               <div className="flex flex-wrap gap-2">
                 {userData.skills.map((skill: string) => (
-                  <span key={skill} className="px-3 py-1 border border-portal-emerald/30 text-portal-emerald font-rajdhani text-xs tracking-wide bg-portal-emerald/[0.010]">
+                  <span key={skill} className="px-3 py-1 border border-portal-emerald/30 text-portal-emerald font-cormorant text-xs tracking-wide bg-portal-emerald/[0.010]">
                     {skill}
                   </span>
                 ))}
@@ -350,20 +350,20 @@ export default function ProfilePage() {
           {(achievements.length > 0 || titles.length > 0) && (
             <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase">Honours</h2>
-                <Link href="/dashboard/achievements" className="font-orbitron text-[10px] text-portal-emerald hover:text-portal-emerald tracking-widest">VIEW ALL →</Link>
+                <h2 className="font-cinzel font-bold text-sm text-white tracking-widest uppercase">Honours</h2>
+                <Link href="/dashboard/achievements" className="font-cinzel text-[10px] text-portal-emerald hover:text-portal-emerald tracking-widest">VIEW ALL →</Link>
               </div>
               <div className="flex flex-wrap gap-2">
                 {achievements.slice(0, 4).map((a: any) => (
                   <div key={a.id} className="flex items-center gap-1.5 border border-portal-emerald/20 px-2 py-1">
                     <span className="text-sm">{a.icon}</span>
-                    <span className="font-orbitron text-[10px] text-portal-emerald">{a.name}</span>
+                    <span className="font-cinzel text-[10px] text-portal-emerald">{a.name}</span>
                   </div>
                 ))}
                 {titles.map((t: any) => (
                   <div key={t.id} className="flex items-center gap-1.5 border border-amber-500/20 px-2 py-1">
                     <span className="text-sm">{t.icon}</span>
-                    <span className="font-orbitron text-[10px] text-amber-300">{t.name}</span>
+                    <span className="font-cinzel text-[10px] text-amber-300">{t.name}</span>
                   </div>
                 ))}
               </div>
@@ -373,7 +373,7 @@ export default function ProfilePage() {
           {/* About — editable */}
           <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase">About</h2>
+              <h2 className="font-cinzel font-bold text-sm text-white tracking-widest uppercase">About</h2>
               {!editing && (
                 <GlowButton variant="ghost" size="sm" onClick={() => setEditing(true)}>
                   Edit
@@ -386,7 +386,7 @@ export default function ProfilePage() {
                 <div>
                   <GlowInput label="Full Name (private — used for identity verification only)" placeholder="Your real name"
                     value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-                  <p className="font-rajdhani text-[10px] text-slate-600 mt-1">
+                  <p className="font-cormorant text-[10px] text-slate-600 mt-1">
                     This is different from your nickname — other members never see it. Your nickname is what shows in chat, quests, and leaderboards.
                   </p>
                 </div>
@@ -396,12 +396,12 @@ export default function ProfilePage() {
                   value={form.portfolioUrl} onChange={e => setForm(f => ({ ...f, portfolioUrl: e.target.value }))} />
 
                 <div className="border-t border-portal-emerald/10 pt-4">
-                  <p className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase mb-3">Extended Profile</p>
+                  <p className="font-cinzel text-[9px] text-portal-emerald/60 tracking-widest uppercase mb-3">Extended Profile</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase block mb-1.5">Timezone</label>
+                      <label className="font-cinzel text-[9px] text-portal-emerald/60 tracking-widest uppercase block mb-1.5">Timezone</label>
                       <select value={form.timezone} onChange={e => setForm(f => ({ ...f, timezone: e.target.value }))}
-                        className="w-full bg-black/50 border border-portal-emerald/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-portal-emerald/70">
+                        className="w-full bg-black/50 border border-portal-emerald/25 text-slate-200 text-sm font-cormorant px-3 py-2.5 focus:outline-none focus:border-portal-emerald/70">
                         <option value="">Select timezone</option>
                         {TIMEZONES.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
@@ -409,17 +409,17 @@ export default function ProfilePage() {
                     <GlowInput label="Country" placeholder="e.g. United States"
                       value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} />
                     <div>
-                      <label className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase block mb-1.5">Work Style</label>
+                      <label className="font-cinzel text-[9px] text-portal-emerald/60 tracking-widest uppercase block mb-1.5">Work Style</label>
                       <select value={form.workStyle} onChange={e => setForm(f => ({ ...f, workStyle: e.target.value }))}
-                        className="w-full bg-black/50 border border-portal-emerald/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-portal-emerald/70">
+                        className="w-full bg-black/50 border border-portal-emerald/25 text-slate-200 text-sm font-cormorant px-3 py-2.5 focus:outline-none focus:border-portal-emerald/70">
                         <option value="">Select work style</option>
                         {WORK_STYLES.map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase block mb-1.5">Preferred Task Type</label>
+                      <label className="font-cinzel text-[9px] text-portal-emerald/60 tracking-widest uppercase block mb-1.5">Preferred Task Type</label>
                       <select value={form.preferredTaskType} onChange={e => setForm(f => ({ ...f, preferredTaskType: e.target.value }))}
-                        className="w-full bg-black/50 border border-portal-emerald/25 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-portal-emerald/70">
+                        className="w-full bg-black/50 border border-portal-emerald/25 text-slate-200 text-sm font-cormorant px-3 py-2.5 focus:outline-none focus:border-portal-emerald/70">
                         <option value="">Select type</option>
                         {TASK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
@@ -440,26 +440,26 @@ export default function ProfilePage() {
                   </GlowButton>
                 </div>
                 {profileError && (
-                  <p className="font-rajdhani text-xs text-red-400">{profileError}</p>
+                  <p className="font-cormorant text-xs text-red-400">{profileError}</p>
                 )}
               </div>
             ) : (
               <div className="flex flex-col gap-4">
-                <p className="font-rajdhani text-slate-400 text-sm leading-relaxed">
+                <p className="font-cormorant text-slate-400 text-sm leading-relaxed">
                   {userData.bio || 'No bio set yet.'}
                 </p>
                 {userData.portfolioUrl && (
                   <a href={userData.portfolioUrl} target="_blank" rel="noopener noreferrer"
-                    className="font-rajdhani text-portal-emerald hover:text-portal-emerald text-sm underline underline-offset-2 transition-colors">
+                    className="font-cormorant text-portal-emerald hover:text-portal-emerald text-sm underline underline-offset-2 transition-colors">
                     {userData.portfolioUrl}
                   </a>
                 )}
                 {(userData.timezone || userData.country || userData.workStyle || userData.preferredTaskType) && (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-portal-emerald/10">
-                    {userData.timezone && <div><p className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase">Timezone</p><p className="font-rajdhani text-slate-300 text-sm">{userData.timezone}</p></div>}
-                    {userData.country && <div><p className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase">Country</p><p className="font-rajdhani text-slate-300 text-sm">{userData.country}</p></div>}
-                    {userData.workStyle && <div><p className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase">Work Style</p><p className="font-rajdhani text-slate-300 text-sm">{userData.workStyle}</p></div>}
-                    {userData.preferredTaskType && <div><p className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase">Speciality</p><p className="font-rajdhani text-slate-300 text-sm">{userData.preferredTaskType}</p></div>}
+                    {userData.timezone && <div><p className="font-cinzel text-[9px] text-portal-emerald/60 tracking-widest uppercase">Timezone</p><p className="font-cormorant text-slate-300 text-sm">{userData.timezone}</p></div>}
+                    {userData.country && <div><p className="font-cinzel text-[9px] text-portal-emerald/60 tracking-widest uppercase">Country</p><p className="font-cormorant text-slate-300 text-sm">{userData.country}</p></div>}
+                    {userData.workStyle && <div><p className="font-cinzel text-[9px] text-portal-emerald/60 tracking-widest uppercase">Work Style</p><p className="font-cormorant text-slate-300 text-sm">{userData.workStyle}</p></div>}
+                    {userData.preferredTaskType && <div><p className="font-cinzel text-[9px] text-portal-emerald/60 tracking-widest uppercase">Speciality</p><p className="font-cormorant text-slate-300 text-sm">{userData.preferredTaskType}</p></div>}
                   </div>
                 )}
               </div>
@@ -468,10 +468,10 @@ export default function ProfilePage() {
 
           {/* Identity Growth System — Trust Ladder */}
           <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
-            <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase mb-2">Identity & Trust Ladder</h2>
-            <p className="font-rajdhani text-slate-600 text-xs mb-4">As you rank up, more verification is required — this increases your trust score, quest access, and payout eligibility.</p>
+            <h2 className="font-cinzel font-bold text-sm text-white tracking-widest uppercase mb-2">Identity & Trust Ladder</h2>
+            <p className="font-cormorant text-slate-600 text-xs mb-4">As you rank up, more verification is required — this increases your trust score, quest access, and payout eligibility.</p>
             {verifyMsg && (
-              <div className="bg-portal-emerald/[0.020] border border-portal-emerald/30 px-3 py-2 font-rajdhani text-xs text-portal-emerald mb-3">{verifyMsg}</div>
+              <div className="bg-portal-emerald/[0.020] border border-portal-emerald/30 px-3 py-2 font-cormorant text-xs text-portal-emerald mb-3">{verifyMsg}</div>
             )}
             <div className="flex flex-col gap-2">
               {[
@@ -497,7 +497,7 @@ export default function ProfilePage() {
                     'border-portal-emerald/10 opacity-50'
                   }`}>
                     <div className="flex items-center gap-3">
-                      <div className={`w-6 h-6 flex items-center justify-center text-xs font-orbitron font-black flex-shrink-0 ${
+                      <div className={`w-6 h-6 flex items-center justify-center text-xs font-cinzel font-black flex-shrink-0 ${
                         step.done ? 'bg-green-500/20 text-green-400' :
                         step.required ? 'bg-yellow-500/20 text-yellow-400' :
                         'bg-slate-800 text-slate-600'
@@ -505,13 +505,13 @@ export default function ProfilePage() {
                         {step.done ? '✓' : step.rank}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-orbitron text-[10px] text-white tracking-widest">{step.label}</p>
-                        <p className="font-rajdhani text-xs text-slate-500">{step.desc}</p>
+                        <p className="font-cinzel text-[10px] text-white tracking-widest">{step.label}</p>
+                        <p className="font-cormorant text-xs text-slate-500">{step.desc}</p>
                       </div>
                       {vType && !step.done && step.required && (
                         <button
                           onClick={() => setVerifyExpanded(isExpanded ? null : vType)}
-                          className="font-orbitron text-[9px] tracking-widest px-2 py-1 border border-yellow-500/40 text-yellow-400 hover:bg-yellow-900/20 transition-colors flex-shrink-0"
+                          className="font-cinzel text-[9px] tracking-widest px-2 py-1 border border-yellow-500/40 text-yellow-400 hover:bg-yellow-900/20 transition-colors flex-shrink-0"
                         >
                           {isExpanded ? '✕' : 'SUBMIT'}
                         </button>
@@ -526,15 +526,15 @@ export default function ProfilePage() {
                           onChange={e => setVerifyEvidence(prev => ({ ...prev, [vType]: e.target.value }))}
                           onKeyDown={e => e.key === 'Enter' && submitVerification(vType)}
                           placeholder={evidencePlaceholders[vType] || 'Enter your evidence…'}
-                          className="w-full bg-black/50 border border-yellow-500/30 text-white font-rajdhani text-xs px-3 py-2 focus:outline-none focus:border-yellow-400/60 transition-colors"
+                          className="w-full bg-black/50 border border-yellow-500/30 text-white font-cormorant text-xs px-3 py-2 focus:outline-none focus:border-yellow-400/60 transition-colors"
                         />
-                        <p className="font-rajdhani text-[10px] text-slate-600">
+                        <p className="font-cormorant text-[10px] text-slate-600">
                           Your submission will be reviewed manually. Do not share sensitive personal info beyond what is asked.
                         </p>
                         <button
                           disabled={verifying === vType || !verifyEvidence[vType]?.trim()}
                           onClick={() => submitVerification(vType)}
-                          className="self-start font-orbitron text-[9px] tracking-widest px-3 py-1.5 border border-yellow-500/50 text-yellow-300 hover:bg-yellow-900/20 transition-colors disabled:opacity-40"
+                          className="self-start font-cinzel text-[9px] tracking-widest px-3 py-1.5 border border-yellow-500/50 text-yellow-300 hover:bg-yellow-900/20 transition-colors disabled:opacity-40"
                         >
                           {verifying === vType ? 'SUBMITTING…' : 'CONFIRM SUBMIT'}
                         </button>
@@ -548,7 +548,7 @@ export default function ProfilePage() {
 
           {/* Guild Record */}
           <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
-            <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase mb-3">Guild Record</h2>
+            <h2 className="font-cinzel font-bold text-sm text-white tracking-widest uppercase mb-3">Guild Record</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {[
                 { label: 'Member Since', value: new Date(userData.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) },
@@ -559,8 +559,8 @@ export default function ProfilePage() {
                 { label: 'Achievements', value: achievements.length },
               ].map(item => (
                 <div key={item.label}>
-                  <p className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase mb-1">{item.label}</p>
-                  <p className="font-rajdhani font-semibold text-slate-300 text-sm">{item.value}</p>
+                  <p className="font-cinzel text-[9px] text-portal-emerald/60 tracking-widest uppercase mb-1">{item.label}</p>
+                  <p className="font-cormorant font-semibold text-slate-300 text-sm">{item.value}</p>
                 </div>
               ))}
             </div>

@@ -174,11 +174,11 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative w-7 h-7 flex-shrink-0">
             <div className="absolute inset-0 bg-portal-emerald/20 rotate-45 group-hover:bg-portal-emerald/40 transition-all" />
-            <span className="absolute inset-0 flex items-center justify-center text-portal-emerald font-orbitron font-black text-[10px]">Q</span>
+            <span className="absolute inset-0 flex items-center justify-center text-portal-emerald font-cinzel font-black text-[10px]">Q</span>
           </div>
           <div>
-            <div className="font-orbitron font-black text-white text-xs tracking-widest">QUESTHUB</div>
-            <div className="font-rajdhani text-portal-emerald text-[10px] tracking-[0.3em]">GUILD</div>
+            <div className="font-cinzel font-black text-white text-xs tracking-widest">QUESTHUB</div>
+            <div className="font-cormorant text-portal-emerald text-[10px] tracking-[0.3em]">GUILD</div>
           </div>
         </Link>
       </div>
@@ -192,16 +192,16 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
               <RankBadge rank={session.user.rank} size="sm" />
             )}
             <div className="min-w-0">
-              <p className="font-orbitron text-xs text-white truncate">
+              <p className="font-cinzel text-xs text-white truncate">
                 {session.user.nickname || session.user.name}
               </p>
-              <p className="font-rajdhani text-[11px] text-slate-500 truncate">
+              <p className="font-cormorant text-[11px] text-slate-500 truncate">
                 {session.user.xp.toLocaleString()} XP
               </p>
             </div>
           </div>
           <div className="mt-2 flex items-center gap-1.5">
-            <span className={`text-[10px] font-rajdhani px-2 py-0.5 border tracking-widest ${
+            <span className={`text-[10px] font-cormorant rounded-full backdrop-blur-sm px-2.5 py-0.5 border tracking-widest ${
               userRole === 'FOUNDER' ? 'text-amber-300 border-amber-500/50 bg-amber-900/20' :
               userRole === 'ADMIN' ? 'text-red-300 border-red-500/50 bg-red-900/20' :
               userRole === 'ACCEPTED_MEMBER' || userRole === 'ACTIVE_WORKER' ? 'text-green-300 border-green-500/50 bg-green-900/20' :
@@ -215,7 +215,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
       )}
 
       <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
-        <div className="font-orbitron text-[9px] text-slate-700 tracking-[0.3em] uppercase px-3 mb-2">
+        <div className="font-cinzel text-[9px] text-slate-700 tracking-[0.3em] uppercase px-3 mb-2">
           Navigation
         </div>
 
@@ -231,13 +231,13 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-transparent text-slate-700 cursor-not-allowed relative group"
               >
                 <span className="text-base flex-shrink-0 text-slate-800">{item.icon}</span>
-                <span className="font-rajdhani font-semibold text-sm tracking-wide line-through decoration-slate-800">
+                <span className="font-cormorant font-semibold text-sm tracking-wide line-through decoration-slate-800">
                   {item.label}
                 </span>
                 <span className="ml-auto text-slate-800 text-xs flex-shrink-0">🔒</span>
                 {item.lockReason && (
                   <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 w-44 bg-portal-black/90 backdrop-blur-md rounded-lg border border-portal-emerald/30 px-2.5 py-2 z-50 hidden group-hover:block shadow-xl">
-                    <p className="font-rajdhani text-xs text-portal-emerald/80 leading-snug">{item.lockReason}</p>
+                    <p className="font-cormorant text-xs text-portal-emerald/80 leading-snug">{item.lockReason}</p>
                   </div>
                 )}
               </div>
@@ -263,14 +263,14 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
               <span className={`text-base flex-shrink-0 ${active ? 'text-portal-emerald' : 'text-slate-600 group-hover:text-slate-400'}`}>
                 {item.icon}
               </span>
-              <span className="font-rajdhani font-semibold text-sm tracking-wide">{item.label}</span>
+              <span className="font-cormorant font-semibold text-sm tracking-wide">{item.label}</span>
             </Link>
           )
         })}
 
         {visibleAdminNav.length > 0 && (
           <>
-            <div className="font-orbitron text-[9px] text-slate-700 tracking-[0.3em] uppercase px-3 mt-4 mb-2">
+            <div className="font-cinzel text-[9px] text-slate-700 tracking-[0.3em] uppercase px-3 mt-4 mb-2">
               {userRole === 'FOUNDER' ? 'Control' : 'Admin'}
             </div>
             {visibleAdminNav.map(item => {
@@ -296,7 +296,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                     <span className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 ${item.founderOnly ? 'bg-amber-400' : 'bg-red-400'}`} />
                   )}
                   <span className="text-base flex-shrink-0">{item.icon}</span>
-                  <span className="font-rajdhani font-semibold text-sm tracking-wide">{item.label}</span>
+                  <span className="font-cormorant font-semibold text-sm tracking-wide">{item.label}</span>
                 </Link>
               )
             })}
@@ -310,14 +310,14 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
           className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-slate-400 transition-colors"
         >
           <span className="text-base">↩</span>
-          <span className="font-rajdhani text-sm tracking-wide">Main Site</span>
+          <span className="font-cormorant text-sm tracking-wide">Main Site</span>
         </Link>
         <button
           onClick={() => signOut({ callbackUrl: typeof window !== 'undefined' ? window.location.origin + '/' : '/' })}
           className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:text-red-400 transition-colors w-full text-left"
         >
           <span className="text-base">⏻</span>
-          <span className="font-rajdhani text-sm tracking-wide">Log Out</span>
+          <span className="font-cormorant text-sm tracking-wide">Log Out</span>
         </button>
         {/* Discreet identity switch — not a feature normal members are pointed to.
             Signs out of the current session cleanly, then drops straight onto
@@ -328,7 +328,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
           title="Switch account"
         >
           <span className="text-sm">⇄</span>
-          <span className="font-rajdhani tracking-wide">Switch Account</span>
+          <span className="font-cormorant tracking-wide">Switch Account</span>
         </button>
       </div>
     </div>
@@ -344,7 +344,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div className="w-60 bg-portal-black/85 backdrop-blur-md border-r border-portal-emerald/15 flex flex-col">
             <div className="flex items-center justify-between px-4 py-4 border-b border-portal-emerald/15">
-              <span className="font-orbitron text-xs text-portal-emerald tracking-widest">NAVIGATION</span>
+              <span className="font-cinzel text-xs text-portal-emerald tracking-widest">NAVIGATION</span>
               <button onClick={() => setSidebarOpen(false)} className="text-slate-500 hover:text-white text-xl">✕</button>
             </div>
             <SidebarContent />
@@ -369,7 +369,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
             </button>
             <div className="hidden sm:flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-              <span className="font-rajdhani text-xs text-slate-600 tracking-widest uppercase">
+              <span className="font-cormorant text-xs text-slate-600 tracking-widest uppercase">
                 {title || 'Guild Network Online'}
               </span>
             </div>
@@ -398,7 +398,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                 >
                   <span className="text-lg">🔔</span>
                   {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white font-orbitron text-[8px] min-w-[15px] h-[15px] rounded-full flex items-center justify-center px-0.5">
+                    <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white font-cinzel text-[8px] min-w-[15px] h-[15px] rounded-full flex items-center justify-center px-0.5">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
@@ -409,15 +409,15 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                     <div className="fixed inset-0 z-40" onClick={() => setBellOpen(false)} />
                     <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto bg-portal-black/90 backdrop-blur-md rounded-xl border border-portal-emerald/30 shadow-xl z-50">
                       <div className="flex items-center justify-between px-3 py-2.5 border-b border-portal-emerald/15 sticky top-0 bg-portal-black/90 backdrop-blur-md rounded-t-xl">
-                        <span className="font-orbitron text-[10px] text-portal-emerald tracking-widest uppercase">Notifications</span>
+                        <span className="font-cinzel text-[10px] text-portal-emerald tracking-widest uppercase">Notifications</span>
                         {unreadCount > 0 && (
-                          <button onClick={markAllRead} className="font-orbitron text-[9px] text-slate-500 hover:text-portal-emerald tracking-wider">
+                          <button onClick={markAllRead} className="font-cinzel text-[9px] text-slate-500 hover:text-portal-emerald tracking-wider">
                             MARK ALL READ
                           </button>
                         )}
                       </div>
                       {notifications.length === 0 ? (
-                        <p className="font-rajdhani text-sm text-slate-600 px-4 py-6 text-center">No notifications yet.</p>
+                        <p className="font-cormorant text-sm text-slate-600 px-4 py-6 text-center">No notifications yet.</p>
                       ) : (
                         notifications.map(n => (
                           <button
@@ -428,9 +428,9 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
                             <div className="flex items-start gap-2">
                               {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 flex-shrink-0" />}
                               <div className="min-w-0">
-                                <p className={`font-rajdhani text-sm leading-snug ${n.read ? 'text-slate-500' : 'text-slate-200'}`}>{n.title}</p>
-                                {n.body && <p className="font-rajdhani text-xs text-slate-600 mt-0.5 leading-snug">{n.body}</p>}
-                                <p className="font-orbitron text-[9px] text-slate-700 mt-1">
+                                <p className={`font-cormorant text-sm leading-snug ${n.read ? 'text-slate-500' : 'text-slate-200'}`}>{n.title}</p>
+                                {n.body && <p className="font-cormorant text-xs text-slate-600 mt-0.5 leading-snug">{n.body}</p>}
+                                <p className="font-cinzel text-[9px] text-slate-700 mt-1">
                                   {new Date(n.createdAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </p>
                               </div>
@@ -447,7 +447,7 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
             {session?.user && (
               <div className="flex items-center gap-2">
                 <RankBadge rank={session.user.rank} size="sm" />
-                <span className="hidden sm:block font-orbitron text-xs text-slate-400 tracking-widest">
+                <span className="hidden sm:block font-cinzel text-xs text-slate-400 tracking-widest">
                   {session.user.nickname || session.user.name}
                 </span>
               </div>
@@ -460,13 +460,13 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
           <div className="bg-amber-950/40 border-b border-amber-500/30 px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
-              <p className="font-rajdhani text-amber-300 text-sm">
-                <span className="font-orbitron text-xs text-amber-400 mr-2">ACTION REQUIRED</span>
+              <p className="font-cormorant text-amber-300 text-sm">
+                <span className="font-cinzel text-xs text-amber-400 mr-2">ACTION REQUIRED</span>
                 You have an account but no guild application. Submit one to begin your trial.
               </p>
             </div>
             <Link href="/apply">
-              <span className="font-orbitron text-[10px] text-amber-300 border border-amber-500/40 bg-amber-900/30 px-3 py-1.5 hover:bg-amber-900/50 transition-all whitespace-nowrap cursor-pointer">
+              <span className="font-cinzel text-[10px] text-amber-300 rounded-full border border-amber-500/40 bg-amber-900/30 px-4 py-1.5 hover:bg-amber-900/50 transition-all whitespace-nowrap cursor-pointer">
                 APPLY NOW →
               </span>
             </Link>

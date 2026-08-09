@@ -123,16 +123,16 @@ export default function ApplyPage() {
                 <span className="text-2xl -rotate-45">✓</span>
               </div>
 
-              <h2 className="font-orbitron font-black text-2xl text-white mb-3">
+              <h2 className="font-cinzel font-black text-2xl text-white mb-3">
                 APPLICATION RECEIVED
               </h2>
 
-              <p className="font-rajdhani text-slate-400 leading-relaxed mb-8">
+              <p className="font-cormorant text-slate-400 leading-relaxed mb-8">
                 Your application has been submitted to the Guild Council. You will be contacted via the details you provided once your trial status has been reviewed.
               </p>
 
               <div className="bg-black/40 border border-portal-emerald/20 rounded-lg px-4 py-3 mb-8">
-                <p className="font-orbitron text-xs text-portal-emerald tracking-widest">
+                <p className="font-cinzel text-xs text-portal-emerald tracking-widest">
                   STATUS: PENDING REVIEW
                 </p>
               </div>
@@ -163,17 +163,17 @@ export default function ApplyPage() {
             <div className="text-center mb-10">
               <div className="inline-flex items-center gap-2 mb-4">
                 <div className="w-8 h-px bg-portal-emerald/50" />
-                <span className="font-orbitron text-xs text-portal-emerald tracking-[0.3em] uppercase">
+                <span className="font-cinzel text-xs text-portal-emerald tracking-[0.3em] uppercase">
                   Enrollment
                 </span>
                 <div className="w-8 h-px bg-portal-emerald/50" />
               </div>
 
-              <h1 className="font-orbitron font-black text-3xl sm:text-4xl text-white mb-3">
+              <h1 className="font-cinzel font-black text-3xl sm:text-4xl text-white mb-3">
                 APPLY TO THE GUILD
               </h1>
 
-              <p className="font-rajdhani text-slate-400 text-base">
+              <p className="font-cormorant text-slate-400 text-base">
                 Applications are reviewed by the Guild Council. Only serious operatives are accepted.
               </p>
             </div>
@@ -182,7 +182,7 @@ export default function ApplyPage() {
             <div className="flex items-center justify-center gap-3 mb-10">
               {[1, 2, 3].map((s) => (
                 <div key={s} className="flex items-center gap-3">
-                  <div className={`w-8 h-8 rounded-lg border flex items-center justify-center font-orbitron text-xs font-bold transition-all duration-300 ${
+                  <div className={`w-8 h-8 rounded-lg border flex items-center justify-center font-cinzel text-xs font-bold transition-all duration-300 ${
                     step === s
                       ? 'border-portal-emerald bg-portal-emerald/[0.08] text-portal-emerald shadow-[0_0_15px_rgba(0,255,163,0.3)]'
                       : step > s
@@ -205,7 +205,7 @@ export default function ApplyPage() {
               {['Identity', 'Skills', 'Availability'].map((label, i) => (
                 <span
                   key={i}
-                  className={`font-orbitron text-xs tracking-widest uppercase ${
+                  className={`font-cinzel text-xs tracking-widest uppercase ${
                     step === i + 1 ? 'text-portal-emerald' : 'text-slate-600'
                   }`}
                 >
@@ -220,7 +220,7 @@ export default function ApplyPage() {
               {/* Step 1 */}
               {step === 1 && (
                 <div className="flex flex-col gap-5">
-                  <h3 className="font-orbitron font-bold text-white text-sm tracking-widest uppercase border-b border-portal-emerald/20 pb-3">
+                  <h3 className="font-cinzel font-bold text-white text-sm tracking-widest uppercase border-b border-portal-emerald/20 pb-3">
                     Identity Clearance
                   </h3>
 
@@ -240,7 +240,7 @@ export default function ApplyPage() {
 
                   {/* DOB Added Here */}
                   <div className="flex flex-col gap-1.5 w-full">
-                    <label className="text-[10px] font-orbitron tracking-[0.25em] text-portal-emerald/70 uppercase">
+                    <label className="text-[10px] font-cinzel tracking-[0.25em] text-portal-emerald/70 uppercase">
                       Date of Birth *
                     </label>
                     <div className="relative">
@@ -250,7 +250,7 @@ export default function ApplyPage() {
                         min={new Date(Date.now() - 19 * 365.25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                         value={form.dob}
                         onChange={e => update('dob', e.target.value)}
-                        className="w-full bg-black/50 border border-portal-emerald/25 text-slate-200 text-sm font-rajdhani px-4 py-3 focus:outline-none focus:border-portal-emerald/60 focus:shadow-[0_0_18px_rgba(0,255,163,0.18)] transition-all duration-200 appearance-none [color-scheme:dark]"
+                        className="w-full bg-black/50 border border-portal-emerald/25 text-slate-200 text-sm font-cormorant px-4 py-3 focus:outline-none focus:border-portal-emerald/60 focus:shadow-[0_0_18px_rgba(0,255,163,0.18)] transition-all duration-200 appearance-none [color-scheme:dark]"
                       />
                       <span className="absolute top-0 left-0 w-2 h-2 border-t border-l border-portal-emerald/50 pointer-events-none" />
                       <span className="absolute top-0 right-0 w-2 h-2 border-t border-r border-portal-emerald/50 pointer-events-none" />
@@ -259,7 +259,7 @@ export default function ApplyPage() {
                     </div>
 
                     {form.dob && (
-                      <p className="text-[11px] text-portal-emerald/70 font-rajdhani">
+                      <p className="text-[11px] text-portal-emerald/70 font-cormorant">
                         Age: {Math.floor(
                           (Date.now() - new Date(form.dob).getTime()) /
                           (365.25 * 24 * 60 * 60 * 1000)
@@ -282,12 +282,12 @@ export default function ApplyPage() {
               {/* Step 2 */}
               {step === 2 && (
                 <div className="flex flex-col gap-5">
-                  <h3 className="font-orbitron font-bold text-white text-sm tracking-widest uppercase border-b border-portal-emerald/20 pb-3">
+                  <h3 className="font-cinzel font-bold text-white text-sm tracking-widest uppercase border-b border-portal-emerald/20 pb-3">
                     Skills & Capabilities
                   </h3>
 
                   <div>
-                    <label className="block font-orbitron text-xs text-portal-emerald/80 tracking-widest uppercase mb-3">
+                    <label className="block font-cinzel text-xs text-portal-emerald/80 tracking-widest uppercase mb-3">
                       Select Your Skills *
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -296,7 +296,7 @@ export default function ApplyPage() {
                           key={skill}
                           type="button"
                           onClick={() => toggleSkill(skill)}
-                          className={`px-3 py-2 text-xs font-rajdhani font-semibold border transition-all duration-200 text-left ${
+                          className={`px-3 py-2 text-xs font-cormorant font-semibold border transition-all duration-200 text-left ${
                             form.skills.includes(skill)
                               ? 'border-portal-emerald bg-portal-emerald/[0.08] text-portal-moonlight'
                               : 'border-slate-700 text-slate-500 hover:border-portal-emerald/40 hover:text-slate-300'
@@ -329,12 +329,12 @@ export default function ApplyPage() {
               {/* Step 3 */}
               {step === 3 && (
                 <div className="flex flex-col gap-5">
-                  <h3 className="font-orbitron font-bold text-white text-sm tracking-widest uppercase border-b border-portal-emerald/20 pb-3">
+                  <h3 className="font-cinzel font-bold text-white text-sm tracking-widest uppercase border-b border-portal-emerald/20 pb-3">
                     Deployment Details
                   </h3>
 
                   <div>
-                    <label className="block font-orbitron text-xs text-portal-emerald/80 tracking-widest uppercase mb-3">
+                    <label className="block font-cinzel text-xs text-portal-emerald/80 tracking-widest uppercase mb-3">
                       Weekly Availability *
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -343,7 +343,7 @@ export default function ApplyPage() {
                           key={opt}
                           type="button"
                           onClick={() => update('availability', opt)}
-                          className={`px-4 py-3 text-sm font-rajdhani font-semibold border transition-all duration-200 ${
+                          className={`px-4 py-3 text-sm font-cormorant font-semibold border transition-all duration-200 ${
                             form.availability === opt
                               ? 'border-portal-emerald bg-portal-emerald/[0.08] text-portal-moonlight'
                               : 'border-slate-700 text-slate-500 hover:border-portal-emerald/40 hover:text-slate-300'
@@ -371,7 +371,7 @@ export default function ApplyPage() {
 
                   {/* Warning */}
                   <div className="bg-yellow-900/10 border border-yellow-500/20 px-4 py-3">
-                    <p className="font-rajdhani text-yellow-400/80 text-xs leading-relaxed">
+                    <p className="font-cormorant text-yellow-400/80 text-xs leading-relaxed">
                       ⚠ Submitting false information will result in permanent disqualification. The Guild Council reviews all applications manually.
                     </p>
                   </div>
@@ -380,7 +380,7 @@ export default function ApplyPage() {
 
               {/* Error */}
               {error && (
-                <div className="mt-4 bg-red-900/20 border border-red-500/40 px-4 py-3 text-red-300 text-sm font-rajdhani">
+                <div className="mt-4 bg-red-900/20 border border-red-500/40 px-4 py-3 text-red-300 text-sm font-cormorant">
                   ⚠ {error}
                 </div>
               )}

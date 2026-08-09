@@ -23,15 +23,15 @@ export default function StatCard({ label, value, icon, sub, color = 'purple' }: 
 
       <div className="flex items-start justify-between mb-3">
         <span className="text-2xl">{icon}</span>
-        <span className="font-orbitron text-[10px] text-slate-600 tracking-widest uppercase">{label}</span>
+        <span className="font-cinzel text-[10px] text-slate-600 tracking-widest uppercase">{label}</span>
       </div>
 
-      <div className="font-orbitron font-black text-2xl sm:text-3xl text-white mb-1">
+      <div className="font-cinzel font-black text-2xl sm:text-3xl text-white mb-1">
         {typeof value === 'number' ? value.toLocaleString() : value}
       </div>
 
       {sub && (
-        <p className="font-rajdhani text-xs text-slate-600">{sub}</p>
+        <p className="font-cormorant text-xs text-slate-600">{sub}</p>
       )}
     </div>
   )

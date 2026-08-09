@@ -67,7 +67,7 @@ export default function QuestDetailPage({ quest, myClaim, slotsFilled, slotsTota
         <div className="max-w-3xl mx-auto flex flex-col gap-6">
 
           <div className="flex items-center gap-3">
-            <Link href="/dashboard/quests" className="font-rajdhani text-slate-600 hover:text-portal-emerald text-sm transition-colors">
+            <Link href="/dashboard/quests" className="font-cormorant text-slate-600 hover:text-portal-emerald text-sm transition-colors">
               ← Quest Board
             </Link>
           </div>
@@ -75,23 +75,23 @@ export default function QuestDetailPage({ quest, myClaim, slotsFilled, slotsTota
           <div className="relative bg-portal-black/70 backdrop-blur-md rounded-xl border border-portal-emerald/20 p-6 sm:p-8 overflow-hidden">
 
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              <span className="font-orbitron text-[9px] border border-portal-emerald/30 bg-portal-emerald/[0.020] text-portal-emerald px-2 py-0.5 tracking-widest">
+              <span className="font-cinzel text-[9px] border border-portal-emerald/30 bg-portal-emerald/[0.020] text-portal-emerald px-2 py-0.5 tracking-widest">
                 {quest.category}
               </span>
               {quest.difficulty && (
-                <span className={`font-orbitron text-[9px] border px-2 py-0.5 tracking-widest ${DIFFICULTY_COLOR[quest.difficulty] || 'text-slate-400 border-slate-700'}`}>
+                <span className={`font-cinzel text-[9px] border px-2 py-0.5 tracking-widest ${DIFFICULTY_COLOR[quest.difficulty] || 'text-slate-400 border-slate-700'}`}>
                   {quest.difficulty}
                 </span>
               )}
-              <span className="font-orbitron text-[9px] border border-slate-700 text-slate-500 px-2 py-0.5 tracking-widest">
+              <span className="font-cinzel text-[9px] border border-slate-700 text-slate-500 px-2 py-0.5 tracking-widest">
                 Rank {quest.rankRequired}+
               </span>
               {slotsTotal > 1 && (
-                <span className="font-orbitron text-[9px] border border-blue-500/30 text-blue-400 px-2 py-0.5 tracking-widest">
+                <span className="font-cinzel text-[9px] border border-blue-500/30 text-blue-400 px-2 py-0.5 tracking-widest">
                   {slotsFilled}/{slotsTotal} SLOTS FILLED
                 </span>
               )}
-              <span className={`font-orbitron text-[9px] px-2 py-0.5 tracking-widest border ${
+              <span className={`font-cinzel text-[9px] px-2 py-0.5 tracking-widest border ${
                 myClaim ? (
                   myClaim.status === 'APPROVED' ? 'text-green-400 border-green-500/40' :
                   myClaim.status === 'REJECTED' ? 'text-red-400 border-red-500/40' :
@@ -103,45 +103,45 @@ export default function QuestDetailPage({ quest, myClaim, slotsFilled, slotsTota
               </span>
             </div>
 
-            <h1 className="font-orbitron font-black text-xl sm:text-2xl text-white mb-4 leading-tight">{quest.title}</h1>
+            <h1 className="font-cinzel font-black text-xl sm:text-2xl text-white mb-4 leading-tight">{quest.title}</h1>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6 p-4 bg-black/30 border border-portal-emerald/10">
               <div>
-                <div className="font-orbitron text-[9px] text-slate-600 tracking-widest uppercase">XP Reward</div>
-                <div className="font-orbitron font-black text-lg text-portal-emerald mt-1">+{quest.rewardXp}</div>
+                <div className="font-cinzel text-[9px] text-slate-600 tracking-widest uppercase">XP Reward</div>
+                <div className="font-cinzel font-black text-lg text-portal-emerald mt-1">+{quest.rewardXp}</div>
               </div>
               {quest.cashReward != null && (
                 <div>
-                  <div className="font-orbitron text-[9px] text-slate-600 tracking-widest uppercase">Cash Reward</div>
-                  <div className="font-orbitron font-black text-lg text-amber-300 mt-1">${quest.cashReward.toFixed(2)}</div>
+                  <div className="font-cinzel text-[9px] text-slate-600 tracking-widest uppercase">Cash Reward</div>
+                  <div className="font-cinzel font-black text-lg text-amber-300 mt-1">${quest.cashReward.toFixed(2)}</div>
                 </div>
               )}
               {quest.deadline && (
                 <div>
-                  <div className="font-orbitron text-[9px] text-slate-600 tracking-widest uppercase">Deadline</div>
-                  <div className="font-rajdhani text-slate-300 text-sm mt-1">
+                  <div className="font-cinzel text-[9px] text-slate-600 tracking-widest uppercase">Deadline</div>
+                  <div className="font-cormorant text-slate-300 text-sm mt-1">
                     {new Date(quest.deadline).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </div>
                 </div>
               )}
               <div>
-                <div className="font-orbitron text-[9px] text-slate-600 tracking-widest uppercase">Client</div>
-                <div className="font-rajdhani text-slate-500 text-sm mt-1">— Hidden —</div>
+                <div className="font-cinzel text-[9px] text-slate-600 tracking-widest uppercase">Client</div>
+                <div className="font-cormorant text-slate-500 text-sm mt-1">— Hidden —</div>
               </div>
             </div>
 
             <div className="mb-6">
-              <h3 className="font-orbitron text-xs text-portal-emerald tracking-widest uppercase mb-3">Mission Briefing</h3>
-              <div className="font-rajdhani text-slate-300 leading-relaxed whitespace-pre-wrap">{quest.instructions}</div>
+              <h3 className="font-cinzel text-xs text-portal-emerald tracking-widest uppercase mb-3">Mission Briefing</h3>
+              <div className="font-cormorant text-slate-300 leading-relaxed whitespace-pre-wrap">{quest.instructions}</div>
             </div>
 
             {error && (
-              <div className="bg-red-900/20 border border-red-500/40 px-4 py-3 text-red-300 text-sm font-rajdhani mb-4">
+              <div className="bg-red-900/20 border border-red-500/40 px-4 py-3 text-red-300 text-sm font-cormorant mb-4">
                 ⚠ {error}
               </div>
             )}
             {success && (
-              <div className="bg-green-900/20 border border-green-500/40 px-4 py-3 text-green-300 text-sm font-rajdhani mb-4">
+              <div className="bg-green-900/20 border border-green-500/40 px-4 py-3 text-green-300 text-sm font-cormorant mb-4">
                 ✓ {success}
               </div>
             )}
@@ -149,7 +149,7 @@ export default function QuestDetailPage({ quest, myClaim, slotsFilled, slotsTota
             {/* ── Submission form ── */}
             {canSubmit && (
               <div className="mb-6 p-4 border border-blue-500/20 bg-blue-950/10">
-                <h3 className="font-orbitron text-xs text-blue-400 tracking-widest uppercase mb-3">Submit Your Results</h3>
+                <h3 className="font-cinzel text-xs text-blue-400 tracking-widest uppercase mb-3">Submit Your Results</h3>
                 <div className="flex flex-col gap-3">
                   <GlowInput label="Link to your work (optional)" placeholder="https://..." value={submissionUrl} onChange={(e: any) => setSubmissionUrl(e.target.value)} />
                   <GlowTextarea label="What did you complete? *" placeholder="Describe what you did, any notes for the reviewer..." rows={4} value={submissionNote} onChange={(e: any) => setSubmissionNote(e.target.value)} />
@@ -162,42 +162,42 @@ export default function QuestDetailPage({ quest, myClaim, slotsFilled, slotsTota
 
             {isSubmitted && (
               <div className="mb-6 p-4 border border-portal-emerald/20 bg-portal-black/10">
-                <h3 className="font-orbitron text-xs text-portal-emerald tracking-widest uppercase mb-2">Awaiting Review</h3>
-                <p className="font-rajdhani text-sm text-slate-400">
+                <h3 className="font-cinzel text-xs text-portal-emerald tracking-widest uppercase mb-2">Awaiting Review</h3>
+                <p className="font-cormorant text-sm text-slate-400">
                   Your submission was sent on {myClaim.submittedAt ? new Date(myClaim.submittedAt).toLocaleString() : 'recently'}. You'll be notified once it's reviewed.
                 </p>
                 {myClaim.submissionNote && (
-                  <p className="font-rajdhani text-sm text-slate-500 mt-2 italic">"{myClaim.submissionNote}"</p>
+                  <p className="font-cormorant text-sm text-slate-500 mt-2 italic">"{myClaim.submissionNote}"</p>
                 )}
               </div>
             )}
 
             {isApproved && (
               <div className="mb-6 p-4 border border-green-500/20 bg-green-950/10">
-                <h3 className="font-orbitron text-xs text-green-400 tracking-widest uppercase mb-2">Approved ✓</h3>
-                <p className="font-rajdhani text-sm text-slate-400">+{quest.rewardXp} XP awarded.</p>
+                <h3 className="font-cinzel text-xs text-green-400 tracking-widest uppercase mb-2">Approved ✓</h3>
+                <p className="font-cormorant text-sm text-slate-400">+{quest.rewardXp} XP awarded.</p>
                 {myClaim.clientRating != null && (
                   <div className="flex items-center gap-1 mt-2">
                     {[1,2,3,4,5].map(n => (
                       <span key={n} className={n <= myClaim.clientRating ? 'text-amber-400' : 'text-slate-700'}>★</span>
                     ))}
-                    <span className="font-rajdhani text-xs text-slate-500 ml-1">Client rating</span>
+                    <span className="font-cormorant text-xs text-slate-500 ml-1">Client rating</span>
                   </div>
                 )}
                 {myClaim.clientFeedback && (
-                  <p className="font-rajdhani text-sm text-slate-400 mt-2 italic">"{myClaim.clientFeedback}"</p>
+                  <p className="font-cormorant text-sm text-slate-400 mt-2 italic">"{myClaim.clientFeedback}"</p>
                 )}
                 {myClaim.reviewNote && (
-                  <p className="font-rajdhani text-sm text-slate-500 mt-2">{myClaim.reviewNote}</p>
+                  <p className="font-cormorant text-sm text-slate-500 mt-2">{myClaim.reviewNote}</p>
                 )}
               </div>
             )}
 
             {isRejected && (
               <div className="mb-6 p-4 border border-red-500/20 bg-red-950/10">
-                <h3 className="font-orbitron text-xs text-red-400 tracking-widest uppercase mb-2">Not Approved</h3>
-                {myClaim.reviewNote && <p className="font-rajdhani text-sm text-slate-400 mt-1">{myClaim.reviewNote}</p>}
-                <p className="font-rajdhani text-xs text-slate-600 mt-2">Other slots on this quest may still be open if you'd like to try again.</p>
+                <h3 className="font-cinzel text-xs text-red-400 tracking-widest uppercase mb-2">Not Approved</h3>
+                {myClaim.reviewNote && <p className="font-cormorant text-sm text-slate-400 mt-1">{myClaim.reviewNote}</p>}
+                <p className="font-cormorant text-xs text-slate-600 mt-2">Other slots on this quest may still be open if you'd like to try again.</p>
               </div>
             )}
 
@@ -208,7 +208,7 @@ export default function QuestDetailPage({ quest, myClaim, slotsFilled, slotsTota
                 </GlowButton>
               )}
               {!slotsAvailable && !myClaim && quest.status !== 'CLOSED' && (
-                <p className="font-rajdhani text-sm text-slate-500">All slots for this quest are currently filled.</p>
+                <p className="font-cormorant text-sm text-slate-500">All slots for this quest are currently filled.</p>
               )}
               <GlowButton variant="ghost" size="md" onClick={() => router.back()}>
                 Back

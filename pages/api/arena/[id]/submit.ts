@@ -27,15 +27,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     orderBy: { createdAt: 'desc' },
   })
 
-  if (attemptRules.entry_limit && existing.length >= attemptRules.entry_limit) {
+  if (attemptRules.entry_limit && existing.filter(e => e.response).length >= attemptRules.entry_limit) {
     return res.status(400).json({ error: 'Entry limit reached for this game' })
   }
-  if (attemptRules.cooldown_minutes && existing[0]) {
+  if (attemptRules.cooldown_minutes && existing[0]?.response) {
     const cooldownMs = attemptRules.cooldown_minutes * 60_000
     const elapsed = Date.now() - new Date(existing[0].createdAt).getTime()
     if (elapsed < cooldownMs) {
       const waitMin = Math.ceil((cooldownMs - elapsed) / 60_000)
       return res.status(400).json({ error: `Cooldown active — try again in ${waitMin}m` })
+    }
+  }
+
+  // Time limit enforcement — previously config.time_limit_seconds was collected
+  // by the Founder form and shown in the UI but never actually checked anywhere.
+  const timeLimitSeconds: number = config.time_limit_seconds || 0
+  if (timeLimitSeconds > 0) {
+    const startedAt = existing[0]?.startedAt
+    if (!startedAt) {
+      return res.status(400).json({ error: 'Open the game first so the timer can start' })
+    }
+    const elapsedSeconds = (Date.now() - new Date(startedAt).getTime()) / 1000
+    if (elapsedSeconds > timeLimitSeconds) {
+      return res.status(400).json({ error: 'Time limit expired for this attempt' })
     }
   }
 

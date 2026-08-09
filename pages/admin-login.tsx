@@ -61,11 +61,11 @@ export default function AdminLoginPage() {
 
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-red-900/20 border border-red-500/30 rotate-45 mb-4">
-              <span className="font-orbitron font-black text-red-400 -rotate-45 text-xl">⬛</span>
+              <span className="font-cinzel font-black text-red-400 -rotate-45 text-xl">⬛</span>
             </div>
-            <div className="font-orbitron text-[10px] text-red-400/70 tracking-[0.4em] uppercase mb-2">Restricted Portal</div>
-            <h1 className="font-orbitron font-black text-xl text-white tracking-widest">ADMIN ACCESS</h1>
-            <p className="font-rajdhani text-slate-500 text-sm mt-2">
+            <div className="font-cinzel text-[10px] text-red-400/70 tracking-[0.4em] uppercase mb-2">Restricted Portal</div>
+            <h1 className="font-cinzel font-black text-xl text-white tracking-widest">ADMIN ACCESS</h1>
+            <p className="font-cormorant text-slate-500 text-sm mt-2">
               Authorized personnel only. All access is logged.
             </p>
           </div>
@@ -89,7 +89,7 @@ export default function AdminLoginPage() {
             />
 
             {error && (
-              <div className="bg-red-900/20 border border-red-500/40 px-4 py-3 text-red-300 text-sm font-rajdhani">
+              <div className="bg-red-900/20 border border-red-500/40 px-4 py-3 text-red-300 text-sm font-cormorant">
                 ⚠ {error}
               </div>
             )}
@@ -100,7 +100,7 @@ export default function AdminLoginPage() {
           </form>
 
           <div className="mt-6 pt-5 border-t border-red-500/10 text-center">
-            <p className="font-rajdhani text-xs text-slate-700">
+            <p className="font-cormorant text-xs text-slate-700">
               Not an admin?{' '}
               <Link href="/auth/login" className="text-portal-emerald/60 hover:text-portal-emerald transition-colors">
                 Member login →
@@ -109,7 +109,7 @@ export default function AdminLoginPage() {
           </div>
 
           <div className="mt-4 bg-black/40 border border-red-500/10 px-3 py-2">
-            <p className="font-orbitron text-[9px] text-red-500/40 text-center tracking-widest">
+            <p className="font-cinzel text-[9px] text-red-500/40 text-center tracking-widest">
               UNAUTHORIZED ACCESS WILL BE PROSECUTED
             </p>
           </div>

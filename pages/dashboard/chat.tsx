@@ -156,13 +156,13 @@ export default function ChatPage() {
       <Head><title>Guild Chat — QuestHub Guild</title></Head>
       <DashboardLayout>
         <div className="max-w-5xl mx-auto">
-          <h1 className="font-orbitron font-black text-lg text-white tracking-widest uppercase mb-5">Guild Chat</h1>
+          <h1 className="font-cinzel font-black text-lg text-white tracking-widest uppercase mb-5">Guild Chat</h1>
 
           <div className="flex border border-purple-500/20 bg-[#0d0017] overflow-hidden" style={{ height: '72vh' }}>
             {/* Channel List */}
             <div className="w-52 border-r border-purple-500/15 flex flex-col flex-shrink-0">
               <div className="px-4 py-3 border-b border-purple-500/15">
-                <span className="font-orbitron text-[10px] text-slate-600 tracking-widest uppercase">Channels</span>
+                <span className="font-cinzel text-[10px] text-slate-600 tracking-widest uppercase">Channels</span>
               </div>
               <div className="flex-1 overflow-y-auto py-2">
                 {CHANNELS.map(ch => {
@@ -182,10 +182,10 @@ export default function ChatPage() {
                       }`}
                     >
                       <span className="text-sm">{ch.icon}</span>
-                      <span className="font-rajdhani text-sm font-semibold">{ch.label}</span>
+                      <span className="font-cormorant text-sm font-semibold">{ch.label}</span>
                       {!accessible && <span className="ml-auto text-[10px]">🔒</span>}
                       {ch.minRank && accessible && (
-                        <span className="ml-auto font-orbitron text-[8px] text-purple-500/60">{ch.minRank}+</span>
+                        <span className="ml-auto font-cinzel text-[8px] text-purple-500/60">{ch.minRank}+</span>
                       )}
                     </button>
                   )
@@ -197,13 +197,13 @@ export default function ChatPage() {
                 <div className="border-t border-purple-500/15 p-3">
                   <button
                     onClick={() => setGhostPanelOpen(v => !v)}
-                    className="w-full flex items-center gap-1.5 font-orbitron text-[9px] text-purple-300 tracking-widest"
+                    className="w-full flex items-center gap-1.5 font-cinzel text-[9px] text-purple-300 tracking-widest"
                   >
                     <span className={`w-1.5 h-1.5 rounded-full ${ghost?.isActive ? 'bg-purple-400 animate-pulse' : 'bg-slate-700'}`} />
                     👻 GHOST MODE: {ghost?.isActive ? 'ON' : 'OFF'}
                   </button>
                   {ghost?.isActive && (
-                    <p className="font-rajdhani text-[10px] text-slate-500 mt-1 truncate">as {ghost.ghostName} ({ghost.ghostRank})</p>
+                    <p className="font-cormorant text-[10px] text-slate-500 mt-1 truncate">as {ghost.ghostName} ({ghost.ghostRank})</p>
                   )}
                 </div>
               )}
@@ -212,26 +212,26 @@ export default function ChatPage() {
             {/* Chat */}
             <div className="flex-1 flex flex-col">
               <div className="px-5 py-3 border-b border-purple-500/15 flex items-center gap-3">
-                <span className="font-orbitron text-xs text-white tracking-wide">
+                <span className="font-cinzel text-xs text-white tracking-wide">
                   #{CHANNELS.find(c => c.id === channel)?.label || channel}
                 </span>
                 <div className="ml-auto flex items-center gap-3">
                   <button
                     onClick={() => setShowHelp(v => !v)}
-                    className="relative flex items-center gap-1.5 font-orbitron text-[9px] text-purple-300 border border-purple-500/40 bg-purple-900/10 px-2.5 py-1.5 hover:bg-purple-900/25 tracking-widest transition-colors"
+                    className="relative flex items-center gap-1.5 font-cinzel text-[9px] text-purple-300 border border-purple-500/40 bg-purple-900/10 px-2.5 py-1.5 hover:bg-purple-900/25 tracking-widest transition-colors"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
                     👻 PARTY GAMES
                   </button>
                   <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-                  <span className="font-rajdhani text-[10px] text-slate-600">AI-monitored</span>
+                  <span className="font-cormorant text-[10px] text-slate-600">AI-monitored</span>
                 </div>
               </div>
 
               {/* Founder Ghost Mode setup panel */}
               {isFounder && ghostPanelOpen && (
                 <div className="px-5 py-3 border-b border-purple-500/15 bg-purple-900/10 flex flex-col gap-2">
-                  <p className="font-orbitron text-[10px] text-purple-300 tracking-widest uppercase">
+                  <p className="font-cinzel text-[10px] text-purple-300 tracking-widest uppercase">
                     {ghost ? 'Ghost Identity' : 'Set Up Ghost Identity'}
                   </p>
                   <div className="flex flex-wrap items-center gap-2">
@@ -239,19 +239,19 @@ export default function ChatPage() {
                       value={ghostNameInput}
                       onChange={e => setGhostNameInput(e.target.value)}
                       placeholder="Ghost display name"
-                      className="bg-black/40 border border-purple-500/20 text-slate-200 text-sm font-rajdhani px-3 py-1.5 focus:outline-none focus:border-purple-400/50 transition-colors"
+                      className="bg-black/40 border border-purple-500/20 text-slate-200 text-sm font-cormorant px-3 py-1.5 focus:outline-none focus:border-purple-400/50 transition-colors"
                     />
                     <select
                       value={ghostRankInput}
                       onChange={e => setGhostRankInput(e.target.value)}
-                      className="bg-black/40 border border-purple-500/20 text-slate-200 text-sm font-rajdhani px-2 py-1.5 focus:outline-none focus:border-purple-400/50"
+                      className="bg-black/40 border border-purple-500/20 text-slate-200 text-sm font-cormorant px-2 py-1.5 focus:outline-none focus:border-purple-400/50"
                     >
                       {VALID_GHOST_RANKS.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>
                     <button
                       onClick={saveGhostIdentity}
                       disabled={ghostLoading || ghostNameInput.trim().length < 3}
-                      className="bg-purple-600/30 border border-purple-500/40 text-purple-300 hover:bg-purple-600/50 transition-colors px-3 py-1.5 font-orbitron text-[10px] tracking-widest disabled:opacity-40"
+                      className="bg-purple-600/30 border border-purple-500/40 text-purple-300 hover:bg-purple-600/50 transition-colors px-3 py-1.5 font-cinzel text-[10px] tracking-widest disabled:opacity-40"
                     >
                       {ghost ? 'UPDATE' : 'CREATE'}
                     </button>
@@ -259,7 +259,7 @@ export default function ChatPage() {
                       <button
                         onClick={toggleGhostActive}
                         disabled={ghostLoading}
-                        className={`px-3 py-1.5 font-orbitron text-[10px] tracking-widest border transition-colors ${
+                        className={`px-3 py-1.5 font-cinzel text-[10px] tracking-widest border transition-colors ${
                           ghost.isActive
                             ? 'border-red-500/40 text-red-400 hover:bg-red-900/20'
                             : 'border-green-500/40 text-green-400 hover:bg-green-900/20'
@@ -269,16 +269,16 @@ export default function ChatPage() {
                       </button>
                     )}
                   </div>
-                  {ghostError && <p className="font-rajdhani text-xs text-red-400">{ghostError}</p>}
-                  <p className="font-rajdhani text-[10px] text-slate-600">
+                  {ghostError && <p className="font-cormorant text-xs text-red-400">{ghostError}</p>}
+                  <p className="font-cormorant text-[10px] text-slate-600">
                     While ON, every message and party-game post you send appears under this name and rank instead of your real one.
                   </p>
                 </div>
               )}
 
               {showHelp && (
-                <div className="px-5 py-3 border-b border-purple-500/15 bg-purple-900/10 font-rajdhani text-xs text-slate-400 space-y-1">
-                  <p className="font-orbitron text-[10px] text-purple-300 tracking-widest uppercase mb-1">Party Game Commands</p>
+                <div className="px-5 py-3 border-b border-purple-500/15 bg-purple-900/10 font-cormorant text-xs text-slate-400 space-y-1">
+                  <p className="font-cinzel text-[10px] text-purple-300 tracking-widest uppercase mb-1">Party Game Commands</p>
                   {PARTY_COMMANDS.map(c => (
                     <p key={c.cmd}>
                       <code className="text-purple-300">{c.cmd.trim()}</code> — {c.desc}
@@ -294,7 +294,7 @@ export default function ChatPage() {
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
-                    <p className="font-rajdhani text-slate-700 text-sm">No messages yet. Be the first.</p>
+                    <p className="font-cormorant text-slate-700 text-sm">No messages yet. Be the first.</p>
                   </div>
                 ) : (
                   messages.map((msg: any) => {
@@ -320,11 +320,11 @@ export default function ChatPage() {
                         <div key={msg.id} className={`relative border px-4 py-3 ${styles[game.color]}`}>
                           <span className={`absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 ${styles[game.color].split(' ')[0]}`} />
                           <span className={`absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 ${styles[game.color].split(' ')[0]}`} />
-                          <div className={`flex items-center gap-1.5 mb-1.5 font-orbitron text-[9px] tracking-widest ${labelColor[game.color]}`}>
+                          <div className={`flex items-center gap-1.5 mb-1.5 font-cinzel text-[9px] tracking-widest ${labelColor[game.color]}`}>
                             <span>{game.icon}</span>
                             <span>{game.label}</span>
                           </div>
-                          <p className="font-rajdhani text-purple-100 text-sm leading-relaxed whitespace-pre-line">{body}</p>
+                          <p className="font-cormorant text-purple-100 text-sm leading-relaxed whitespace-pre-line">{body}</p>
                         </div>
                       )
                     }
@@ -335,19 +335,19 @@ export default function ChatPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-orbitron text-[11px] text-purple-300">
+                            <span className="font-cinzel text-[11px] text-purple-300">
                               {msg.isGhost && msg.ghostDisplayName
                                 ? msg.ghostDisplayName
                                 : (msg.user?.nickname || msg.user?.name || 'Unknown')}
                             </span>
                             {msg.isGhost && (
-                              <span className="font-orbitron text-[8px] text-purple-500/60" title="Posted in Ghost Mode">👻</span>
+                              <span className="font-cinzel text-[8px] text-purple-500/60" title="Posted in Ghost Mode">👻</span>
                             )}
-                            <span className="font-rajdhani text-[10px] text-slate-600">
+                            <span className="font-cormorant text-[10px] text-slate-600">
                               {new Date(msg.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
-                          <p className="font-rajdhani text-slate-300 text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
+                          <p className="font-cormorant text-slate-300 text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
                         </div>
                       </div>
                     )
@@ -358,7 +358,7 @@ export default function ChatPage() {
 
               {error && (
                 <div className="px-5 py-1.5 border-t border-red-500/20 bg-red-900/10">
-                  <p className="font-rajdhani text-red-400 text-xs">{error}</p>
+                  <p className="font-cormorant text-red-400 text-xs">{error}</p>
                 </div>
               )}
 
@@ -374,14 +374,14 @@ export default function ChatPage() {
                         className="w-full text-left px-3 py-2 hover:bg-purple-900/20 transition-colors flex items-center gap-2 border-b border-purple-500/10 last:border-b-0"
                       >
                         <code className="font-mono text-xs text-purple-300 flex-shrink-0">{c.cmd.trim()}</code>
-                        <span className="font-rajdhani text-[11px] text-slate-500 truncate">{c.desc}</span>
+                        <span className="font-cormorant text-[11px] text-slate-500 truncate">{c.desc}</span>
                       </button>
                     ))}
                   </div>
                 )}
                 {showPalette && paletteMatches.length === 0 && (
                   <div className="absolute left-4 right-4 bottom-full mb-1 bg-[#0d0017] border border-purple-500/30 px-3 py-2">
-                    <span className="font-rajdhani text-[11px] text-slate-600">No matching command — this will send as a regular message.</span>
+                    <span className="font-cormorant text-[11px] text-slate-600">No matching command — this will send as a regular message.</span>
                   </div>
                 )}
                 <div className="flex items-center gap-3">
@@ -393,16 +393,16 @@ export default function ChatPage() {
                     placeholder={`Message #${CHANNELS.find(c => c.id === channel)?.label || channel}…`}
                     autoComplete="off"
                     spellCheck={false}
-                    className="flex-1 bg-black/40 border border-purple-500/20 text-slate-200 text-sm font-rajdhani px-4 py-2.5 focus:outline-none focus:border-purple-400/50 transition-colors"
+                    className="flex-1 bg-black/40 border border-purple-500/20 text-slate-200 text-sm font-cormorant px-4 py-2.5 focus:outline-none focus:border-purple-400/50 transition-colors"
                   />
                   <button
                     onClick={send}
-                    className="bg-purple-600/30 border border-purple-500/40 text-purple-300 hover:bg-purple-600/50 transition-colors px-4 py-2.5 font-orbitron text-xs tracking-widest"
+                    className="bg-purple-600/30 border border-purple-500/40 text-purple-300 hover:bg-purple-600/50 transition-colors px-4 py-2.5 font-cinzel text-xs tracking-widest"
                   >
                     SEND
                   </button>
                 </div>
-                <p className="font-rajdhani text-[10px] text-slate-700 mt-1.5 pl-1">
+                <p className="font-cormorant text-[10px] text-slate-700 mt-1.5 pl-1">
                   Type <span className="text-purple-500/70 font-mono">/</span> to see party game commands
                 </p>
               </div>

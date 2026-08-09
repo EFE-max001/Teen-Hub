@@ -35,7 +35,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-2 border-portal-emerald/30 border-t-portal-emerald rounded-full animate-spin" />
-            <p className="font-orbitron text-xs text-portal-emerald tracking-widest animate-pulse">
+            <p className="font-cinzel text-xs text-portal-emerald tracking-widest animate-pulse">
               LOADING OPERATIVE DATA...
             </p>
           </div>
@@ -72,12 +72,12 @@ export default function DashboardPage() {
               <RankBadge rank={rank} size="lg" showLabel />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-orbitron text-[10px] text-portal-emerald/70 tracking-[0.3em] uppercase">
+                  <span className="font-cinzel text-[10px] text-portal-emerald/70 tracking-[0.3em] uppercase">
                     Operative
                   </span>
                   {trialStatus && <StatusChip status={trialStatus} size="sm" />}
                 </div>
-                <h1 className="font-orbitron font-black text-xl sm:text-2xl text-white mb-3">
+                <h1 className="font-cinzel font-black text-xl sm:text-2xl text-white mb-3">
                   {user.nickname || user.name}
                 </h1>
                 <XPBar xp={xp} rank={rank} showNumbers />
@@ -90,10 +90,10 @@ export default function DashboardPage() {
             <div className="bg-yellow-900/15 border border-yellow-500/30 p-4 flex items-start gap-3">
               <span className="text-yellow-400 mt-0.5 text-lg flex-shrink-0">⚠</span>
               <div>
-                <p className="font-orbitron text-xs text-yellow-400 tracking-widest uppercase mb-1">
+                <p className="font-cinzel text-xs text-yellow-400 tracking-widest uppercase mb-1">
                   Trial Pending Review
                 </p>
-                <p className="font-rajdhani text-slate-400 text-sm">
+                <p className="font-cormorant text-slate-400 text-sm">
                   Your application is with the Guild Council. You'll be notified once reviewed. Full access unlocks after acceptance.
                 </p>
               </div>
@@ -104,10 +104,10 @@ export default function DashboardPage() {
             <div className="bg-blue-900/15 border border-blue-500/30 p-4 flex items-start gap-3">
               <span className="text-blue-400 mt-0.5 text-lg flex-shrink-0">◉</span>
               <div>
-                <p className="font-orbitron text-xs text-blue-400 tracking-widest uppercase mb-1">
+                <p className="font-cinzel text-xs text-blue-400 tracking-widest uppercase mb-1">
                   Under Active Review
                 </p>
-                <p className="font-rajdhani text-slate-400 text-sm">
+                <p className="font-cormorant text-slate-400 text-sm">
                   A Trial Judge is reviewing your application now. Stay active and check back soon.
                 </p>
               </div>
@@ -118,10 +118,10 @@ export default function DashboardPage() {
             <div className="bg-red-900/15 border border-red-500/30 p-4 flex items-start gap-3">
               <span className="text-red-400 mt-0.5 text-lg flex-shrink-0">✕</span>
               <div>
-                <p className="font-orbitron text-xs text-red-400 tracking-widest uppercase mb-1">
+                <p className="font-cinzel text-xs text-red-400 tracking-widest uppercase mb-1">
                   Application Rejected
                 </p>
-                <p className="font-rajdhani text-slate-400 text-sm">
+                <p className="font-cormorant text-slate-400 text-sm">
                   Your trial application was not accepted at this time. Contact an admin for feedback.
                 </p>
               </div>
@@ -143,17 +143,17 @@ export default function DashboardPage() {
             <div className="lg:col-span-2 bg-[#03060A] border border-portal-emerald/20 p-5">
               <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/30" />
               <div className="flex items-center justify-between mb-5">
-                <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase">
+                <h2 className="font-cinzel font-bold text-sm text-white tracking-widest uppercase">
                   Recent Activity
                 </h2>
-                <span className="font-rajdhani text-xs text-slate-600 tracking-widest uppercase">
+                <span className="font-cormorant text-xs text-slate-600 tracking-widest uppercase">
                   Last 20 actions
                 </span>
               </div>
 
               {recentActivity.length === 0 ? (
                 <div className="text-center py-10">
-                  <p className="font-rajdhani text-slate-600 text-sm">No activity yet. Complete your trial or claim a quest to get started.</p>
+                  <p className="font-cormorant text-slate-600 text-sm">No activity yet. Complete your trial or claim a quest to get started.</p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
@@ -161,15 +161,15 @@ export default function DashboardPage() {
                     <div key={log.id} className="flex items-start gap-3 py-2.5 border-b border-portal-emerald/10 last:border-0">
                       <div className="w-1.5 h-1.5 rounded-full bg-portal-emerald/60 mt-1.5 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="font-rajdhani text-sm text-slate-300">{log.details || log.action}</p>
-                        <p className="font-rajdhani text-xs text-slate-600 mt-0.5">
+                        <p className="font-cormorant text-sm text-slate-300">{log.details || log.action}</p>
+                        <p className="font-cormorant text-xs text-slate-600 mt-0.5">
                           {new Date(log.createdAt).toLocaleDateString('en-GB', {
                             day: 'numeric', month: 'short', year: 'numeric',
                             hour: '2-digit', minute: '2-digit',
                           })}
                         </p>
                       </div>
-                      <span className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest flex-shrink-0">
+                      <span className="font-cinzel text-[9px] text-portal-emerald/60 tracking-widest flex-shrink-0">
                         {log.action}
                       </span>
                     </div>
@@ -183,22 +183,22 @@ export default function DashboardPage() {
 
               {/* XP log */}
               <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
-                <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase mb-4">
+                <h2 className="font-cinzel font-bold text-sm text-white tracking-widest uppercase mb-4">
                   XP Log
                 </h2>
                 {recentXP.length === 0 ? (
-                  <p className="font-rajdhani text-slate-600 text-sm">No XP earned yet.</p>
+                  <p className="font-cormorant text-slate-600 text-sm">No XP earned yet.</p>
                 ) : (
                   <div className="flex flex-col gap-2">
                     {recentXP.map((log: any) => (
                       <div key={log.id} className="flex items-center justify-between py-2 border-b border-portal-emerald/10 last:border-0">
                         <div className="min-w-0 flex-1">
-                          <p className="font-rajdhani text-xs text-slate-400 truncate">{log.reason}</p>
-                          <p className="font-rajdhani text-[11px] text-slate-600">
+                          <p className="font-cormorant text-xs text-slate-400 truncate">{log.reason}</p>
+                          <p className="font-cormorant text-[11px] text-slate-600">
                             {new Date(log.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                           </p>
                         </div>
-                        <span className={`font-orbitron font-bold text-sm flex-shrink-0 ml-3 ${log.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        <span className={`font-cinzel font-bold text-sm flex-shrink-0 ml-3 ${log.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
                           {log.amount > 0 ? '+' : ''}{log.amount}
                         </span>
                       </div>
@@ -209,7 +209,7 @@ export default function DashboardPage() {
 
               {/* Quick links */}
               <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
-                <h2 className="font-orbitron font-bold text-sm text-white tracking-widest uppercase mb-4">
+                <h2 className="font-cinzel font-bold text-sm text-white tracking-widest uppercase mb-4">
                   Quick Access
                 </h2>
                 <div className="flex flex-col gap-2">
@@ -226,7 +226,7 @@ export default function DashboardPage() {
                       className="flex items-center gap-3 px-3 py-2.5 border border-portal-emerald/15 text-slate-400 hover:border-portal-emerald/40 hover:text-portal-emerald hover:bg-portal-emerald/[0.010] transition-all duration-200"
                     >
                       <span className="text-portal-emerald/60">{item.icon}</span>
-                      <span className="font-rajdhani font-semibold text-sm">{item.label}</span>
+                      <span className="font-cormorant font-semibold text-sm">{item.label}</span>
                       <span className="ml-auto text-slate-700 text-xs">→</span>
                     </Link>
                   ))}

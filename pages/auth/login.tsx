@@ -66,22 +66,22 @@ export default function LoginPage() {
               <div className="relative w-12 h-12">
                 <div className="absolute inset-0 bg-portal-emerald/20 rotate-45 group-hover:bg-portal-emerald/30 transition-all duration-300" />
                 <div className="absolute inset-1.5 bg-portal-emerald/10 rotate-45" />
-                <span className="absolute inset-0 flex items-center justify-center text-portal-emerald font-orbitron font-black text-lg">Q</span>
+                <span className="absolute inset-0 flex items-center justify-center text-portal-emerald font-cinzel font-black text-lg">Q</span>
               </div>
             </Link>
 
             <div className="inline-flex items-center gap-3 mb-3">
               <div className="w-10 h-px bg-portal-emerald/30" />
-              <span className="font-orbitron text-[10px] text-portal-emerald tracking-[0.4em] uppercase">
+              <span className="font-cinzel text-[10px] text-portal-emerald tracking-[0.4em] uppercase">
                 Guild Access Terminal
               </span>
               <div className="w-10 h-px bg-portal-emerald/30" />
             </div>
 
-            <h1 className="font-orbitron font-black text-3xl sm:text-4xl text-white glow-text mb-2">
+            <h1 className="font-cinzel font-black text-3xl sm:text-4xl text-white glow-text mb-2">
               QUESTHUB
             </h1>
-            <p className="font-rajdhani text-slate-500 text-sm tracking-wider">
+            <p className="font-cormorant text-slate-500 text-sm tracking-wider">
               Enter your credentials to access the guild network
             </p>
           </div>
@@ -90,7 +90,7 @@ export default function LoginPage() {
           {router.query.registered && (
             <div className="bg-green-900/20 border border-green-500/30 px-4 py-3 mb-4 flex items-center gap-2">
               <span className="text-green-400 text-sm">✓</span>
-              <p className="font-rajdhani text-green-300 text-sm">
+              <p className="font-cormorant text-green-300 text-sm">
                 Account created successfully. Sign in to access the guild.
               </p>
             </div>
@@ -130,7 +130,7 @@ export default function LoginPage() {
               {error && (
                 <div className="bg-red-900/20 border border-red-500/30 px-4 py-3 flex items-center gap-2">
                   <span className="text-red-400 text-sm flex-shrink-0">⚠</span>
-                  <p className="font-rajdhani text-red-300 text-sm">{error}</p>
+                  <p className="font-cormorant text-red-300 text-sm">{error}</p>
                 </div>
               )}
 
@@ -147,12 +147,12 @@ export default function LoginPage() {
             {/* Divider */}
             <div className="my-6 flex items-center gap-3">
               <div className="flex-1 h-px bg-portal-emerald/10" />
-              <span className="font-rajdhani text-xs text-slate-700 tracking-widest uppercase">or</span>
+              <span className="font-cormorant text-xs text-slate-700 tracking-widest uppercase">or</span>
               <div className="flex-1 h-px bg-portal-emerald/10" />
             </div>
 
             <div className="text-center">
-              <p className="font-rajdhani text-slate-600 text-sm">
+              <p className="font-cormorant text-slate-600 text-sm">
                 No guild access yet?{' '}
                 <Link
                   href="/auth/register"
@@ -161,7 +161,7 @@ export default function LoginPage() {
                   Create an account
                 </Link>
               </p>
-              <p className="font-rajdhani text-slate-600 text-sm mt-2">
+              <p className="font-cormorant text-slate-600 text-sm mt-2">
                 Want to join the guild?{' '}
                 <Link
                   href="/apply"
@@ -177,7 +177,7 @@ export default function LoginPage() {
           <div className="text-center mt-6">
             <Link
               href="/"
-              className="font-rajdhani text-slate-700 text-xs hover:text-slate-500 tracking-[0.2em] uppercase transition-colors"
+              className="font-cormorant text-slate-700 text-xs hover:text-slate-500 tracking-[0.2em] uppercase transition-colors"
             >
               ← Return to Base
             </Link>
@@ -186,7 +186,7 @@ export default function LoginPage() {
           {/* System status */}
           <div className="flex items-center justify-center gap-2 mt-6">
             <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-            <span className="font-orbitron text-[9px] text-slate-700 tracking-[0.3em] uppercase">
+            <span className="font-cinzel text-[9px] text-slate-700 tracking-[0.3em] uppercase">
               Guild Network Online
             </span>
           </div>

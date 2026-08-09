@@ -402,6 +402,10 @@ model ArenaEntry {
   response    String?
   score       Int?
   createdAt   DateTime       @default(now())
+  // Set once, the first time a player opens a timed game (POST /api/arena/[id]/start).
+  // Never overwritten afterwards — this is what lets submit.ts actually enforce
+  // config.time_limit_seconds instead of just displaying it and doing nothing.
+  startedAt   DateTime?
   user        User           @relation(fields: [userId], references: [id])
   challenge   ArenaChallenge @relation(fields: [challengeId], references: [id])
 

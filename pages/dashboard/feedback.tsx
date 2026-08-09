@@ -96,9 +96,9 @@ export default function FeedbackPage() {
 
         {/* Header */}
         <div>
-          <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.4em] uppercase">Communications</span>
-          <h1 className="font-orbitron font-black text-xl sm:text-2xl text-white mt-1">FEEDBACK</h1>
-          <p className="font-rajdhani text-slate-400 text-sm mt-1">
+          <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.4em] uppercase">Communications</span>
+          <h1 className="font-cinzel font-black text-xl sm:text-2xl text-white mt-1">FEEDBACK</h1>
+          <p className="font-cormorant text-slate-400 text-sm mt-1">
             Send feedback, bug reports, or suggestions to the Founder. You'll get a reply here.
           </p>
         </div>
@@ -107,14 +107,14 @@ export default function FeedbackPage() {
         <div className="relative bg-portal-black/70 border border-portal-emerald/20 p-5 sm:p-6">
           <span className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-portal-emerald/40" />
           <span className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-portal-emerald/40" />
-          <h2 className="font-orbitron font-bold text-sm text-white mb-4">SUBMIT FEEDBACK</h2>
+          <h2 className="font-cinzel font-bold text-sm text-white mb-4">SUBMIT FEEDBACK</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="font-orbitron text-[9px] text-portal-emerald tracking-widest uppercase block mb-2">Type</label>
+              <label className="font-cinzel text-[9px] text-portal-emerald tracking-widest uppercase block mb-2">Type</label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="w-full bg-black/60 border border-portal-emerald/20 text-white font-rajdhani text-sm px-3 py-2.5 focus:outline-none focus:border-portal-emerald/50"
+                className="w-full bg-black/60 border border-portal-emerald/20 text-white font-cormorant text-sm px-3 py-2.5 focus:outline-none focus:border-portal-emerald/50"
               >
                 {TYPES.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -122,17 +122,17 @@ export default function FeedbackPage() {
               </select>
             </div>
             <div>
-              <label className="font-orbitron text-[9px] text-portal-emerald tracking-widest uppercase block mb-2">Message</label>
+              <label className="font-cinzel text-[9px] text-portal-emerald tracking-widest uppercase block mb-2">Message</label>
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={5}
                 placeholder="Be specific and clear. The Founder reads every message."
-                className="w-full bg-black/60 border border-portal-emerald/20 text-white font-rajdhani text-sm px-3 py-2.5 resize-none focus:outline-none focus:border-portal-emerald/50 placeholder-slate-600"
+                className="w-full bg-black/60 border border-portal-emerald/20 text-white font-cormorant text-sm px-3 py-2.5 resize-none focus:outline-none focus:border-portal-emerald/50 placeholder-slate-600"
               />
             </div>
-            {error && <p className="font-rajdhani text-red-400 text-sm">{error}</p>}
-            {success && <p className="font-rajdhani text-green-400 text-sm">{success}</p>}
+            {error && <p className="font-cormorant text-red-400 text-sm">{error}</p>}
+            {success && <p className="font-cormorant text-green-400 text-sm">{success}</p>}
             <GlowButton type="submit" variant="primary" disabled={submitting || !content.trim()} className="w-full sm:w-auto">
               {submitting ? 'Submitting...' : 'Send Feedback'}
             </GlowButton>
@@ -141,11 +141,11 @@ export default function FeedbackPage() {
 
         {/* Past feedback */}
         <div>
-          <h2 className="font-orbitron font-bold text-sm text-white mb-4">YOUR SUBMISSIONS</h2>
+          <h2 className="font-cinzel font-bold text-sm text-white mb-4">YOUR SUBMISSIONS</h2>
           {loading ? (
-            <p className="font-rajdhani text-slate-500 text-sm">Loading...</p>
+            <p className="font-cormorant text-slate-500 text-sm">Loading...</p>
           ) : feedbacks.length === 0 ? (
-            <p className="font-rajdhani text-slate-600 text-sm">No feedback submitted yet.</p>
+            <p className="font-cormorant text-slate-600 text-sm">No feedback submitted yet.</p>
           ) : (
             <div className="space-y-4">
               {feedbacks.map((fb) => (
@@ -153,16 +153,16 @@ export default function FeedbackPage() {
                   <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/30" />
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-orbitron text-[9px] text-portal-emerald tracking-widest">{fb.type}</span>
-                      <span className={`font-orbitron text-[8px] border px-1.5 py-0.5 ${STATUS_COLORS[fb.status] || STATUS_COLORS.OPEN}`}>
+                      <span className="font-cinzel text-[9px] text-portal-emerald tracking-widest">{fb.type}</span>
+                      <span className={`font-cinzel text-[8px] border px-1.5 py-0.5 ${STATUS_COLORS[fb.status] || STATUS_COLORS.OPEN}`}>
                         {fb.status}
                       </span>
                     </div>
-                    <span className="font-rajdhani text-[10px] text-slate-600">
+                    <span className="font-cormorant text-[10px] text-slate-600">
                       {new Date(fb.createdAt).toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="font-rajdhani text-slate-300 text-sm leading-relaxed mb-3">{fb.content}</p>
+                  <p className="font-cormorant text-slate-300 text-sm leading-relaxed mb-3">{fb.content}</p>
 
                   {/* Replies */}
                   {fb.replies.length > 0 && (
@@ -170,14 +170,14 @@ export default function FeedbackPage() {
                       {fb.replies.map((r) => (
                         <div key={r.id} className="bg-portal-black/40 border border-portal-emerald/20 p-3">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-orbitron text-[8px] text-portal-emerald">
+                            <span className="font-cinzel text-[8px] text-portal-emerald">
                               {roleLabel(r.author.role)} {r.author.nickname || r.author.name}
                             </span>
-                            <span className="font-rajdhani text-[9px] text-slate-600">
+                            <span className="font-cormorant text-[9px] text-slate-600">
                               {new Date(r.createdAt).toLocaleDateString()}
                             </span>
                           </div>
-                          <p className="font-rajdhani text-slate-300 text-sm">{r.content}</p>
+                          <p className="font-cormorant text-slate-300 text-sm">{r.content}</p>
                         </div>
                       ))}
                     </div>

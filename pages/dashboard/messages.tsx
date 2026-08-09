@@ -167,10 +167,10 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
               <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-portal-emerald/40" />
               <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-portal-emerald/40" />
               <div className="text-4xl mb-4 text-slate-700">🔒</div>
-              <h2 className="font-orbitron font-black text-lg text-white mb-3 tracking-widest">ACCESS LOCKED</h2>
-              <p className="font-rajdhani text-slate-400 leading-relaxed">{lockReason || 'Messages unlock at Rank D.'}</p>
+              <h2 className="font-cinzel font-black text-lg text-white mb-3 tracking-widest">ACCESS LOCKED</h2>
+              <p className="font-cormorant text-slate-400 leading-relaxed">{lockReason || 'Messages unlock at Rank D.'}</p>
               <div className="mt-6 bg-black/40 border border-portal-emerald/20 px-4 py-3">
-                <p className="font-orbitron text-[10px] text-portal-emerald tracking-widest">REQUIREMENT: RANK D+</p>
+                <p className="font-cinzel text-[10px] text-portal-emerald tracking-widest">REQUIREMENT: RANK D+</p>
               </div>
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
       <Head><title>Messages — QuestHub Guild</title></Head>
       <DashboardLayout>
         <div className="max-w-5xl mx-auto">
-          <h1 className="font-orbitron font-black text-lg text-white tracking-widest uppercase mb-5">Messages</h1>
+          <h1 className="font-cinzel font-black text-lg text-white tracking-widest uppercase mb-5">Messages</h1>
 
           <div className="flex border border-portal-emerald/20 bg-portal-black overflow-hidden" style={{ height: '76vh' }}>
 
@@ -199,7 +199,7 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                   <button
                     key={t}
                     onClick={() => { setTab(t); if (t !== 'friends') setActiveConv(null) }}
-                    className={`flex-1 py-2.5 font-orbitron text-[9px] tracking-widest uppercase transition-colors relative ${
+                    className={`flex-1 py-2.5 font-cinzel text-[9px] tracking-widest uppercase transition-colors relative ${
                       tab === t ? 'text-portal-emerald' : 'text-slate-600 hover:text-slate-400'
                     }`}
                   >
@@ -208,7 +208,7 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                       <>
                         Requests
                         {incoming.length > 0 && (
-                          <span className="absolute top-1.5 right-1 bg-red-500 text-white font-orbitron text-[8px] min-w-[14px] h-[14px] rounded-full flex items-center justify-center px-0.5">
+                          <span className="absolute top-1.5 right-1 bg-red-500 text-white font-cinzel text-[8px] min-w-[14px] h-[14px] rounded-full flex items-center justify-center px-0.5">
                             {incoming.length}
                           </span>
                         )}
@@ -229,8 +229,8 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                     </div>
                   ) : friends.length === 0 ? (
                     <div className="p-5 text-center space-y-2">
-                      <p className="font-rajdhani text-slate-600 text-sm">No connections yet.</p>
-                      <p className="font-rajdhani text-slate-700 text-xs">Use the <span className="text-portal-emerald">+ Add</span> tab to send a friend request.</p>
+                      <p className="font-cormorant text-slate-600 text-sm">No connections yet.</p>
+                      <p className="font-cormorant text-slate-700 text-xs">Use the <span className="text-portal-emerald">+ Add</span> tab to send a friend request.</p>
                     </div>
                   ) : (
                     friends.map(f => (
@@ -242,8 +242,8 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-orbitron text-xs text-white truncate">{f.name}</span>
-                          <span className="font-orbitron text-[9px] text-portal-emerald/60 ml-1">{f.rank}</span>
+                          <span className="font-cinzel text-xs text-white truncate">{f.name}</span>
+                          <span className="font-cinzel text-[9px] text-portal-emerald/60 ml-1">{f.rank}</span>
                         </div>
                       </button>
                     ))
@@ -256,21 +256,21 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                 <div className="flex-1 overflow-y-auto">
                   {incoming.length > 0 && (
                     <div className="px-3 py-2 border-b border-portal-emerald/10">
-                      <p className="font-orbitron text-[9px] text-portal-emerald tracking-widest uppercase mb-2">Incoming</p>
+                      <p className="font-cinzel text-[9px] text-portal-emerald tracking-widest uppercase mb-2">Incoming</p>
                       {incoming.map(r => (
                         <div key={r.requestId} className="mb-3 p-3 border border-portal-emerald/15 bg-portal-emerald/[0.03]">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="font-orbitron text-[10px] text-white">{r.name}</span>
-                            <span className="font-orbitron text-[9px] text-portal-emerald/60">{r.rank}</span>
+                            <span className="font-cinzel text-[10px] text-white">{r.name}</span>
+                            <span className="font-cinzel text-[9px] text-portal-emerald/60">{r.rank}</span>
                           </div>
                           <div className="flex gap-2">
                             <button
                               onClick={() => respondRequest(r.requestId, 'accept')}
-                              className="flex-1 font-orbitron text-[9px] text-emerald-400 border border-emerald-500/40 py-1.5 hover:bg-emerald-900/20 tracking-widest transition-colors"
+                              className="flex-1 font-cinzel text-[9px] text-emerald-400 border border-emerald-500/40 py-1.5 hover:bg-emerald-900/20 tracking-widest transition-colors"
                             >ACCEPT</button>
                             <button
                               onClick={() => respondRequest(r.requestId, 'decline')}
-                              className="flex-1 font-orbitron text-[9px] text-slate-500 border border-slate-700 py-1.5 hover:bg-slate-800/40 tracking-widest transition-colors"
+                              className="flex-1 font-cinzel text-[9px] text-slate-500 border border-slate-700 py-1.5 hover:bg-slate-800/40 tracking-widest transition-colors"
                             >DECLINE</button>
                           </div>
                         </div>
@@ -279,29 +279,29 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                   )}
                   {outgoing.length > 0 && (
                     <div className="px-3 py-2">
-                      <p className="font-orbitron text-[9px] text-slate-600 tracking-widest uppercase mb-2">Sent</p>
+                      <p className="font-cinzel text-[9px] text-slate-600 tracking-widest uppercase mb-2">Sent</p>
                       {outgoing.map(r => (
                         <div key={r.requestId} className="mb-2 flex items-center justify-between py-2 border-b border-portal-emerald/5">
-                          <span className="font-rajdhani text-slate-400 text-sm">{r.name}</span>
-                          <span className="font-orbitron text-[9px] text-slate-600 tracking-widest">PENDING</span>
+                          <span className="font-cormorant text-slate-400 text-sm">{r.name}</span>
+                          <span className="font-cinzel text-[9px] text-slate-600 tracking-widest">PENDING</span>
                         </div>
                       ))}
                     </div>
                   )}
                   {incoming.length === 0 && outgoing.length === 0 && (
                     <div className="p-5 text-center">
-                      <p className="font-rajdhani text-slate-600 text-sm">No pending requests.</p>
+                      <p className="font-cormorant text-slate-600 text-sm">No pending requests.</p>
                     </div>
                   )}
 
                   {/* Blocked users */}
                   {blockedIds.length > 0 && (
                     <div className="px-3 py-2 mt-2 border-t border-portal-emerald/10">
-                      <p className="font-orbitron text-[9px] text-red-700 tracking-widest uppercase mb-2">Blocked</p>
+                      <p className="font-cinzel text-[9px] text-red-700 tracking-widest uppercase mb-2">Blocked</p>
                       {blockedIds.map(id => (
                         <div key={id} className="flex items-center justify-between py-1.5">
-                          <span className="font-rajdhani text-slate-600 text-xs">{id.slice(0, 8)}…</span>
-                          <button onClick={() => unblock(id)} className="font-orbitron text-[9px] text-red-700 hover:text-red-400">UNBLOCK</button>
+                          <span className="font-cormorant text-slate-600 text-xs">{id.slice(0, 8)}…</span>
+                          <button onClick={() => unblock(id)} className="font-cinzel text-[9px] text-red-700 hover:text-red-400">UNBLOCK</button>
                         </div>
                       ))}
                     </div>
@@ -318,7 +318,7 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                       value={search}
                       onChange={e => setSearch(e.target.value)}
                       placeholder="Search members…"
-                      className="w-full bg-black/40 border border-portal-emerald/20 text-slate-200 text-sm font-rajdhani px-3 py-2 focus:outline-none focus:border-portal-emerald/50 transition-colors"
+                      className="w-full bg-black/40 border border-portal-emerald/20 text-slate-200 text-sm font-cormorant px-3 py-2 focus:outline-none focus:border-portal-emerald/50 transition-colors"
                     />
                   </div>
                   <div className="flex-1 overflow-y-auto">
@@ -327,7 +327,7 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                         <div className="w-5 h-5 border border-portal-emerald/40 border-t-portal-emerald rounded-full animate-spin" />
                       </div>
                     ) : searchResults.length === 0 ? (
-                      <p className="font-rajdhani text-slate-600 text-sm p-4 text-center">No members found.</p>
+                      <p className="font-cormorant text-slate-600 text-sm p-4 text-center">No members found.</p>
                     ) : (
                       searchResults.map((m: any) => {
                         const alreadyFriend = friends.some(f => f.userId === m.userId)
@@ -337,20 +337,20 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                         return (
                           <div key={m.userId} className="px-4 py-3 border-b border-portal-emerald/10 flex items-center justify-between">
                             <div>
-                              <span className="font-orbitron text-xs text-white">{m.name}</span>
-                              <span className="font-orbitron text-[9px] text-portal-emerald/60 ml-2">{m.rank}</span>
+                              <span className="font-cinzel text-xs text-white">{m.name}</span>
+                              <span className="font-cinzel text-[9px] text-portal-emerald/60 ml-2">{m.rank}</span>
                             </div>
                             {blocked ? (
-                              <span className="font-orbitron text-[9px] text-red-700">BLOCKED</span>
+                              <span className="font-cinzel text-[9px] text-red-700">BLOCKED</span>
                             ) : alreadyFriend ? (
-                              <span className="font-orbitron text-[9px] text-portal-emerald tracking-widest">FRIEND</span>
+                              <span className="font-cinzel text-[9px] text-portal-emerald tracking-widest">FRIEND</span>
                             ) : alreadySent || status === 'sent' ? (
-                              <span className="font-orbitron text-[9px] text-slate-500 tracking-widest">SENT</span>
+                              <span className="font-cinzel text-[9px] text-slate-500 tracking-widest">SENT</span>
                             ) : (
                               <button
                                 onClick={() => sendRequest(m.userId)}
                                 disabled={status === 'sending'}
-                                className="font-orbitron text-[9px] text-portal-emerald border border-portal-emerald/40 px-2 py-1 hover:bg-portal-emerald/10 transition-colors tracking-widest disabled:opacity-40"
+                                className="font-cinzel text-[9px] text-portal-emerald border border-portal-emerald/40 px-2 py-1 hover:bg-portal-emerald/10 transition-colors tracking-widest disabled:opacity-40"
                               >
                                 {status === 'sending' ? '…' : 'ADD'}
                               </button>
@@ -368,21 +368,21 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
             <div className="flex-1 flex flex-col">
               {!activeConv ? (
                 <div className="flex-1 flex flex-col items-center justify-center gap-2">
-                  <p className="font-orbitron text-slate-700 text-xs tracking-widest">SELECT A FRIEND TO MESSAGE</p>
-                  <p className="font-rajdhani text-slate-800 text-sm">Only connected members can exchange messages.</p>
+                  <p className="font-cinzel text-slate-700 text-xs tracking-widest">SELECT A FRIEND TO MESSAGE</p>
+                  <p className="font-cormorant text-slate-800 text-sm">Only connected members can exchange messages.</p>
                 </div>
               ) : (
                 <>
                   {/* Header */}
                   <div className="px-5 py-3 border-b border-portal-emerald/15 flex items-center gap-3">
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <span className="font-orbitron text-xs text-white tracking-wide">{activeConv.name}</span>
-                    <span className="font-orbitron text-[9px] text-portal-emerald/60 ml-1">{activeConv.rank}</span>
+                    <span className="font-cinzel text-xs text-white tracking-wide">{activeConv.name}</span>
+                    <span className="font-cinzel text-[9px] text-portal-emerald/60 ml-1">{activeConv.rank}</span>
                     <div className="ml-auto flex items-center gap-3">
                       {/* Block button */}
                       <button
                         onClick={() => setBlockTarget(activeConv)}
-                        className="font-orbitron text-[9px] text-red-800 hover:text-red-500 tracking-widest transition-colors"
+                        className="font-cinzel text-[9px] text-red-800 hover:text-red-500 tracking-widest transition-colors"
                         title="Block user"
                       >
                         🚫
@@ -390,7 +390,7 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                       {/* Unfriend */}
                       <button
                         onClick={() => { const f = friends.find(f => f.userId === activeConv.userId); if (f) unfriend(f.requestId) }}
-                        className="font-orbitron text-[9px] text-slate-600 hover:text-red-400 tracking-widest transition-colors"
+                        className="font-cinzel text-[9px] text-slate-600 hover:text-red-400 tracking-widest transition-colors"
                         title="Unfriend"
                       >
                         ✕ REMOVE
@@ -402,7 +402,7 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                   <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3">
                     {messages.length === 0 && (
                       <div className="flex-1 flex items-center justify-center">
-                        <p className="font-rajdhani text-slate-700 text-sm">Say hello to start the conversation.</p>
+                        <p className="font-cormorant text-slate-700 text-sm">Say hello to start the conversation.</p>
                       </div>
                     )}
                     {messages.map((msg: any) => {
@@ -413,13 +413,13 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                         : (msg.from?.nickname || msg.from?.name || 'Unknown')
                       return (
                         <div key={msg.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-xs px-4 py-2.5 text-sm font-rajdhani leading-relaxed ${
+                          <div className={`max-w-xs px-4 py-2.5 text-sm font-cormorant leading-relaxed ${
                             mine
                               ? 'bg-portal-emerald/[0.12] border border-portal-emerald/30 text-emerald-100'
                               : 'bg-slate-900/60 border border-slate-700/50 text-slate-300'
                           }`}>
                             {!mine && (
-                              <div className="font-orbitron text-[9px] text-portal-emerald/70 mb-1">
+                              <div className="font-cinzel text-[9px] text-portal-emerald/70 mb-1">
                                 {senderName}
                                 {msg.isGhost && <span className="ml-1 text-slate-600">👻</span>}
                               </div>
@@ -437,7 +437,7 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
 
                   {sendError && (
                     <div className="px-5 py-1.5 border-t border-red-500/20 bg-red-900/10">
-                      <p className="font-rajdhani text-red-400 text-xs">{sendError}</p>
+                      <p className="font-cormorant text-red-400 text-xs">{sendError}</p>
                     </div>
                   )}
 
@@ -447,11 +447,11 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
                       onChange={e => setText(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && send()}
                       placeholder="Type a message…"
-                      className="flex-1 bg-black/40 border border-portal-emerald/20 text-slate-200 text-sm font-rajdhani px-4 py-2.5 focus:outline-none focus:border-portal-emerald/50 transition-colors"
+                      className="flex-1 bg-black/40 border border-portal-emerald/20 text-slate-200 text-sm font-cormorant px-4 py-2.5 focus:outline-none focus:border-portal-emerald/50 transition-colors"
                     />
                     <button
                       onClick={send}
-                      className="bg-portal-emerald/[0.15] border border-portal-emerald/40 text-portal-emerald hover:bg-portal-emerald/30 transition-colors px-4 py-2.5 font-orbitron text-xs tracking-widest"
+                      className="bg-portal-emerald/[0.15] border border-portal-emerald/40 text-portal-emerald hover:bg-portal-emerald/30 transition-colors px-4 py-2.5 font-cinzel text-xs tracking-widest"
                     >
                       SEND
                     </button>
@@ -461,7 +461,7 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
             </div>
           </div>
 
-          <p className="font-rajdhani text-[11px] text-slate-700 mt-2">
+          <p className="font-cormorant text-[11px] text-slate-700 mt-2">
             ⚠ All messages are AI-monitored. Contact information sharing is automatically blocked.
           </p>
         </div>
@@ -472,18 +472,18 @@ export default function MessagesPage({ locked, lockReason }: { locked: boolean; 
             <div className="relative bg-portal-black border border-red-500/30 p-8 max-w-sm w-full mx-4">
               <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-red-500/40" />
               <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-red-500/40" />
-              <h3 className="font-orbitron font-black text-white text-sm tracking-widest mb-2">BLOCK USER</h3>
-              <p className="font-rajdhani text-slate-400 text-sm mb-6">
+              <h3 className="font-cinzel font-black text-white text-sm tracking-widest mb-2">BLOCK USER</h3>
+              <p className="font-cormorant text-slate-400 text-sm mb-6">
                 Block <span className="text-white">{blockTarget.name}</span>? They won't be able to message you and you will be removed from each other's friends.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => blockUser(blockTarget.userId)}
-                  className="flex-1 font-orbitron text-[10px] text-red-400 border border-red-500/40 py-2.5 hover:bg-red-900/20 tracking-widest transition-colors"
+                  className="flex-1 font-cinzel text-[10px] text-red-400 border border-red-500/40 py-2.5 hover:bg-red-900/20 tracking-widest transition-colors"
                 >BLOCK</button>
                 <button
                   onClick={() => setBlockTarget(null)}
-                  className="flex-1 font-orbitron text-[10px] text-slate-500 border border-slate-700 py-2.5 hover:bg-slate-800/40 tracking-widest transition-colors"
+                  className="flex-1 font-cinzel text-[10px] text-slate-500 border border-slate-700 py-2.5 hover:bg-slate-800/40 tracking-widest transition-colors"
                 >CANCEL</button>
               </div>
             </div>

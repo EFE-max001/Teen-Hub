@@ -43,7 +43,7 @@ export default function TrialPage() {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="flex flex-col items-center gap-4">
             <div className="w-10 h-10 border-2 border-portal-emerald/30 border-t-portal-emerald rounded-full animate-spin" />
-            <p className="font-orbitron text-xs text-portal-emerald tracking-widest animate-pulse">LOADING TRIAL DATA...</p>
+            <p className="font-cinzel text-xs text-portal-emerald tracking-widest animate-pulse">LOADING TRIAL DATA...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -58,17 +58,17 @@ export default function TrialPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="font-orbitron font-black text-xl text-white tracking-widest uppercase">Trial Status</h1>
-              <p className="font-rajdhani text-slate-500 text-sm mt-1">Your guild evaluation progress</p>
+              <h1 className="font-cinzel font-black text-xl text-white tracking-widest uppercase">Trial Status</h1>
+              <p className="font-cormorant text-slate-500 text-sm mt-1">Your guild evaluation progress</p>
             </div>
           </div>
 
           {!trial ? (
             <div className="bg-[#03060A] border border-portal-emerald/20 p-8 text-center">
-              <div className="font-orbitron text-4xl text-slate-700 mb-4">◈</div>
-              <p className="font-orbitron text-sm text-slate-500 tracking-widest mb-6">No Trial Application Found</p>
-              <p className="font-rajdhani text-slate-600 mb-6">You haven't submitted a guild application yet.</p>
-              <Link href="/apply" className="inline-block bg-portal-emerald/20 border border-portal-emerald/40 px-6 py-2.5 font-orbitron text-xs text-portal-emerald hover:bg-portal-emerald/30 transition-all tracking-widest">
+              <div className="font-cinzel text-4xl text-slate-700 mb-4">◈</div>
+              <p className="font-cinzel text-sm text-slate-500 tracking-widest mb-6">No Trial Application Found</p>
+              <p className="font-cormorant text-slate-600 mb-6">You haven't submitted a guild application yet.</p>
+              <Link href="/apply" className="inline-block bg-portal-emerald/20 border border-portal-emerald/40 px-6 py-2.5 font-cinzel text-xs text-portal-emerald hover:bg-portal-emerald/30 transition-all tracking-widest">
                 APPLY NOW
               </Link>
             </div>
@@ -87,19 +87,19 @@ export default function TrialPage() {
                         </span>
                       </div>
                       <div className="flex-1">
-                        <div className="font-orbitron text-[10px] tracking-[0.3em] text-slate-500 uppercase mb-1">Evaluation Status</div>
-                        <div className={`font-orbitron font-black text-lg ${cfg.color} tracking-wider`}>
+                        <div className="font-cinzel text-[10px] tracking-[0.3em] text-slate-500 uppercase mb-1">Evaluation Status</div>
+                        <div className={`font-cinzel font-black text-lg ${cfg.color} tracking-wider`}>
                           {cfg.label.toUpperCase()}
                         </div>
-                        <div className="font-rajdhani text-slate-400 text-sm mt-1">
+                        <div className="font-cormorant text-slate-400 text-sm mt-1">
                           Submitted: {new Date(trial.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                         </div>
                       </div>
                       {trial.score !== null && trial.score !== undefined && (
                         <div className="text-right">
-                          <div className="font-orbitron text-[10px] text-slate-600 tracking-widest uppercase">Trial Score</div>
-                          <div className={`font-orbitron font-black text-3xl ${cfg.color}`}>{trial.score}</div>
-                          <div className="font-rajdhani text-slate-600 text-xs">/ 100</div>
+                          <div className="font-cinzel text-[10px] text-slate-600 tracking-widest uppercase">Trial Score</div>
+                          <div className={`font-cinzel font-black text-3xl ${cfg.color}`}>{trial.score}</div>
+                          <div className="font-cormorant text-slate-600 text-xs">/ 100</div>
                         </div>
                       )}
                     </div>
@@ -110,7 +110,7 @@ export default function TrialPage() {
               {/* Trial Info Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
-                  <h3 className="font-orbitron text-xs text-portal-emerald tracking-widest uppercase mb-4">Application Details</h3>
+                  <h3 className="font-cinzel text-xs text-portal-emerald tracking-widest uppercase mb-4">Application Details</h3>
                   <div className="flex flex-col gap-3">
                     {[
                       { label: 'Skills', value: trial.skills?.join(', ') || '—' },
@@ -118,15 +118,15 @@ export default function TrialPage() {
                       { label: 'Portfolio', value: trial.portfolioUrl || 'Not provided' },
                     ].map(({ label, value }) => (
                       <div key={label}>
-                        <div className="font-orbitron text-[9px] text-slate-600 tracking-widest uppercase">{label}</div>
-                        <div className="font-rajdhani text-slate-300 text-sm mt-0.5">{value}</div>
+                        <div className="font-cinzel text-[9px] text-slate-600 tracking-widest uppercase">{label}</div>
+                        <div className="font-cormorant text-slate-300 text-sm mt-0.5">{value}</div>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
-                  <h3 className="font-orbitron text-xs text-portal-emerald tracking-widest uppercase mb-4">Scoring Breakdown</h3>
+                  <h3 className="font-cinzel text-xs text-portal-emerald tracking-widest uppercase mb-4">Scoring Breakdown</h3>
                   {[
                     { label: 'Quality', pct: 40 },
                     { label: 'Reliability', pct: 30 },
@@ -135,8 +135,8 @@ export default function TrialPage() {
                   ].map(({ label, pct }) => (
                     <div key={label} className="mb-3">
                       <div className="flex justify-between mb-1">
-                        <span className="font-rajdhani text-xs text-slate-400">{label}</span>
-                        <span className="font-orbitron text-[10px] text-portal-emerald">{pct}%</span>
+                        <span className="font-cormorant text-xs text-slate-400">{label}</span>
+                        <span className="font-cinzel text-[10px] text-portal-emerald">{pct}%</span>
                       </div>
                       <div className="h-1.5 bg-slate-800 w-full">
                         <div className="h-full bg-portal-emerald/40" style={{ width: `${pct}%` }} />
@@ -149,26 +149,26 @@ export default function TrialPage() {
               {/* Founder / Judge Notes */}
               {trial.judgeNotes && (
                 <div className="bg-[#03060A] border border-amber-500/20 p-5">
-                  <h3 className="font-orbitron text-xs text-amber-400 tracking-widest uppercase mb-3">Founder Notes</h3>
-                  <p className="font-rajdhani text-slate-300 leading-relaxed">{trial.judgeNotes}</p>
+                  <h3 className="font-cinzel text-xs text-amber-400 tracking-widest uppercase mb-3">Founder Notes</h3>
+                  <p className="font-cormorant text-slate-300 leading-relaxed">{trial.judgeNotes}</p>
                 </div>
               )}
 
               {/* Active Trial Tasks */}
               {tasks.length > 0 && (
                 <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
-                  <h3 className="font-orbitron text-xs text-portal-emerald tracking-widest uppercase mb-4">Assigned Trial Tasks</h3>
+                  <h3 className="font-cinzel text-xs text-portal-emerald tracking-widest uppercase mb-4">Assigned Trial Tasks</h3>
                   <div className="flex flex-col gap-3">
                     {tasks.map((task: any) => (
                       <div key={task.id} className="border border-portal-emerald/20 p-4 hover:border-portal-emerald/40 transition-colors">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <div className="font-orbitron text-sm text-white mb-1">{task.title}</div>
-                            <div className="font-rajdhani text-slate-400 text-sm leading-relaxed">{task.description}</div>
+                            <div className="font-cinzel text-sm text-white mb-1">{task.title}</div>
+                            <div className="font-cormorant text-slate-400 text-sm leading-relaxed">{task.description}</div>
                             <div className="flex items-center gap-3 mt-2">
-                              <span className="font-orbitron text-[9px] text-portal-emerald border border-portal-emerald/30 px-2 py-0.5 tracking-widest">{task.category}</span>
-                              <span className="font-orbitron text-[9px] text-slate-500 tracking-widest">{task.difficulty}</span>
-                              <span className="font-rajdhani text-xs text-slate-600">⏱ {task.deadlineHours}h deadline</span>
+                              <span className="font-cinzel text-[9px] text-portal-emerald border border-portal-emerald/30 px-2 py-0.5 tracking-widest">{task.category}</span>
+                              <span className="font-cinzel text-[9px] text-slate-500 tracking-widest">{task.difficulty}</span>
+                              <span className="font-cormorant text-xs text-slate-600">⏱ {task.deadlineHours}h deadline</span>
                             </div>
                           </div>
                         </div>
@@ -180,7 +180,7 @@ export default function TrialPage() {
 
               {/* Rules */}
               <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
-                <h3 className="font-orbitron text-xs text-portal-emerald tracking-widest uppercase mb-4">Trial Rules</h3>
+                <h3 className="font-cinzel text-xs text-portal-emerald tracking-widest uppercase mb-4">Trial Rules</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {[
                     'Complete all assigned tasks by the deadline',
@@ -192,7 +192,7 @@ export default function TrialPage() {
                   ].map((rule, i) => (
                     <div key={i} className="flex items-start gap-2 py-1.5">
                       <span className="text-portal-emerald mt-0.5 flex-shrink-0 text-xs">◈</span>
-                      <span className="font-rajdhani text-slate-400 text-sm">{rule}</span>
+                      <span className="font-cormorant text-slate-400 text-sm">{rule}</span>
                     </div>
                   ))}
                 </div>

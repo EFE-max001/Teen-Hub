@@ -31,9 +31,9 @@ export default function StatusChip({ status, size = 'md' }: StatusChipProps) {
 
   return (
     <span className={`
-      inline-flex items-center gap-1.5 border font-orbitron tracking-widest uppercase
+      inline-flex items-center gap-1.5 border rounded-full backdrop-blur-sm font-cinzel tracking-widest uppercase
       ${cfg.color}
-      ${size === 'sm' ? 'px-2 py-0.5 text-[9px]' : 'px-3 py-1 text-[10px]'}
+      ${size === 'sm' ? 'px-2.5 py-0.5 text-[9px]' : 'px-3.5 py-1 text-[10px]'}
     `}>
       <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${cfg.dot}`} />
       {cfg.label}

@@ -69,8 +69,8 @@ export default function PostsPage() {
         <div className="max-w-3xl mx-auto flex flex-col gap-5">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="font-orbitron font-black text-xl text-white">GUILD BOARD</h1>
-              <p className="font-rajdhani text-slate-500 text-sm mt-0.5">Announcements, updates, and community posts</p>
+              <h1 className="font-cinzel font-black text-xl text-white">GUILD BOARD</h1>
+              <p className="font-cormorant text-slate-500 text-sm mt-0.5">Announcements, updates, and community posts</p>
             </div>
             <GlowButton variant="primary" size="sm" onClick={() => setShowForm(s => !s)}>
               {showForm ? 'CANCEL' : '+ POST'}
@@ -79,7 +79,7 @@ export default function PostsPage() {
 
           {showForm && (
             <div className="bg-[#03060A] border border-portal-emerald/30 p-5 flex flex-col gap-4">
-              <h2 className="font-orbitron font-bold text-sm text-white tracking-widest">NEW POST</h2>
+              <h2 className="font-cinzel font-bold text-sm text-white tracking-widest">NEW POST</h2>
               <GlowInput
                 label="Title (optional)"
                 value={form.title}
@@ -95,11 +95,11 @@ export default function PostsPage() {
               />
               <div className="flex flex-wrap gap-4 items-center">
                 <div>
-                  <label className="font-orbitron text-[9px] text-portal-emerald/60 tracking-widest uppercase block mb-1">Visibility</label>
+                  <label className="font-cinzel text-[9px] text-portal-emerald/60 tracking-widest uppercase block mb-1">Visibility</label>
                   <select
                     value={form.visibility}
                     onChange={e => setForm(f => ({ ...f, visibility: e.target.value }))}
-                    className="bg-[#0a0010] border border-portal-emerald/30 text-slate-300 font-rajdhani text-sm px-3 py-1.5"
+                    className="bg-[#0a0010] border border-portal-emerald/30 text-slate-300 font-cormorant text-sm px-3 py-1.5"
                   >
                     <option value="PUBLIC">Public</option>
                     <option value="MEMBERS_ONLY">Members Only</option>
@@ -114,11 +114,11 @@ export default function PostsPage() {
                       onChange={e => setForm(f => ({ ...f, isAnonymous: e.target.checked }))}
                       className="w-4 h-4 accent-portal-emerald"
                     />
-                    <span className="font-rajdhani text-sm text-slate-400">Post anonymously</span>
+                    <span className="font-cormorant text-sm text-slate-400">Post anonymously</span>
                   </label>
                 )}
               </div>
-              {error && <p className="font-rajdhani text-red-400 text-sm">{error}</p>}
+              {error && <p className="font-cormorant text-red-400 text-sm">{error}</p>}
               <div className="flex gap-3">
                 <GlowButton variant="primary" size="sm" loading={posting} onClick={submitPost}>
                   PUBLISH
@@ -136,8 +136,8 @@ export default function PostsPage() {
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-20">
-              <p className="font-orbitron text-slate-600 text-sm">No posts yet</p>
-              <p className="font-rajdhani text-slate-700 text-xs mt-1">Be the first to post something</p>
+              <p className="font-cinzel text-slate-600 text-sm">No posts yet</p>
+              <p className="font-cormorant text-slate-700 text-xs mt-1">Be the first to post something</p>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
@@ -153,26 +153,26 @@ export default function PostsPage() {
                     }`}
                   >
                     {post.isPinned && (
-                      <span className="font-orbitron text-[9px] text-amber-400 tracking-widest">📌 PINNED</span>
+                      <span className="font-cinzel text-[9px] text-amber-400 tracking-widest">📌 PINNED</span>
                     )}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex flex-col gap-0.5">
                         <div className="flex items-center gap-2 flex-wrap">
                           {authorRole && ROLE_LABEL[authorRole] && (
-                            <span className={`font-orbitron text-[10px] tracking-widest ${ROLE_COLOR[authorRole] || 'text-slate-500'}`}>
+                            <span className={`font-cinzel text-[10px] tracking-widest ${ROLE_COLOR[authorRole] || 'text-slate-500'}`}>
                               {ROLE_LABEL[authorRole]}
                             </span>
                           )}
-                          <span className="font-orbitron font-bold text-sm text-white">
+                          <span className="font-cinzel font-bold text-sm text-white">
                             {post.author?.nickname || 'Anonymous'}
                           </span>
                           {post.author?.activeTitle && (
-                            <span className="font-rajdhani text-xs text-portal-emerald italic">
+                            <span className="font-cormorant text-xs text-portal-emerald italic">
                               "{post.author.activeTitle}"
                             </span>
                           )}
                         </div>
-                        <span className="font-rajdhani text-[11px] text-slate-600">
+                        <span className="font-cormorant text-[11px] text-slate-600">
                           {new Date(post.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </span>
                       </div>
@@ -185,9 +185,9 @@ export default function PostsPage() {
                       )}
                     </div>
                     {post.title && (
-                      <h3 className="font-orbitron font-bold text-base text-white">{post.title}</h3>
+                      <h3 className="font-cinzel font-bold text-base text-white">{post.title}</h3>
                     )}
-                    <p className="font-rajdhani text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
+                    <p className="font-cormorant text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
                       {post.content}
                     </p>
                   </div>

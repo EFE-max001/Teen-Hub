@@ -169,8 +169,8 @@ export default function LandingPage() {
                     key={label}
                     className="flex flex-row sm:flex-col items-center sm:items-center gap-3 sm:gap-0.5 px-6 sm:px-8 py-3 sm:py-4 border-b sm:border-b-0 sm:border-r border-portal-emerald/15 last:border-0 w-full sm:w-auto"
                   >
-                    <span className="font-orbitron font-black text-lg sm:text-2xl text-portal-emerald glow-text">{val}</span>
-                    <span className="font-rajdhani text-[10px] text-slate-300/80 tracking-[0.25em] uppercase">{label}</span>
+                    <span className="font-cinzel font-black text-lg sm:text-2xl text-portal-emerald glow-text">{val}</span>
+                    <span className="font-cormorant text-[10px] text-slate-300/80 tracking-[0.25em] uppercase">{label}</span>
                   </div>
                 ))}
               </div>
@@ -196,7 +196,7 @@ export default function LandingPage() {
                 '◈ ZERO TOLERANCE FOR GHOSTING',
                 '◉ MERIT-BASED PROMOTIONS ONLY',
               ]).map((text, i) => (
-                <span key={i} className="font-orbitron text-[9px] text-portal-emerald/85 tracking-[0.3em] uppercase flex-shrink-0">
+                <span key={i} className="font-cinzel text-[9px] text-portal-emerald/85 tracking-[0.3em] uppercase flex-shrink-0">
                   {text}
                 </span>
               ))}
@@ -255,12 +255,12 @@ export default function LandingPage() {
 
             <div className="max-w-7xl mx-auto relative z-10">
               <div className="text-center mb-12 sm:mb-16">
-                <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Power Structure</span>
-                <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
+                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Power Structure</span>
+                <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
                   THE HIERARCHY
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
-                <p className="font-rajdhani text-slate-500 text-sm sm:text-base max-w-lg mx-auto">
+                <p className="font-cormorant text-slate-500 text-sm sm:text-base max-w-lg mx-auto">
                   Nine tiers of power. F to SSS. Every rank is earned — never given.
                   SS and SSS are reserved for the legends.
                 </p>
@@ -274,10 +274,10 @@ export default function LandingPage() {
                     title={`${r.label}: ${r.desc}`}
                   >
                     <span className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-current opacity-20" />
-                    <div className={`font-orbitron font-black text-xl sm:text-2xl md:text-3xl ${r.color} mb-0.5 group-hover:glow-text transition-all`}>
+                    <div className={`font-cinzel font-black text-xl sm:text-2xl md:text-3xl ${r.color} mb-0.5 group-hover:glow-text transition-all`}>
                       {r.rank}
                     </div>
-                    <div className={`font-orbitron text-[7px] sm:text-[8px] ${r.color} opacity-60 tracking-widest hidden sm:block`}>
+                    <div className={`font-cinzel text-[7px] sm:text-[8px] ${r.color} opacity-60 tracking-widest hidden sm:block`}>
                       {r.label}
                     </div>
                   </div>
@@ -288,10 +288,10 @@ export default function LandingPage() {
               <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {RANKS.slice(6).map((r) => (
                   <div key={r.rank} className={`border ${r.border} bg-black/60 backdrop-blur-sm rounded-xl p-3 flex items-start gap-3`}>
-                    <span className={`font-orbitron font-black text-lg ${r.color} flex-shrink-0`}>{r.rank}</span>
+                    <span className={`font-cinzel font-black text-lg ${r.color} flex-shrink-0`}>{r.rank}</span>
                     <div>
-                      <div className={`font-orbitron text-xs ${r.color} mb-0.5`}>{r.label}</div>
-                      <div className="font-rajdhani text-slate-500 text-xs">{r.desc}</div>
+                      <div className={`font-cinzel text-xs ${r.color} mb-0.5`}>{r.label}</div>
+                      <div className="font-cormorant text-slate-500 text-xs">{r.desc}</div>
                     </div>
                   </div>
                 ))}
@@ -308,12 +308,12 @@ export default function LandingPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                 {/* Left */}
                 <div>
-                  <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.5em] uppercase">AI Automation Layer</span>
-                  <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
+                  <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">AI Automation Layer</span>
+                  <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
                     SENTINEL AI
                   </h2>
                   <div className="w-20 h-px bg-gradient-to-r from-portal-emerald to-transparent mb-6" />
-                  <p className="font-rajdhani text-slate-400 text-base sm:text-lg leading-relaxed mb-6">
+                  <p className="font-cormorant text-slate-400 text-base sm:text-lg leading-relaxed mb-6">
                     Every operative is watched by SENTINEL — our AI layer that scores trials,
                     tracks trust, detects risk, and awards achievements in real-time.
                     You cannot fake your way to the top.
@@ -331,8 +331,8 @@ export default function LandingPage() {
                   {AI_FEATURES.map((f, i) => (
                     <div key={i} className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-4 sm:p-5 group hover:border-portal-emerald/50 transition-all duration-300">
                       <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/40 group-hover:border-portal-emerald transition-colors" />
-                      <div className="font-orbitron font-bold text-xs sm:text-sm text-portal-emerald mb-2">{f.title}</div>
-                      <p className="font-rajdhani text-slate-500 text-xs sm:text-sm leading-relaxed">{f.desc}</p>
+                      <div className="font-cinzel font-bold text-xs sm:text-sm text-portal-emerald mb-2">{f.title}</div>
+                      <p className="font-cormorant text-slate-500 text-xs sm:text-sm leading-relaxed">{f.desc}</p>
                     </div>
                   ))}
                 </div>
@@ -345,12 +345,12 @@ export default function LandingPage() {
             <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
             <div className="max-w-6xl mx-auto relative z-10">
               <div className="text-center mb-12 sm:mb-16">
-                <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Beyond The Trial</span>
-                <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
+                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Beyond The Trial</span>
+                <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
                   THE PROTOCOLS
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
-                <p className="font-rajdhani text-slate-500 text-sm sm:text-base max-w-xl mx-auto">
+                <p className="font-cormorant text-slate-500 text-sm sm:text-base max-w-xl mx-auto">
                   Compete, socialize, and watch the Grid come alive around you.
                 </p>
               </div>
@@ -358,8 +358,8 @@ export default function LandingPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
                 <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-amber-400/50 transition-all duration-300 overflow-hidden">
                   <div className="text-3xl mb-3">🕹️</div>
-                  <h3 className="font-orbitron font-bold text-sm sm:text-base text-amber-400 mb-2 tracking-widest">ARENA PROTOCOL</h3>
-                  <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">
+                  <h3 className="font-cinzel font-bold text-sm sm:text-base text-amber-400 mb-2 tracking-widest">ARENA PROTOCOL</h3>
+                  <p className="font-cormorant text-slate-500 text-sm leading-relaxed">
                     A structured mini-game engine — logic, typing, quiz, creative and social
                     challenges, all scored by AI. Rotating daily challenge, live leaderboard, real XP.
                   </p>
@@ -367,8 +367,8 @@ export default function LandingPage() {
 
                 <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-portal-emerald/50 transition-all duration-300 overflow-hidden">
                   <div className="text-3xl mb-3">👻</div>
-                  <h3 className="font-orbitron font-bold text-sm sm:text-base text-portal-emerald mb-2 tracking-widest">GHOST PROTOCOL</h3>
-                  <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">
+                  <h3 className="font-cinzel font-bold text-sm sm:text-base text-portal-emerald mb-2 tracking-widest">GHOST PROTOCOL</h3>
+                  <p className="font-cormorant text-slate-500 text-sm leading-relaxed">
                     Party games live in Guild Chat: Truth or Dare, Would You Rather, Two Truths
                     and a Lie — triggered instantly with slash commands like <span className="text-portal-emerald">/party</span>.
                   </p>
@@ -376,8 +376,8 @@ export default function LandingPage() {
 
                 <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-cyan-400/50 transition-all duration-300 overflow-hidden">
                   <div className="text-3xl mb-3">◈</div>
-                  <h3 className="font-orbitron font-bold text-sm sm:text-base text-cyan-400 mb-2 tracking-widest">SENTINEL GRID</h3>
-                  <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">
+                  <h3 className="font-cinzel font-bold text-sm sm:text-base text-cyan-400 mb-2 tracking-widest">SENTINEL GRID</h3>
+                  <p className="font-cormorant text-slate-500 text-sm leading-relaxed">
                     The live perspective grid rendering beneath every screen — a signal that
                     the Sentinel network is always watching, always active.
                   </p>
@@ -391,12 +391,12 @@ export default function LandingPage() {
             <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
             <div className="max-w-6xl mx-auto relative z-10">
               <div className="text-center mb-12 sm:mb-16">
-                <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Active Operations</span>
-                <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
+                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Active Operations</span>
+                <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
                   QUEST TYPES
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
-                <p className="font-rajdhani text-slate-500 text-sm sm:text-base max-w-xl mx-auto">
+                <p className="font-cormorant text-slate-500 text-sm sm:text-base max-w-xl mx-auto">
                   Real work. Real skills. Some quests pay cash. All quests pay XP.
                 </p>
               </div>
@@ -407,9 +407,9 @@ export default function LandingPage() {
                     key={i}
                     className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/15 p-5 sm:p-6 group hover:border-portal-emerald/40 hover:bg-portal-black/10 transition-all duration-300"
                   >
-                    <div className={`font-orbitron text-3xl ${q.color} mb-3 group-hover:glow-text transition-all`}>{q.icon}</div>
-                    <h3 className={`font-orbitron font-bold text-sm sm:text-base ${q.color} mb-2`}>{q.label}</h3>
-                    <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">{q.desc}</p>
+                    <div className={`font-cinzel text-3xl ${q.color} mb-3 group-hover:glow-text transition-all`}>{q.icon}</div>
+                    <h3 className={`font-cinzel font-bold text-sm sm:text-base ${q.color} mb-2`}>{q.label}</h3>
+                    <p className="font-cormorant text-slate-500 text-sm leading-relaxed">{q.desc}</p>
                   </div>
                 ))}
               </div>
@@ -421,12 +421,12 @@ export default function LandingPage() {
             <div className="absolute inset-0 bg-purple-glow opacity-10 pointer-events-none" />
             <div className="max-w-5xl mx-auto relative z-10">
               <div className="text-center mb-10">
-                <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Legitimacy</span>
-                <h2 className="font-orbitron font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
+                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Legitimacy</span>
+                <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
                   THIS IS REAL.
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
-                <p className="font-rajdhani text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+                <p className="font-cormorant text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
                   QuestHub Guild is not a game. Quests are real work with real consequences.
                   Every action is logged. Every rank is earned. The council is always watching.
                 </p>
@@ -441,8 +441,8 @@ export default function LandingPage() {
                   <div key={i} className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-5 sm:p-6 group hover:border-portal-emerald/40 transition-all duration-300">
                     <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/30" />
                     <div className="text-2xl sm:text-3xl mb-3">{item.icon}</div>
-                    <h3 className="font-orbitron font-bold text-sm text-white mb-2">{item.title}</h3>
-                    <p className="font-rajdhani text-slate-500 text-sm leading-relaxed">{item.desc}</p>
+                    <h3 className="font-cinzel font-bold text-sm text-white mb-2">{item.title}</h3>
+                    <p className="font-cormorant text-slate-500 text-sm leading-relaxed">{item.desc}</p>
                   </div>
                 ))}
               </div>
@@ -456,15 +456,15 @@ export default function LandingPage() {
             <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-portal-emerald/50 to-transparent pointer-events-none" />
 
             <div className="max-w-3xl mx-auto text-center relative z-10">
-              <span className="font-orbitron text-[9px] text-portal-emerald tracking-[0.5em] uppercase block mb-4">The Question Is Simple</span>
-              <h2 className="font-orbitron font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-4 leading-none">
+              <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase block mb-4">The Question Is Simple</span>
+              <h2 className="font-cinzel font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-4 leading-none">
                 DO YOU HAVE
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-portal-emerald via-fuchsia-400 to-pink-500 mt-1">
                   WHAT IT TAKES?
                 </span>
               </h2>
               <div className="w-24 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto my-6" />
-              <p className="font-rajdhani text-slate-400 text-sm sm:text-base md:text-lg mb-10 leading-relaxed">
+              <p className="font-cormorant text-slate-400 text-sm sm:text-base md:text-lg mb-10 leading-relaxed">
                 Create your account, submit your application, and let the Guild Council decide.
                 Most applicants don't make it. The ones who do don't forget it.
               </p>

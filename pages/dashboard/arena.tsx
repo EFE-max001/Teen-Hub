@@ -41,7 +41,7 @@ function GameCard({ game, onOpen }: { game: any; onOpen: () => void }) {
       {/* corner brackets */}
 
       {game.isDaily && (
-        <span className="absolute top-2 left-1/2 -translate-x-1/2 font-orbitron text-[7px] text-amber-300 bg-amber-900/90 border border-amber-500/60 px-2 py-0.5 tracking-widest animate-pulse whitespace-nowrap">
+        <span className="absolute top-2 left-1/2 -translate-x-1/2 font-cinzel text-[7px] text-amber-300 bg-amber-900/90 border border-amber-500/60 px-2 py-0.5 tracking-widest animate-pulse whitespace-nowrap">
           🔥 DAILY CHALLENGE
         </span>
       )}
@@ -53,23 +53,23 @@ function GameCard({ game, onOpen }: { game: any; onOpen: () => void }) {
         {game.icon || '◆'}
       </div>
 
-      <h3 className={`font-orbitron font-bold text-[11px] text-center leading-snug tracking-wider uppercase mt-1 ${game.isDaily ? 'text-amber-200' : 'text-white group-hover:text-portal-emerald'}`}>
+      <h3 className={`font-cinzel font-bold text-[11px] text-center leading-snug tracking-wider uppercase mt-1 ${game.isDaily ? 'text-amber-200' : 'text-white group-hover:text-portal-emerald'}`}>
         {game.title}
       </h3>
 
       {game.isDaily && countdown ? (
-        <span className="font-orbitron text-[10px] text-amber-400">{countdown}</span>
+        <span className="font-cinzel text-[10px] text-amber-400">{countdown}</span>
       ) : (
-        <span className="font-orbitron text-[9px] text-green-400">+{game.xpReward} XP</span>
+        <span className="font-cinzel text-[9px] text-green-400">+{game.xpReward} XP</span>
       )}
 
       <div className="absolute bottom-2 left-0 right-0 flex items-center justify-center gap-2 text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">
-        <span className={`font-orbitron uppercase ${accent === 'amber' ? 'text-amber-400/70' : 'text-portal-emerald/70'}`}>{game.category}</span>
-        <span className="font-orbitron text-slate-600">· {game._count?.entries ?? 0} plays</span>
+        <span className={`font-cinzel uppercase ${accent === 'amber' ? 'text-amber-400/70' : 'text-portal-emerald/70'}`}>{game.category}</span>
+        <span className="font-cinzel text-slate-600">· {game._count?.entries ?? 0} plays</span>
       </div>
 
       {myEntry && (
-        <div className="absolute top-2 right-2 font-orbitron text-[8px] text-portal-emerald bg-black/60 backdrop-blur-sm rounded-xl px-1.5 py-0.5 border border-portal-emerald/30">
+        <div className="absolute top-2 right-2 font-cinzel text-[8px] text-portal-emerald bg-black/60 backdrop-blur-sm rounded-xl px-1.5 py-0.5 border border-portal-emerald/30">
           {myEntry.aiScore ?? '—'}
         </div>
       )}
@@ -84,8 +84,11 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
   const [error, setError] = useState('')
   const [entries, setEntries] = useState<any[]>([])
   const [myVotes, setMyVotes] = useState<string[]>([])
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
+  const [expired, setExpired] = useState(false)
   const config = game.config || {}
   const isVoteBattle = config.mechanics?.type === 'creative' || config.mechanics?.type === 'social_task'
+  const timeLimitSeconds: number = config.time_limit_seconds || 0
 
   useEffect(() => {
     if (isVoteBattle) {
@@ -96,8 +99,33 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
     }
   }, [game.id])
 
+  // Timer — kicks off exactly once (server stamps startedAt only on first
+  // open), then counts down locally. Submitting after it hits 0 is also
+  // blocked server-side, so a slow client can't cheat the limit.
+  useEffect(() => {
+    if (!timeLimitSeconds) return
+    let cancelled = false
+    fetch(`/api/arena/${game.id}/start`, { method: 'POST' })
+      .then(r => r.json())
+      .then(d => {
+        if (cancelled || !d.startedAt) return
+        const deadline = new Date(d.startedAt).getTime() + timeLimitSeconds * 1000
+        const tick = () => {
+          const left = Math.max(0, Math.round((deadline - Date.now()) / 1000))
+          setSecondsLeft(left)
+          if (left <= 0) setExpired(true)
+        }
+        tick()
+        const iv = setInterval(tick, 1000)
+        return () => clearInterval(iv)
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [game.id, timeLimitSeconds])
+
   async function submit() {
     if (!response.trim()) return setError('Enter a response first')
+    if (expired) return setError("Time's up for this attempt")
     setSubmitting(true)
     setError('')
     const r = await fetch(`/api/arena/${game.id}/submit`, {
@@ -106,7 +134,10 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
     })
     const d = await r.json()
     setSubmitting(false)
-    if (!r.ok) return setError(d.error || 'Submission failed')
+    if (!r.ok) {
+      if (/time limit/i.test(d.error || '')) setExpired(true)
+      return setError(d.error || 'Submission failed')
+    }
     setResult(d)
     onSubmitted()
   }
@@ -132,32 +163,47 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xl">{game.icon}</span>
-              <h2 className="font-orbitron font-black text-white text-sm tracking-wide">{game.title}</h2>
+              <h2 className="font-cinzel font-black text-white text-sm tracking-wide">{game.title}</h2>
             </div>
-            <p className="font-rajdhani text-slate-500 text-xs mt-1">{game.description}</p>
+            <p className="font-cormorant text-slate-500 text-xs mt-1">{game.description}</p>
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-white text-lg">✕</button>
         </div>
 
+        {timeLimitSeconds > 0 && secondsLeft !== null && !result && (
+          <div className={`flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full border w-fit ${
+            expired
+              ? 'border-red-500/40 bg-red-900/20 text-red-300'
+              : secondsLeft <= 10
+                ? 'border-amber-500/40 bg-amber-900/20 text-amber-300'
+                : 'border-portal-emerald/30 bg-portal-emerald/[0.06] text-portal-emerald'
+          }`}>
+            <span className="text-xs">⏱</span>
+            <span className="font-cinzel text-[11px] tracking-widest">
+              {expired ? "TIME'S UP" : `${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, '0')}`}
+            </span>
+          </div>
+        )}
+
         {config.rules?.length > 0 && (
-          <ul className="font-rajdhani text-slate-400 text-xs mb-4 list-disc list-inside space-y-0.5">
+          <ul className="font-cormorant text-slate-400 text-xs mb-4 list-disc list-inside space-y-0.5">
             {config.rules.map((r: string, i: number) => <li key={i}>{r}</li>)}
           </ul>
         )}
 
         {result ? (
           <div className="border border-green-500/30 bg-green-900/10 p-4 mb-4">
-            <p className="font-orbitron text-green-400 text-xs mb-1">
+            <p className="font-cinzel text-green-400 text-xs mb-1">
               {result.entry?.aiFlagged ? '⚠ FLAGGED FOR REVIEW' : 'ENTRY RECORDED'}
             </p>
             {typeof result.entry?.aiScore === 'number' && (
-              <p className="font-rajdhani text-slate-300 text-sm">AI Score: {result.entry.aiScore}/100</p>
+              <p className="font-cormorant text-slate-300 text-sm">AI Score: {result.entry.aiScore}/100</p>
             )}
             {result.entry?.aiFeedback && (
-              <p className="font-rajdhani text-slate-500 text-xs mt-1">{result.entry.aiFeedback}</p>
+              <p className="font-cormorant text-slate-500 text-xs mt-1">{result.entry.aiFeedback}</p>
             )}
             {typeof result.xpAwarded === 'number' && result.xpAwarded > 0 && (
-              <p className="font-orbitron text-portal-emerald text-xs mt-2">+{result.xpAwarded} XP awarded</p>
+              <p className="font-cinzel text-portal-emerald text-xs mt-2">+{result.xpAwarded} XP awarded</p>
             )}
           </div>
         ) : (
@@ -167,29 +213,29 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
               onChange={e => setResponse(e.target.value)}
               placeholder="Type your answer / submission..."
               rows={4}
-              className="w-full bg-black/40 backdrop-blur-sm rounded-lg border border-portal-emerald/20 text-slate-200 text-sm font-rajdhani px-3 py-2.5 focus:outline-none focus:border-portal-emerald/50 mb-3"
+              className="w-full bg-black/40 backdrop-blur-sm rounded-lg border border-portal-emerald/20 text-slate-200 text-sm font-cormorant px-3 py-2.5 focus:outline-none focus:border-portal-emerald/50 mb-3"
             />
-            {error && <p className="font-rajdhani text-red-400 text-xs mb-2">{error}</p>}
-            <GlowButton variant="primary" size="md" loading={submitting} onClick={submit} className="w-full">
-              Submit Entry
+            {error && <p className="font-cormorant text-red-400 text-xs mb-2">{error}</p>}
+            <GlowButton variant="primary" size="md" loading={submitting} disabled={expired} onClick={submit} className="w-full">
+              {expired ? "Time's Up" : 'Submit Entry'}
             </GlowButton>
           </>
         )}
 
         {isVoteBattle && entries.length > 0 && (
           <div className="mt-5 pt-4 border-t border-portal-emerald/15">
-            <p className="font-orbitron text-[10px] text-portal-emerald tracking-widest uppercase mb-2">Vote for the best entry</p>
+            <p className="font-cinzel text-[10px] text-portal-emerald tracking-widest uppercase mb-2">Vote for the best entry</p>
             <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
               {entries.map(e => (
                 <div key={e.id} className="border border-portal-emerald/10 p-2.5 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="font-rajdhani text-slate-300 text-xs truncate">{e.response}</p>
-                    <p className="font-orbitron text-[9px] text-slate-600">{e.user?.nickname || e.user?.name} · {e.votes || 0} votes</p>
+                    <p className="font-cormorant text-slate-300 text-xs truncate">{e.response}</p>
+                    <p className="font-cinzel text-[9px] text-slate-600">{e.user?.nickname || e.user?.name} · {e.votes || 0} votes</p>
                   </div>
                   <button
                     onClick={() => vote(e.id)}
                     disabled={myVotes.includes(e.id)}
-                    className="font-orbitron text-[9px] text-portal-emerald border border-portal-emerald/40 px-2 py-1 disabled:opacity-30 hover:bg-portal-emerald/[0.030]"
+                    className="font-cinzel text-[9px] text-portal-emerald border border-portal-emerald/40 px-2 py-1 disabled:opacity-30 hover:bg-portal-emerald/[0.030]"
                   >
                     {myVotes.includes(e.id) ? 'VOTED' : 'VOTE'}
                   </button>
@@ -240,13 +286,13 @@ export default function ArenaPage() {
 
             <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <div className="font-orbitron text-[10px] text-portal-emerald/70 tracking-[0.4em] uppercase">Compete · Earn · Prove Worth</div>
-                <h1 className="font-orbitron font-black text-2xl text-white tracking-widest uppercase glow-text">Arena Protocol</h1>
-                <p className="font-rajdhani text-slate-500 text-sm mt-1">Structured mini-game engine — rapid challenges, ranked entries, real XP</p>
+                <div className="font-cinzel text-[10px] text-portal-emerald/70 tracking-[0.4em] uppercase">Compete · Earn · Prove Worth</div>
+                <h1 className="font-cinzel font-black text-2xl text-white tracking-widest uppercase glow-text">Arena Protocol</h1>
+                <p className="font-cormorant text-slate-500 text-sm mt-1">Structured mini-game engine — rapid challenges, ranked entries, real XP</p>
               </div>
               <div className="flex items-center gap-2 border border-portal-emerald/30 bg-black/30 px-3 py-1.5">
                 <div className="w-2 h-2 bg-portal-emerald rounded-full animate-pulse" />
-                <span className="font-orbitron text-[10px] text-portal-emerald tracking-widest">GRID ONLINE</span>
+                <span className="font-cinzel text-[10px] text-portal-emerald tracking-widest">GRID ONLINE</span>
               </div>
             </div>
           </div>
@@ -260,8 +306,8 @@ export default function ArenaPage() {
               ) : games.length === 0 ? (
                 <div className="bg-[#03060A] border border-portal-emerald/20 p-12 text-center">
                   <div className="text-5xl mb-4 opacity-20">◆</div>
-                  <p className="font-orbitron text-sm text-slate-600 tracking-widest">No Active Games</p>
-                  <p className="font-rajdhani text-slate-700 text-sm mt-1">The Founder will deploy new games soon.</p>
+                  <p className="font-cinzel text-sm text-slate-600 tracking-widest">No Active Games</p>
+                  <p className="font-cormorant text-slate-700 text-sm mt-1">The Founder will deploy new games soon.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -272,17 +318,17 @@ export default function ArenaPage() {
             </div>
 
             <div className="bg-[#03060A] border border-portal-emerald/20 p-4 h-fit sticky top-20">
-              <h3 className="font-orbitron text-[10px] text-portal-emerald tracking-widest uppercase mb-3 pb-2 border-b border-portal-emerald/15">
+              <h3 className="font-cinzel text-[10px] text-portal-emerald tracking-widest uppercase mb-3 pb-2 border-b border-portal-emerald/15">
                 Arena Leaderboard
               </h3>
               <div className="flex flex-col gap-1.5">
                 {leaderboard.length === 0 ? (
-                  <p className="font-rajdhani text-slate-700 text-xs text-center py-4">No entries yet.</p>
+                  <p className="font-cormorant text-slate-700 text-xs text-center py-4">No entries yet.</p>
                 ) : leaderboard.map((u: any, i: number) => (
                   <div key={u.id} className="flex items-center gap-2 py-1">
-                    <span className={`font-orbitron text-xs w-4 ${i === 0 ? 'text-amber-400' : i < 3 ? 'text-portal-emerald' : 'text-slate-600'}`}>{i + 1}</span>
-                    <span className="font-rajdhani text-slate-300 text-sm truncate flex-1">{u.nickname || u.name}</span>
-                    <span className="font-orbitron text-[10px] text-portal-emerald">{u.xp?.toLocaleString?.() ?? u.xp}</span>
+                    <span className={`font-cinzel text-xs w-4 ${i === 0 ? 'text-amber-400' : i < 3 ? 'text-portal-emerald' : 'text-slate-600'}`}>{i + 1}</span>
+                    <span className="font-cormorant text-slate-300 text-sm truncate flex-1">{u.nickname || u.name}</span>
+                    <span className="font-cinzel text-[10px] text-portal-emerald">{u.xp?.toLocaleString?.() ?? u.xp}</span>
                   </div>
                 ))}
               </div>

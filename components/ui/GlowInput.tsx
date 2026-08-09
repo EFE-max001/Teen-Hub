@@ -21,7 +21,7 @@ interface GlowSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 const inputBase = `
-  w-full bg-black/50 backdrop-blur-sm rounded-lg border text-slate-200 text-sm font-rajdhani
+  w-full bg-black/50 backdrop-blur-sm rounded-lg border text-slate-200 text-sm font-cormorant
   px-4 py-3 transition-all duration-200
   focus:outline-none placeholder:text-slate-600
   appearance-none
@@ -34,7 +34,7 @@ export function GlowInput({ label, error, hint, className = '', ...props }: Glow
   return (
     <div className="flex flex-col gap-1.5 w-full">
       {label && (
-        <label className="text-[10px] font-orbitron tracking-[0.25em] text-cyan-300/70 uppercase">
+        <label className="text-[10px] font-cinzel tracking-[0.25em] text-cyan-300/70 uppercase">
           {label}
         </label>
       )}
@@ -45,10 +45,10 @@ export function GlowInput({ label, error, hint, className = '', ...props }: Glow
         />
       </div>
       {hint && !error && (
-        <p className="text-[11px] text-slate-600 font-rajdhani">{hint}</p>
+        <p className="text-[11px] text-slate-600 font-cormorant">{hint}</p>
       )}
       {error && (
-        <p className="text-[11px] text-red-400 font-rajdhani flex items-center gap-1">
+        <p className="text-[11px] text-red-400 font-cormorant flex items-center gap-1">
           <span>⚠</span> {error}
         </p>
       )}
@@ -60,7 +60,7 @@ export function GlowTextarea({ label, error, hint, className = '', ...props }: G
   return (
     <div className="flex flex-col gap-1.5 w-full">
       {label && (
-        <label className="text-[10px] font-orbitron tracking-[0.25em] text-cyan-300/70 uppercase">
+        <label className="text-[10px] font-cinzel tracking-[0.25em] text-cyan-300/70 uppercase">
           {label}
         </label>
       )}
@@ -71,10 +71,10 @@ export function GlowTextarea({ label, error, hint, className = '', ...props }: G
         />
       </div>
       {hint && !error && (
-        <p className="text-[11px] text-slate-600 font-rajdhani">{hint}</p>
+        <p className="text-[11px] text-slate-600 font-cormorant">{hint}</p>
       )}
       {error && (
-        <p className="text-[11px] text-red-400 font-rajdhani flex items-center gap-1">
+        <p className="text-[11px] text-red-400 font-cormorant flex items-center gap-1">
           <span>⚠</span> {error}
         </p>
       )}
@@ -86,7 +86,7 @@ export function GlowSelect({ label, error, hint, options, className = '', ...pro
   return (
     <div className="flex flex-col gap-1.5 w-full">
       {label && (
-        <label className="text-[10px] font-orbitron tracking-[0.25em] text-cyan-300/70 uppercase">
+        <label className="text-[10px] font-cinzel tracking-[0.25em] text-cyan-300/70 uppercase">
           {label}
         </label>
       )}
@@ -105,10 +105,10 @@ export function GlowSelect({ label, error, hint, options, className = '', ...pro
         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-400/60 pointer-events-none text-xs">▼</span>
       </div>
       {hint && !error && (
-        <p className="text-[11px] text-slate-600 font-rajdhani">{hint}</p>
+        <p className="text-[11px] text-slate-600 font-cormorant">{hint}</p>
       )}
       {error && (
-        <p className="text-[11px] text-red-400 font-rajdhani flex items-center gap-1">
+        <p className="text-[11px] text-red-400 font-cormorant flex items-center gap-1">
           <span>⚠</span> {error}
         </p>
       )}
