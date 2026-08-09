@@ -93,7 +93,7 @@ export default function AdminDashboard({ permissions }: { permissions: any }) {
           </div>
 
           {availableTabs.length === 0 ? (
-            <div className="bg-[#03060A] border border-red-500/20 p-10 text-center">
+            <div className="bg-[#03060A] rounded-xl border border-red-500/20 p-10 text-center">
               <p className="font-cinzel text-sm text-red-400 tracking-widest mb-3">NO PERMISSIONS ASSIGNED</p>
               <p className="font-cormorant text-slate-500">Contact the Founder to assign your admin permissions.</p>
             </div>
@@ -128,7 +128,7 @@ export default function AdminDashboard({ permissions }: { permissions: any }) {
               ) : (
                 <>
                   {tab === 'Trials' && (
-                    <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
+                    <div className="bg-[#03060A] rounded-xl border border-portal-emerald/20 p-5">
                       <h3 className="font-cinzel text-xs text-white tracking-widest uppercase mb-4">Trial Applications ({data.trials?.length || 0})</h3>
                       <div className="flex flex-col gap-3">
                         {(data.trials || []).length === 0 ? (
@@ -162,7 +162,7 @@ export default function AdminDashboard({ permissions }: { permissions: any }) {
                   )}
 
                   {tab === 'Quests' && (
-                    <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
+                    <div className="bg-[#03060A] rounded-xl border border-portal-emerald/20 p-5">
                       <h3 className="font-cinzel text-xs text-white tracking-widest uppercase mb-4">Quest Management ({data.quests?.length || 0})</h3>
                       <div className="flex flex-col gap-2">
                         {(data.quests || []).length === 0 ? (
@@ -180,7 +180,7 @@ export default function AdminDashboard({ permissions }: { permissions: any }) {
                   )}
 
                   {tab === 'Users' && (
-                    <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
+                    <div className="bg-[#03060A] rounded-xl border border-portal-emerald/20 p-5">
                       <h3 className="font-cinzel text-xs text-white tracking-widest uppercase mb-4">User Overview ({data.users?.length || 0})</h3>
                       <div className="overflow-x-auto">
                         <table className="w-full">
@@ -210,7 +210,7 @@ export default function AdminDashboard({ permissions }: { permissions: any }) {
                   )}
 
                   {tab === 'Reports' && (
-                    <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
+                    <div className="bg-[#03060A] rounded-xl border border-portal-emerald/20 p-5">
                       <h3 className="font-cinzel text-xs text-white tracking-widest uppercase mb-4">Reports ({data.reports?.length || 0})</h3>
                       <div className="flex flex-col gap-3">
                         {(data.reports || []).length === 0 ? (
@@ -239,7 +239,7 @@ export default function AdminDashboard({ permissions }: { permissions: any }) {
                   )}
 
                   {tab === 'Arena' && (
-                    <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
+                    <div className="bg-[#03060A] rounded-xl border border-portal-emerald/20 p-5">
                       <h3 className="font-cinzel text-xs text-white tracking-widest uppercase mb-4">Arena Events ({data.challenges?.length || 0})</h3>
                       <div className="flex flex-col gap-2">
                         {(data.challenges || []).length === 0 ? (

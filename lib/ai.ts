@@ -729,6 +729,47 @@ Reply JSON: { "prompt": string, "answer": string|null }`
   return { prompt: `Give your best ${category.toLowerCase()} answer under pressure!`, answer: undefined }
 }
 
+// Structured multiple-choice question for the "Quiz" Arena mechanic. Unlike
+// generateArenaPrompt (free text, graded by the AI validator after the fact),
+// this gives a deterministic correct answer up front so quiz games can be
+// scored instantly client-independent, with no AI grading ambiguity.
+// IMPORTANT: correctIndex must never be sent to the client before an attempt
+// is submitted — see the redaction in pages/api/arena.ts and start.ts.
+export async function generateArenaQuiz(category: string, difficulty: string): Promise<{
+  question: string
+  options: string[]
+  correctIndex: number
+  explanation?: string
+}> {
+  const req = `Generate one fresh ${difficulty}-difficulty multiple choice "${category}" trivia/logic question for a competitive tech guild's Arena Protocol. Exactly 4 options, only one correct.
+Reply JSON: { "question": string, "options": string[4], "correctIndex": number (0-3), "explanation": string }`
+
+  try {
+    const raw = await openRouterChat([{ role: 'user', content: req }], {
+      model: MODELS.router,
+      fallbackModel: MODELS.routerFallback,
+      nvidiaModel: NVIDIA_MODELS.general,
+      maxTokens: 300,
+      fallbackToMistral: true,
+    })
+    const m = raw.match(/\{[\s\S]*?\}/)
+    if (m) {
+      const parsed = JSON.parse(m[0])
+      if (parsed?.question && Array.isArray(parsed.options) && parsed.options.length === 4 &&
+          typeof parsed.correctIndex === 'number') {
+        return parsed
+      }
+    }
+  } catch {}
+
+  return {
+    question: `Which of these best describes a "${category}" challenge?`,
+    options: ['Speed', 'Accuracy', 'Creativity', 'All of the above'],
+    correctIndex: 3,
+    explanation: 'Fallback question — AI generation was unavailable.',
+  }
+}
+
 // ─── GHOST PROTOCOL: Community Party Games ─────────────────────────────────
 
 export async function generateGhostProtocolContent(

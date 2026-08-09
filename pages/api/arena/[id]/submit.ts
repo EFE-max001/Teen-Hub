@@ -53,13 +53,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-  // AI validator layer — auto-grades unless the game requires manual/hybrid review.
+  const mechanicsType = config.mechanics?.type
   const validationType = config.mechanics?.validation_type || 'auto'
   let aiScore: number | null = null
   let aiFeedback: string | null = null
   let aiFlagged = false
 
-  if (validationType !== 'manual') {
+  if (mechanicsType === 'quiz' && config.quiz) {
+    // Deterministic grading — no AI ambiguity, no 5/100-on-an-empty-field
+    // situations. response is the chosen option's index as a string.
+    const chosen = parseInt(response, 10)
+    const correct = chosen === config.quiz.correctIndex
+    aiScore = correct ? 100 : 0
+    aiFeedback = config.quiz.explanation
+      ? `${correct ? 'Correct! ' : 'Not quite. '}${config.quiz.explanation}`
+      : (correct ? 'Correct!' : 'Not quite.')
+    aiFlagged = false
+  } else if (mechanicsType === 'tap_speed') {
+    // response is the raw tap count from the client-side timer game.
+    // 30 taps in the window is treated as a "perfect" score — arbitrary but
+    // deterministic; Founders can't yet tune the target, so this is a
+    // reasonable default rather than AI-guessed.
+    const taps = Math.max(0, parseInt(response, 10) || 0)
+    aiScore = Math.min(100, Math.round((taps / 30) * 100))
+    aiFeedback = `${taps} taps recorded.`
+    aiFlagged = false
+  } else if (validationType !== 'manual') {
+    // AI validator layer — for the free-text mechanics (puzzle/creative/
+    // social_task) where there's no single deterministic correct answer.
     const result = await validateArenaEntry({
       gameTitle: game.title,
       category: game.category || 'General',
@@ -88,9 +109,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     },
   })
 
-  // Award XP immediately for auto-graded, non-flagged entries.
+  // Award XP immediately for auto-graded, non-flagged entries. Quiz games
+  // only pay out on a correct answer — guessing shouldn't be free XP.
   let xpAwarded = 0
-  if (validationType === 'auto' && !aiFlagged && config.rewards?.xp) {
+  const qualifiesForXp = mechanicsType === 'quiz' ? aiScore === 100 : true
+  if (validationType === 'auto' && !aiFlagged && qualifiesForXp && config.rewards?.xp) {
     xpAwarded = config.rewards.xp
     await prisma.user.update({
       where: { id: session.user.id },

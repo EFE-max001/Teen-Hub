@@ -10,6 +10,7 @@ import AppLoadingGate from '@/components/ui/AppLoadingGate'
 import PageTransitionParticles from '@/components/ui/PageTransitionParticles'
 
 const SentinelBackground = dynamic(() => import('@/components/ui/SentinelBackground'), { ssr: false })
+const AmbientGlow = dynamic(() => import('@/components/ui/AmbientGlow'), { ssr: false })
 
 // Only the landing page ("/") has the heavy hero scene (portal + butterfly
 // flock + particle network). It used to mount unconditionally in every
@@ -65,7 +66,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
   return (
     <SessionProvider session={session}>
       <AppLoadingGate>
-        {showSentinel && <SentinelBackground />}
+        {showSentinel ? <SentinelBackground /> : <AmbientGlow />}
         {burst !== null && !reducedMotion && <PageTransitionParticles key={burst} />}
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

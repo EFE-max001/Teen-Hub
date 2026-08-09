@@ -198,3 +198,22 @@ h1, h2, h3, h4, h5, h6 {
 @media (prefers-reduced-motion: reduce) {
   .glow-sweep-text { transition: none; }
 }
+/* ── Ambient glow (non-landing pages) — see components/ui/AmbientGlow.tsx ── */
+@keyframes glowDriftA {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(2%, 3%) scale(1.08); }
+}
+@keyframes glowDriftB {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-3%, 2%) scale(1.1); }
+}
+@keyframes glowDriftC {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(2%, -2%) scale(1.06); }
+}
+.animate-glow-drift-a { animation: glowDriftA 18s ease-in-out infinite; }
+.animate-glow-drift-b { animation: glowDriftB 22s ease-in-out infinite; }
+.animate-glow-drift-c { animation: glowDriftC 26s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-glow-drift-a, .animate-glow-drift-b, .animate-glow-drift-c { animation: none; }
+}

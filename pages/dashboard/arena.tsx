@@ -86,9 +86,23 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
   const [myVotes, setMyVotes] = useState<string[]>([])
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
   const [expired, setExpired] = useState(false)
+  const [selectedOption, setSelectedOption] = useState<number | null>(null)
+  const [taps, setTaps] = useState(0)
+  const [tapWindowLeft, setTapWindowLeft] = useState<number | null>(null)
+  const [tapDone, setTapDone] = useState(false)
+  const [starting, setStarting] = useState(false)
+  const [startError, setStartError] = useState('')
+  const [started, setStarted] = useState(false)
+
   const config = game.config || {}
-  const isVoteBattle = config.mechanics?.type === 'creative' || config.mechanics?.type === 'social_task'
+  const mechanicsType = config.mechanics?.type
+  const isVoteBattle = mechanicsType === 'creative' || mechanicsType === 'social_task'
+  const isQuiz = mechanicsType === 'quiz' && !!config.quiz
+  const isTapSpeed = mechanicsType === 'tap_speed'
   const timeLimitSeconds: number = config.time_limit_seconds || 0
+  // Tap Speed is a short reaction burst, not a long "answer the objective"
+  // window — cap it at 15s even if the founder set a longer overall limit.
+  const tapWindowSeconds = Math.min(timeLimitSeconds || 10, 15)
 
   useEffect(() => {
     if (isVoteBattle) {
@@ -102,13 +116,24 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
   // Timer — kicks off exactly once (server stamps startedAt only on first
   // open), then counts down locally. Submitting after it hits 0 is also
   // blocked server-side, so a slow client can't cheat the limit.
-  useEffect(() => {
-    if (!timeLimitSeconds) return
-    let cancelled = false
+  // Failures used to be swallowed silently, leaving players staring at a
+  // form with no countdown and a confusing "open the game first" error the
+  // moment they tried to submit — this now surfaces the real problem with
+  // a retry, instead of pretending nothing happened.
+  function startTimer() {
+    if (!timeLimitSeconds && !isTapSpeed) return
+    setStarting(true)
+    setStartError('')
     fetch(`/api/arena/${game.id}/start`, { method: 'POST' })
-      .then(r => r.json())
+      .then(async r => {
+        const d = await r.json()
+        if (!r.ok) throw new Error(d.error || `Server returned ${r.status}`)
+        return d
+      })
       .then(d => {
-        if (cancelled || !d.startedAt) return
+        setStarting(false)
+        setStarted(true)
+        if (!timeLimitSeconds) return
         const deadline = new Date(d.startedAt).getTime() + timeLimitSeconds * 1000
         const tick = () => {
           const left = Math.max(0, Math.round((deadline - Date.now()) / 1000))
@@ -119,18 +144,48 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
         const iv = setInterval(tick, 1000)
         return () => clearInterval(iv)
       })
-      .catch(() => {})
-    return () => { cancelled = true }
-  }, [game.id, timeLimitSeconds])
+      .catch(err => {
+        setStarting(false)
+        setStartError(
+          err.message?.includes('closed') || err.message?.includes('Unauthorized')
+            ? err.message
+            : `Couldn't start the timer (${err.message}). This usually means the server needs a database sync — try again in a moment.`
+        )
+      })
+  }
 
-  async function submit() {
-    if (!response.trim()) return setError('Enter a response first')
-    if (expired) return setError("Time's up for this attempt")
+  useEffect(() => {
+    if (timeLimitSeconds > 0 || isTapSpeed) startTimer()
+  }, [game.id])
+
+  // Tap Speed's own short local countdown, independent of the server timer
+  // (which only gates the overall submit deadline). Auto-submits on zero.
+  useEffect(() => {
+    if (!isTapSpeed || !started || tapDone) return
+    setTapWindowLeft(tapWindowSeconds)
+    const deadline = Date.now() + tapWindowSeconds * 1000
+    const iv = setInterval(() => {
+      const left = Math.max(0, Math.round((deadline - Date.now()) / 1000))
+      setTapWindowLeft(left)
+      if (left <= 0) {
+        clearInterval(iv)
+        setTapDone(true)
+      }
+    }, 100)
+    return () => clearInterval(iv)
+  }, [isTapSpeed, started])
+
+  useEffect(() => {
+    if (isTapSpeed && tapDone) doSubmit(String(taps))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tapDone])
+
+  async function doSubmit(payload: string) {
     setSubmitting(true)
     setError('')
     const r = await fetch(`/api/arena/${game.id}/submit`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ response }),
+      body: JSON.stringify({ response: payload }),
     })
     const d = await r.json()
     setSubmitting(false)
@@ -140,6 +195,17 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
     }
     setResult(d)
     onSubmitted()
+  }
+
+  async function submit() {
+    if (isQuiz) {
+      if (selectedOption === null) return setError('Pick an answer first')
+      if (expired) return setError("Time's up for this attempt")
+      return doSubmit(String(selectedOption))
+    }
+    if (!response.trim()) return setError('Enter a response first')
+    if (expired) return setError("Time's up for this attempt")
+    return doSubmit(response)
   }
 
   async function vote(entryId: string) {
@@ -169,6 +235,16 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
           </div>
           <button onClick={onClose} className="text-slate-500 hover:text-white text-lg">✕</button>
         </div>
+
+        {startError && (
+          <div className="flex items-center justify-between gap-3 mb-4 px-3 py-2 rounded-lg border border-red-500/30 bg-red-900/10">
+            <p className="font-cormorant text-red-300 text-xs">{startError}</p>
+            <button onClick={startTimer} disabled={starting}
+              className="font-cinzel text-[9px] rounded-full px-2.5 py-1 border border-red-500/40 text-red-300 hover:bg-red-900/20 flex-shrink-0">
+              {starting ? '...' : 'RETRY'}
+            </button>
+          </div>
+        )}
 
         {timeLimitSeconds > 0 && secondsLeft !== null && !result && (
           <div className={`flex items-center gap-2 mb-4 px-3 py-1.5 rounded-full border w-fit ${
@@ -205,6 +281,54 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
             {typeof result.xpAwarded === 'number' && result.xpAwarded > 0 && (
               <p className="font-cinzel text-portal-emerald text-xs mt-2">+{result.xpAwarded} XP awarded</p>
             )}
+          </div>
+        ) : isQuiz ? (
+          <>
+            <p className="font-cormorant text-slate-200 text-sm mb-3">{config.quiz.question}</p>
+            <div className="flex flex-col gap-2 mb-3">
+              {config.quiz.options.map((opt: string, i: number) => (
+                <button
+                  key={i}
+                  onClick={() => setSelectedOption(i)}
+                  disabled={expired}
+                  className={`text-left font-cormorant text-sm rounded-lg border px-3 py-2.5 transition-all disabled:opacity-40 ${
+                    selectedOption === i
+                      ? 'border-portal-emerald/60 bg-portal-emerald/10 text-white'
+                      : 'border-portal-emerald/20 bg-black/40 text-slate-300 hover:border-portal-emerald/40'
+                  }`}
+                >
+                  <span className="font-cinzel text-[10px] text-portal-emerald mr-2">{String.fromCharCode(65 + i)}</span>
+                  {opt}
+                </button>
+              ))}
+            </div>
+            {error && <p className="font-cormorant text-red-400 text-xs mb-2">{error}</p>}
+            <GlowButton variant="primary" size="md" loading={submitting} disabled={expired} onClick={submit} className="w-full">
+              {expired ? "Time's Up" : 'Lock In Answer'}
+            </GlowButton>
+          </>
+        ) : isTapSpeed ? (
+          <div className="flex flex-col items-center gap-4 py-2">
+            {!started ? (
+              <p className="font-cormorant text-slate-400 text-sm">
+                {starting ? 'Starting…' : startError ? 'Retry above to begin.' : 'Preparing…'}
+              </p>
+            ) : (
+              <>
+                <div className="font-cinzel text-[11px] text-portal-emerald tracking-widest">
+                  {tapDone ? 'TIME! SUBMITTING…' : `${tapWindowLeft ?? tapWindowSeconds}s LEFT`}
+                </div>
+                <button
+                  onClick={() => !tapDone && setTaps(t => t + 1)}
+                  disabled={tapDone}
+                  className="w-40 h-40 rounded-full border-4 border-portal-emerald/50 bg-portal-emerald/10 hover:bg-portal-emerald/20 active:scale-95 transition-all flex items-center justify-center disabled:opacity-50 select-none"
+                >
+                  <span className="font-cinzel font-black text-4xl text-portal-emerald">{taps}</span>
+                </button>
+                <p className="font-cormorant text-slate-500 text-xs">Tap as fast as you can before time runs out!</p>
+              </>
+            )}
+            {error && <p className="font-cormorant text-red-400 text-xs">{error}</p>}
           </div>
         ) : (
           <>
