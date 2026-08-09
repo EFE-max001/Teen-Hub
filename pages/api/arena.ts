@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       _count: { select: { entries: true } },
       entries: {
         where: { userId: session.user.id },
-        select: { id: true, score: true, aiScore: true, createdAt: true, response: true },
+        select: { id: true, score: true, aiScore: true, aiFeedback: true, aiFlagged: true, createdAt: true, response: true },
       },
     },
   })

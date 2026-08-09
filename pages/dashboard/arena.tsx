@@ -103,6 +103,22 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
   // Tap Speed is a short reaction burst, not a long "answer the objective"
   // window — cap it at 15s even if the founder set a longer overall limit.
   const tapWindowSeconds = Math.min(timeLimitSeconds || 10, 15)
+  // The games-list API already tells us if this user has a past entry for
+  // this game (game.entries[0], scoped server-side to the current user).
+  // If they've already submitted, show that result immediately instead of
+  // calling /start — which would otherwise correctly reject with "already
+  // submitted" and surface as a confusing red error banner.
+  const myEntry = game.entries?.[0]
+
+  useEffect(() => {
+    if (myEntry?.response) {
+      setResult({
+        entry: { aiScore: myEntry.aiScore, aiFeedback: myEntry.aiFeedback, aiFlagged: myEntry.aiFlagged },
+        xpAwarded: 0,
+        alreadySubmitted: true,
+      })
+    }
+  }, [])
 
   useEffect(() => {
     if (isVoteBattle) {
@@ -121,11 +137,20 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
   // moment they tried to submit — this now surfaces the real problem with
   // a retry, instead of pretending nothing happened.
   function startTimer() {
+    if (myEntry?.response) return // already played — nothing to time
     if (!timeLimitSeconds && !isTapSpeed) return
     setStarting(true)
     setStartError('')
     fetch(`/api/arena/${game.id}/start`, { method: 'POST' })
       .then(async r => {
+        const ct = r.headers.get('content-type') || ''
+        if (!ct.includes('application/json')) {
+          // The server sent back an HTML error page (typically a 404) instead
+          // of JSON — this means the /api/arena/[id]/start route itself isn't
+          // deployed/registered, not a data problem. Distinguish it clearly
+          // from a normal API error so it's actually fixable.
+          throw new Error('ROUTE_NOT_FOUND')
+        }
         const d = await r.json()
         if (!r.ok) throw new Error(d.error || `Server returned ${r.status}`)
         return d
@@ -146,15 +171,20 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
       })
       .catch(err => {
         setStarting(false)
-        setStartError(
-          err.message?.includes('closed') || err.message?.includes('Unauthorized')
-            ? err.message
-            : `Couldn't start the timer (${err.message}). This usually means the server needs a database sync — try again in a moment.`
-        )
+        if (err.message === 'ROUTE_NOT_FOUND') {
+          setStartError(
+            "This game's timer endpoint isn't reachable on the server. Make sure pages/api/arena/[id]/start.ts exists in your deployment, then restart/redeploy — a plain code save often isn't enough to register a brand-new API route."
+          )
+        } else if (err.message?.includes('closed') || err.message?.includes('Unauthorized')) {
+          setStartError(err.message)
+        } else {
+          setStartError(`Couldn't start the timer (${err.message}). This usually means the server needs a database sync (npx prisma db push) — try again in a moment.`)
+        }
       })
   }
 
   useEffect(() => {
+    if (myEntry?.response) return
     if (timeLimitSeconds > 0 || isTapSpeed) startTimer()
   }, [game.id])
 
@@ -270,7 +300,7 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
         {result ? (
           <div className="border border-green-500/30 bg-green-900/10 p-4 mb-4">
             <p className="font-cinzel text-green-400 text-xs mb-1">
-              {result.entry?.aiFlagged ? '⚠ FLAGGED FOR REVIEW' : 'ENTRY RECORDED'}
+              {result.entry?.aiFlagged ? '⚠ FLAGGED FOR REVIEW' : result.alreadySubmitted ? 'YOU ALREADY PLAYED THIS' : 'ENTRY RECORDED'}
             </p>
             {typeof result.entry?.aiScore === 'number' && (
               <p className="font-cormorant text-slate-300 text-sm">AI Score: {result.entry.aiScore}/100</p>
