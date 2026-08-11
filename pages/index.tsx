@@ -11,45 +11,45 @@ import Footer from '@/components/layout/Footer'
 
 const RANKS = [
   { rank: 'F',   label: 'Initiate',   color: 'text-slate-400',  border: 'border-slate-600/40',  glow: '',                                  desc: 'Unproven. The starting point for every operative.' },
-  { rank: 'E',   label: 'Operative',  color: 'text-green-400',  border: 'border-green-600/40',  glow: 'shadow-[0_0_15px_rgba(74,222,128,0.15)]',  desc: 'Proven active. Basic member rights unlocked.' },
-  { rank: 'D',   label: 'Specialist', color: 'text-blue-400',   border: 'border-blue-600/40',   glow: 'shadow-[0_0_15px_rgba(96,165,250,0.15)]',  desc: 'Skilled contributor. Quest access widens.' },
-  { rank: 'C',   label: 'Vanguard',   color: 'text-yellow-400', border: 'border-yellow-600/40', glow: 'shadow-[0_0_15px_rgba(250,204,21,0.15)]',  desc: 'Dependable force. High-value tasks open.' },
-  { rank: 'B',   label: 'Commander',  color: 'text-orange-400', border: 'border-orange-500/50', glow: 'shadow-[0_0_15px_rgba(251,146,60,0.2)]',   desc: 'Strong track record. Leadership adjacent.' },
-  { rank: 'A',   label: 'Elite',      color: 'text-portal-emerald', border: 'border-portal-emerald/60', glow: 'shadow-[0_0_20px_rgba(0,255,163,0.25)]',  desc: 'Top performer. Guild\'s most trusted operatives.' },
-  { rank: 'S',   label: 'Sovereign',  color: 'text-pink-400',   border: 'border-pink-500/60',   glow: 'shadow-[0_0_20px_rgba(236,72,153,0.25)]',  desc: 'Living legend. Rare. Chosen by the council.' },
-  { rank: 'SS',  label: 'Warlord',    color: 'text-red-400',    border: 'border-red-500/60',    glow: 'shadow-[0_0_25px_rgba(239,68,68,0.3)]',    desc: 'Mythic performer. One of the guild\'s pillars.' },
-  { rank: 'SSS', label: 'Mythic',     color: 'text-amber-300',  border: 'border-amber-400/70',  glow: 'shadow-[0_0_30px_rgba(252,211,77,0.35)]',  desc: 'Ultra-rare. The absolute pinnacle. Unchallengeable.' },
+  { rank: 'E',   label: 'Operative',  color: 'text-green-400',  border: 'border-green-600/40',  glow: 'shadow-[0_0_15px_rgba(74,222,128,0.15)]',  desc: 'Proven active. Basic member rights unlocked. First paid quests available.' },
+  { rank: 'D',   label: 'Specialist', color: 'text-blue-400',   border: 'border-blue-600/40',   glow: 'shadow-[0_0_15px_rgba(96,165,250,0.15)]',  desc: 'Skilled contributor. Higher-paying quests unlocked.' },
+  { rank: 'C',   label: 'Vanguard',   color: 'text-yellow-400', border: 'border-yellow-600/40', glow: 'shadow-[0_0_15px_rgba(250,204,21,0.15)]',  desc: 'Dependable force. Premium quest access. Real earnings begin.' },
+  { rank: 'B',   label: 'Commander',  color: 'text-orange-400', border: 'border-orange-500/50', glow: 'shadow-[0_0_15px_rgba(251,146,60,0.2)]',   desc: 'Strong track record. Leadership opportunities. Top-tier pay rates.' },
+  { rank: 'A',   label: 'Elite',      color: 'text-portal-emerald', border: 'border-portal-emerald/60', glow: 'shadow-[0_0_20px_rgba(0,255,163,0.25)]',  desc: 'Top performer. Guild\'s most trusted operatives. Maximum earning potential.' },
+  { rank: 'S',   label: 'Sovereign',  color: 'text-pink-400',   border: 'border-pink-500/60',   glow: 'shadow-[0_0_20px_rgba(236,72,153,0.25)]',  desc: 'Living legend. Rare. Chosen by the council. Exclusive high-value projects.' },
+  { rank: 'SS',  label: 'Warlord',    color: 'text-red-400',    border: 'border-red-500/60',    glow: 'shadow-[0_0_25px_rgba(239,68,68,0.3)]',    desc: 'Mythic performer. One of the guild\'s pillars. Industry connections.' },
+  { rank: 'SSS', label: 'Mythic',     color: 'text-amber-300',  border: 'border-amber-400/70',  glow: 'shadow-[0_0_30px_rgba(252,211,77,0.35)]',  desc: 'Ultra-rare. The absolute pinnacle. Career-defining opportunities.' },
 ]
 
 const STEPS = [
-  { step: '01', title: 'Create Account',    icon: '◈', desc: 'Register your operative profile. Your identity in the guild network starts here.' },
+  { step: '01', title: 'Join Free',    icon: '◈', desc: 'Register your operative profile. Your identity in the guild network starts here.' },
   { step: '02', title: 'Submit Application', icon: '◉', desc: 'Fill out the guild application. The Council reviews every submission personally.' },
   { step: '03', title: 'Complete Trial',     icon: '◍', desc: 'Assigned a real task. Scored on quality, speed, reliability, and attitude.' },
-  { step: '04', title: 'Rise Through Ranks', icon: '◎', desc: 'Accepted into the guild. Earn XP, complete quests, and climb from F to SSS.' },
+  { step: '04', title: 'Earn & Rise', icon: '◎', desc: 'Accepted into the guild. Complete paid quests, earn XP, climb from F to SSS, and build real income.' },
 ]
 
 const QUEST_TYPES = [
-  { icon: '◈', label: 'Graphic Design',  color: 'text-portal-emerald', desc: 'Logos, banners, social visuals, brand identity work'  },
-  { icon: '◉', label: 'Writing & Copy',  color: 'text-blue-400',   desc: 'Captions, articles, scripts, ad copy, blog posts'      },
-  { icon: '◍', label: 'Video Editing',   color: 'text-pink-400',   desc: 'Reels, short-form promos, YouTube edits, transitions'  },
-  { icon: '◎', label: 'Research Ops',    color: 'text-yellow-400', desc: 'Market data, competitor analysis, sourcing, reports'   },
-  { icon: '◆', label: 'Web Operations',  color: 'text-green-400',  desc: 'Site updates, QA testing, CMS management, bug reports' },
-  { icon: '◇', label: 'Social Media',    color: 'text-orange-400', desc: 'Content planning, scheduling, community growth'        },
+  { icon: '◈', label: 'Graphic Design',  color: 'text-portal-emerald', desc: 'Logos, banners, social visuals, brand identity work — get paid per project'  },
+  { icon: '◉', label: 'Writing & Copy',  color: 'text-blue-400',   desc: 'Captions, articles, scripts, ad copy, blog posts — monetize your words'      },
+  { icon: '◍', label: 'Video Editing',   color: 'text-pink-400',   desc: 'Reels, short-form promos, YouTube edits, transitions — paid per edit'  },
+  { icon: '◎', label: 'Research Ops',    color: 'text-yellow-400', desc: 'Market data, competitor analysis, sourcing, reports — earn while you investigate'   },
+  { icon: '◆', label: 'Web Operations',  color: 'text-green-400',  desc: 'Site updates, QA testing, CMS management, bug reports — technical tasks that pay' },
+  { icon: '◇', label: 'Social Media',    color: 'text-orange-400', desc: 'Content planning, scheduling, community growth — turn engagement into earnings'        },
 ]
 
 const AI_FEATURES = [
-  { title: 'Trial Evaluation',  desc: 'SENTINEL AI scores every trial submission — quality, reliability, attitude — and generates a recommendation for the council.' },
-  { title: 'Trust Scoring',     desc: 'Every action is logged. Quest completions, abandonments, warnings. Your trust score is calculated in real-time.' },
-  { title: 'Risk Detection',    desc: 'Anomaly detection flags ghosting patterns, quality drops, and suspicious behavior before it becomes a problem.' },
-  { title: 'Achievement Engine',desc: 'AI monitors member progress and auto-awards achievements the moment you hit a qualifying milestone.' },
+  { title: 'Quest Matching',    desc: 'AI matches your skills and rank with the best-paying quests. Higher rank = better opportunities.' },
+  { title: 'Payment Protection',desc: 'Smart contracts ensure you get paid for completed work. No client ghosting, no unpaid projects.' },
+  { title: 'Skill Analytics',   desc: 'Track your growth, identify strengths, and get personalized recommendations to maximize earnings.' },
+  { title: 'Auto Achievements', desc: 'AI monitors your progress and awards achievements the moment you hit earning or XP milestones.' },
 ]
 
 export default function LandingPage() {
   return (
     <>
       <Head>
-        <title>QuestHub Guild — Elite Teen Talent Platform</title>
-        <meta name="description" content="An elite guild for talented teens. Apply, survive the trial, rank up, and complete real quests that build a reputation that matters." />
+        <title>QuestHub Guild — Where Talented Teens Connect, Grow & Earn</title>
+        <meta name="description" content="QuestHub Guild — where ambitious teens connect, grow, learn skills, join challenges, and take on paid quests. Build your reputation and earn real money." />
       </Head>
 
       <div className="min-h-screen bg-transparent flex flex-col">
@@ -130,7 +130,7 @@ export default function LandingPage() {
 
               {/* Divider line */}
               <div className="hero-assemble flex items-center justify-center gap-4 mb-2" style={{ animationDelay: '220ms' }}>
-                <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Elite Talent Platform</span>
+                <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Teen Guild • Learn • Earn • Grow</span>
               </div>
               <div className="hero-assemble mb-8" style={{ animationDelay: '260ms' }}>
                 <OrnamentDivider color="#FFC65C" />
@@ -141,17 +141,17 @@ export default function LandingPage() {
                 className="hero-assemble font-cormorant text-base sm:text-lg md:text-xl text-slate-300/90 max-w-2xl mx-auto mb-10 leading-relaxed px-2 italic"
                 style={{ animationDelay: '340ms' }}
               >
-                An elite guild for talented teens. Not everyone gets in — you have to earn it.
-                Apply, survive the trial, rank up from{' '}
-                <span className="text-portal-moonlight font-semibold not-italic">F to SSS</span>, and complete real operations
-                that build a reputation that actually matters.
+                A teen guild/community where ambitious teens connect, grow, learn skills, join fun challenges, and take on real paid quests.
+                Not just another dead group — this is an active space for talented teens to build something bigger together.
+                Rank up from{' '}
+                <span className="text-portal-moonlight font-semibold not-italic">F to SSS</span>, complete paid projects, and turn your skills into real income.
               </p>
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-14">
                 <Link href="/apply">
                   <GlowButton size="lg" variant="primary" className="w-48 sm:w-auto animate-pulse-glow">
-                    Apply to Join
+                    Start Your Journey
                   </GlowButton>
                 </Link>
                 <Link href="/auth/register">
@@ -161,7 +161,7 @@ export default function LandingPage() {
                 </Link>
                 <Link href="/auth/login">
                   <GlowButton size="lg" variant="ghost" className="w-48 sm:w-auto">
-                    Sign In
+                    Member Login
                   </GlowButton>
                 </Link>
               </div>
@@ -169,10 +169,10 @@ export default function LandingPage() {
               {/* Stats bar */}
               <div className="inline-flex flex-col sm:flex-row items-center gap-0 sm:gap-px border border-portal-emerald/20 bg-portal-black/50 backdrop-blur-md overflow-hidden">
                 {[
-                  ['9', 'Rank Tiers'],
-                  ['∞', 'Operations'],
-                  ['AI', 'Powered'],
-                  ['0', 'Excuses Tolerated'],
+                  ['Paid', 'Quests Available'],
+                  ['Active', 'Teen Community'],
+                  ['AI', 'Matched Jobs'],
+                  ['100%', 'Payment Protected'],
                 ].map(([val, label], i) => (
                   <div
                     key={label}
@@ -196,14 +196,14 @@ export default function LandingPage() {
           <div className="border-y border-portal-emerald/20 bg-portal-black/75 backdrop-blur-sm overflow-hidden py-2.5">
             <div className="flex items-center gap-8 whitespace-nowrap animate-marquee">
               {Array.from({ length: 3 }).flatMap(() => [
-                '◈ GRAPHIC DESIGN OPS AVAILABLE',
-                '◉ AI TRIAL EVALUATION ACTIVE',
-                '◍ TRUST ENGINE MONITORING',
-                '◎ QUEST BOARD LIVE',
-                '◆ NEW RANK TIERS: SS AND SSS',
-                '◇ SENTINEL AI ONLINE',
-                '◈ ZERO TOLERANCE FOR GHOSTING',
-                '◉ MERIT-BASED PROMOTIONS ONLY',
+                '◈ PAID QUESTS AVAILABLE NOW',
+                '◉ TEEN COMMUNITY ACTIVE',
+                '◍ EARN WHILE YOU LEARN',
+                '◎ SKILL GROWTH TRACKING',
+                '◆ FUN CHALLENGES & EVENTS',
+                '◇ AI JOB MATCHING ONLINE',
+                '◈ BUILD REAL PORTFOLIO',
+                '◉ GET PAID PER PROJECT',
               ]).map((text, i) => (
                 <span key={i} className="font-cinzel text-[9px] text-portal-emerald/85 tracking-[0.3em] uppercase flex-shrink-0">
                   {text}
@@ -216,9 +216,9 @@ export default function LandingPage() {
           <section id="how-it-works" className="py-20 sm:py-28 px-4 sm:px-6 bg-portal-black/45 backdrop-blur-sm relative">
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
-                <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Initiation Protocol</span>
+                <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Your Journey Starts Here</span>
                 <h2 className="glow-sweep-text font-cinzel font-semibold text-2xl sm:text-3xl md:text-4xl text-portal-moonlight mt-3 mb-4">
-                  The Path Forward
+                  Join QuestHub Guild
                 </h2>
                 <OrnamentDivider color="#00FFA3" />
               </div>
@@ -308,7 +308,7 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* ── SENTINEL AI ──────────────────────────────────────── */}
+          {/* ── SMART MATCHING ENGINE ──────────────────────────────────────── */}
           <section className="py-20 sm:py-28 px-4 sm:px-6 bg-portal-black/45 backdrop-blur-sm relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-portal-emerald/30 to-transparent pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-portal-emerald/30 to-transparent pointer-events-none" />
@@ -317,21 +317,21 @@ export default function LandingPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                 {/* Left */}
                 <div>
-                  <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">AI Automation Layer</span>
+                  <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">AI-Powered • Founder Controlled</span>
                   <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
                     SENTINEL AI
                   </h2>
                   <div className="w-20 h-px bg-gradient-to-r from-portal-emerald to-transparent mb-6" />
                   <p className="font-cormorant text-slate-400 text-base sm:text-lg leading-relaxed mb-6">
-                    Every operative is watched by SENTINEL — our AI layer that scores trials,
-                    tracks trust, detects risk, and awards achievements in real-time.
-                    You cannot fake your way to the top.
+                    Our AI matches you with the best-paying quests based on your skills, rank, and past performance.
+                    Founders maintain full control while AI handles matching, payments, and growth tracking.
+                    Everyone wins: teens earn money, founders get quality work.
                   </p>
                   <div className="bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-4 font-mono text-xs">
-                    <div className="text-green-400/80 mb-1">{'>'} SENTINEL.evaluate(trial_submission)</div>
-                    <div className="text-slate-500 mb-1">{'>'} Scoring quality... reliability... attitude...</div>
-                    <div className="text-portal-emerald mb-1">{'>'} Trust delta: <span className="text-green-400">+12pts</span></div>
-                    <div className="text-slate-500">{'>'} Recommendation: <span className="text-green-400">ACCEPT</span></div>
+                    <div className="text-green-400/80 mb-1">{'>'} AI.matchQuest(user_profile)</div>
+                    <div className="text-slate-500 mb-1">{'>'} Analyzing skills... rank... availability...</div>
+                    <div className="text-portal-emerald mb-1">{'>'} Match found: <span className="text-green-400">$50 quest</span></div>
+                    <div className="text-slate-500">{'>'} Payment: <span className="text-green-400">PROTECTED</span></div>
                   </div>
                 </div>
 
@@ -430,22 +430,23 @@ export default function LandingPage() {
             <div className="absolute inset-0 bg-purple-glow opacity-10 pointer-events-none" />
             <div className="max-w-5xl mx-auto relative z-10">
               <div className="text-center mb-10">
-                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Legitimacy</span>
+                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Why QuestHub Guild</span>
                 <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
-                  THIS IS REAL.
+                  MORE THAN JUST A GUILD.
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
                 <p className="font-cormorant text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-                  QuestHub Guild is not a game. Quests are real work with real consequences.
-                  Every action is logged. Every rank is earned. The council is always watching.
+                  QuestHub Guild is a space where talented teens connect, grow, and earn together.
+                  Fun challenges keep it active. Real quests build your portfolio. AI matching finds your perfect opportunities.
+                  This isn't one of those dead groups that dies after 3 days — we're building something bigger.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
                 {[
-                  { icon: '🛡️', title: 'Admin Moderated',    desc: 'Every trial, quest, and submission reviewed by real admins — not automated bots.' },
-                  { icon: '⚡',  title: 'Merit-Only Ranking', desc: 'No shortcuts. No exceptions. Every rank is earned through consistent, quality output.' },
-                  { icon: '🔒', title: 'Zero Tolerance',      desc: 'Ghosting, dishonesty, and low quality are actioned instantly. Warnings stack. Bans happen.' },
+                  { icon: '🤝', title: 'Active Community',   desc: 'Daily challenges, events, and a chill teen environment. No ghost towns here.' },
+                  { icon: '💰', title: 'Real Earnings',      desc: 'Get paid for completed quests. Build income while building skills and connections.' },
+                  { icon: '📈', title: 'Skill Growth',       desc: 'Track your progress, level up your abilities, and unlock higher-paying opportunities.' },
                 ].map((item, i) => (
                   <div key={i} className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-5 sm:p-6 group hover:border-portal-emerald/40 transition-all duration-300">
                     <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/30" />
@@ -485,7 +486,7 @@ export default function LandingPage() {
                 </Link>
                 <Link href="/auth/register">
                   <GlowButton size="lg" variant="secondary" className="w-52 sm:w-auto">
-                    Create Account First
+                    Create Your Account
                   </GlowButton>
                 </Link>
               </div>
