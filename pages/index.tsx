@@ -22,19 +22,19 @@ const RANKS = [
 ]
 
 const STEPS = [
-  { step: '01', title: 'Create Account',    icon: '◈', desc: 'Register your operative profile. Your identity in the guild network starts here.' },
-  { step: '02', title: 'Submit Application', icon: '◉', desc: 'Fill out the guild application. The Council reviews every submission personally.' },
-  { step: '03', title: 'Complete Trial',     icon: '◍', desc: 'Assigned a real task. Scored on quality, speed, reliability, and attitude.' },
-  { step: '04', title: 'Rise Through Ranks', icon: '◎', desc: 'Accepted into the guild. Earn XP, complete quests, and climb from F to SSS.' },
+  { step: '01', title: 'Create Account',    icon: 'I', desc: 'Register your operative profile. Your identity in the guild network starts here.' },
+  { step: '02', title: 'Submit Application', icon: 'II', desc: 'Fill out the guild application. The Council reviews every submission personally.' },
+  { step: '03', title: 'Complete Trial',     icon: 'III', desc: 'Assigned a real task. Scored on quality, speed, reliability, and attitude.' },
+  { step: '04', title: 'Rise Through Ranks', icon: 'IV', desc: 'Accepted into the guild. Earn XP, complete quests, and climb from F to SSS.' },
 ]
 
 const QUEST_TYPES = [
-  { icon: '◈', label: 'Graphic Design',  color: 'text-portal-emerald', desc: 'Logos, banners, social visuals, brand identity work'  },
-  { icon: '◉', label: 'Writing & Copy',  color: 'text-blue-400',   desc: 'Captions, articles, scripts, ad copy, blog posts'      },
-  { icon: '◍', label: 'Video Editing',   color: 'text-pink-400',   desc: 'Reels, short-form promos, YouTube edits, transitions'  },
-  { icon: '◎', label: 'Research Ops',    color: 'text-yellow-400', desc: 'Market data, competitor analysis, sourcing, reports'   },
-  { icon: '◆', label: 'Web Operations',  color: 'text-green-400',  desc: 'Site updates, QA testing, CMS management, bug reports' },
-  { icon: '◇', label: 'Social Media',    color: 'text-orange-400', desc: 'Content planning, scheduling, community growth'        },
+  { icon: '01', label: 'Graphic Design',  color: 'text-portal-emerald', desc: 'Logos, banners, social visuals, brand identity work'  },
+  { icon: '02', label: 'Writing & Copy',  color: 'text-blue-400',   desc: 'Captions, articles, scripts, ad copy, blog posts'      },
+  { icon: '03', label: 'Video Editing',   color: 'text-pink-400',   desc: 'Reels, short-form promos, YouTube edits, transitions'  },
+  { icon: '04', label: 'Research Ops',    color: 'text-yellow-400', desc: 'Market data, competitor analysis, sourcing, reports'   },
+  { icon: '05', label: 'Web Operations',  color: 'text-green-400',  desc: 'Site updates, QA testing, CMS management, bug reports' },
+  { icon: '06', label: 'Social Media',    color: 'text-orange-400', desc: 'Content planning, scheduling, community growth'        },
 ]
 
 const AI_FEATURES = [
@@ -58,10 +58,9 @@ export default function LandingPage() {
 
           {/* ── HERO ──────────────────────────────────────────── */}
           <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4 py-20">
-            {/* Background video removed from here — it was landing on top
-                of (not behind) the interactive scene in testing and wasn't
-                rendering reliably. Kept only in the one-time PortalIntro
-                sequence, where it's confirmed working. */}
+            {/* The atmosphere is mounted globally so this hero can focus on
+                the message, proof, and first action instead of competing
+                with a second local scene. */}
 
             {/* No local background mount here anymore — the Living Digital
                 Forest (fog + roots + particles + portal/butterflies/branch)
@@ -107,67 +106,59 @@ export default function LandingPage() {
               style={{ background: 'radial-gradient(circle, rgba(0,255,163,0.16) 0%, rgba(139,92,246,0.10) 45%, transparent 72%)' }}
             />
 
-            <div className="relative z-10 text-center max-w-5xl mx-auto w-full">
+            <div className="relative z-10 max-w-6xl mx-auto w-full">
 
               {/* Status badge */}
-              <div className="hero-assemble inline-flex items-center gap-3 mb-8 border border-portal-emerald/25 bg-portal-emerald/[0.06] px-4 py-2 backdrop-blur-sm rounded-full">
+              <div className="hero-assemble inline-flex items-center gap-3 mb-6 border border-portal-emerald/25 bg-portal-emerald/[0.06] px-4 py-2 backdrop-blur-sm rounded-full" style={{ animationDelay: '40ms' }}>
                 <div className="w-1.5 h-1.5 rounded-full bg-portal-emerald animate-pulse" />
-                <span className="font-cinzel text-[9px] sm:text-[10px] text-portal-moonlight/70 tracking-[0.35em] uppercase">Guild Network Online</span>
+                <span className="font-cinzel text-[9px] sm:text-[10px] text-portal-moonlight/70 tracking-[0.35em] uppercase">Guild Network / Open Intake</span>
                 <div className="w-1.5 h-1.5 rounded-full bg-portal-emerald animate-pulse" style={{ animationDelay: '0.5s' }} />
               </div>
 
-              {/* Main heading */}
-              <div className="hero-assemble mb-4" style={{ animationDelay: '120ms' }}>
-                <h1 className="font-cinzel font-semibold leading-none tracking-wide">
-                  <span className="block text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-portal-moonlight">
-                    Quest<span className="text-transparent bg-clip-text bg-gradient-to-r from-portal-gold via-portal-emerald to-portal-cyan">Hub</span>
-                  </span>
-                  <span className="block text-xl sm:text-2xl md:text-3xl lg:text-4xl text-slate-400 tracking-[0.3em] mt-2 font-normal">
-                    Guild
-                  </span>
-                </h1>
-              </div>
+              <div className="grid lg:grid-cols-[1.2fr_.8fr] gap-8 lg:gap-14 items-center">
+                <div className="text-center lg:text-left">
+                  <div className="hero-assemble mb-4" style={{ animationDelay: '120ms' }}>
+                    <h1 className="font-cinzel font-semibold leading-[.92] tracking-wide">
+                      <span className="block text-[clamp(3.1rem,12vw,8rem)] text-portal-moonlight">
+                        Quest<span className="text-transparent bg-clip-text bg-gradient-to-r from-portal-gold via-portal-emerald to-portal-cyan">Hub</span>
+                      </span>
+                      <span className="block text-xl sm:text-2xl md:text-3xl text-slate-400 tracking-[0.3em] mt-4 font-normal">Guild</span>
+                    </h1>
+                  </div>
+                  <div className="hero-assemble flex items-center lg:justify-start justify-center gap-4 mb-2" style={{ animationDelay: '220ms' }}>
+                    <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Elite Talent Platform</span>
+                  </div>
+                  <div className="hero-assemble mb-6 lg:mx-0" style={{ animationDelay: '260ms' }}><OrnamentDivider color="#FFC65C" /></div>
+                  <p className="hero-assemble font-cormorant text-lg sm:text-xl md:text-2xl text-slate-300/90 max-w-2xl mb-8 leading-relaxed px-2 lg:px-0 italic" style={{ animationDelay: '340ms' }}>
+                    Talent is common. <span className="text-portal-moonlight not-italic font-semibold">Proof is rare.</span> Apply, survive the trial, and climb from <span className="text-portal-moonlight font-semibold not-italic">F to SSS</span> through work that builds a reputation worth carrying.
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-3 sm:gap-4 mb-8">
+                    <Link href="/apply"><GlowButton size="lg" variant="primary" className="w-52 sm:w-auto animate-pulse-glow">Apply to Join</GlowButton></Link>
+                    <Link href="/auth/register"><GlowButton size="lg" variant="secondary" className="w-52 sm:w-auto">Create Account</GlowButton></Link>
+                    <Link href="/auth/login"><GlowButton size="lg" variant="ghost" className="w-52 sm:w-auto">Sign In</GlowButton></Link>
+                  </div>
+                </div>
 
-              {/* Divider line */}
-              <div className="hero-assemble flex items-center justify-center gap-4 mb-2" style={{ animationDelay: '220ms' }}>
-                <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Elite Talent Platform</span>
-              </div>
-              <div className="hero-assemble mb-8" style={{ animationDelay: '260ms' }}>
-                <OrnamentDivider color="#FFC65C" />
-              </div>
-
-              {/* Subtitle */}
-              <p
-                className="hero-assemble font-cormorant text-base sm:text-lg md:text-xl text-slate-300/90 max-w-2xl mx-auto mb-10 leading-relaxed px-2 italic"
-                style={{ animationDelay: '340ms' }}
-              >
-                An elite guild for talented teens. Not everyone gets in — you have to earn it.
-                Apply, survive the trial, rank up from{' '}
-                <span className="text-portal-moonlight font-semibold not-italic">F to SSS</span>, and complete real operations
-                that build a reputation that actually matters.
-              </p>
-
-              {/* CTAs */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-14">
-                <Link href="/apply">
-                  <GlowButton size="lg" variant="primary" className="w-48 sm:w-auto animate-pulse-glow">
-                    Apply to Join
-                  </GlowButton>
-                </Link>
-                <Link href="/auth/register">
-                  <GlowButton size="lg" variant="secondary" className="w-48 sm:w-auto">
-                    Create Account
-                  </GlowButton>
-                </Link>
-                <Link href="/auth/login">
-                  <GlowButton size="lg" variant="ghost" className="w-48 sm:w-auto">
-                    Sign In
-                  </GlowButton>
-                </Link>
+                <aside className="hero-assemble hero-panel relative overflow-hidden border border-portal-emerald/25 bg-portal-black/65 backdrop-blur-md p-5 sm:p-6 text-left" style={{ animationDelay: '420ms' }} aria-label="Guild status">
+                  <div className="guild-signal absolute top-0 left-0 right-0 h-px" />
+                  <div className="flex items-center justify-between border-b border-portal-emerald/15 pb-4 mb-5">
+                    <div><span className="font-cinzel text-[9px] tracking-[.3em] text-portal-gold uppercase">Council Brief</span><h2 className="font-cinzel text-lg text-portal-moonlight mt-1">The gate is open.</h2></div>
+                    <span className="font-mono text-[10px] text-portal-emerald">LIVE / 01</span>
+                  </div>
+                  <div className="space-y-4 font-mono text-[11px]">
+                    <div className="flex justify-between gap-4"><span className="text-slate-500">INTAKE STATUS</span><span className="text-portal-emerald">ACCEPTING APPLICATIONS</span></div>
+                    <div className="h-px bg-portal-emerald/10"><div className="h-px w-[68%] bg-gradient-to-r from-portal-emerald to-portal-gold" /></div>
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      <div className="border-l border-portal-gold/50 pl-3"><div className="text-portal-gold text-lg font-cinzel">F → SSS</div><div className="text-slate-500 text-[10px] mt-1">MERIT LADDER</div></div>
+                      <div className="border-l border-portal-cyan/50 pl-3"><div className="text-portal-cyan text-lg font-cinzel">REAL</div><div className="text-slate-500 text-[10px] mt-1">WORK TRIALS</div></div>
+                    </div>
+                    <p className="text-slate-400 leading-relaxed pt-2">The Guild does not promise a shortcut. It gives you a place to make your record impossible to ignore.</p>
+                  </div>
+                </aside>
               </div>
 
               {/* Stats bar */}
-              <div className="inline-flex flex-col sm:flex-row items-center gap-0 sm:gap-px border border-portal-emerald/20 bg-portal-black/50 backdrop-blur-md overflow-hidden">
+              <div className="mt-8 lg:mt-10 w-full lg:w-auto inline-flex flex-col sm:flex-row items-center gap-0 sm:gap-px border border-portal-emerald/20 bg-portal-black/50 backdrop-blur-md overflow-hidden">
                 {[
                   ['9', 'Rank Tiers'],
                   ['∞', 'Operations'],
@@ -186,7 +177,7 @@ export default function LandingPage() {
             </div>
 
             {/* Scroll indicator */}
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce">
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce hidden sm:flex">
               <div className="w-px h-8 bg-gradient-to-b from-portal-emerald/60 to-transparent" />
               <div className="w-1.5 h-1.5 bg-portal-emerald rotate-45" />
             </div>
@@ -196,14 +187,14 @@ export default function LandingPage() {
           <div className="border-y border-portal-emerald/20 bg-portal-black/75 backdrop-blur-sm overflow-hidden py-2.5">
             <div className="flex items-center gap-8 whitespace-nowrap animate-marquee">
               {Array.from({ length: 3 }).flatMap(() => [
-                '◈ GRAPHIC DESIGN OPS AVAILABLE',
-                '◉ AI TRIAL EVALUATION ACTIVE',
-                '◍ TRUST ENGINE MONITORING',
-                '◎ QUEST BOARD LIVE',
-                '◆ NEW RANK TIERS: SS AND SSS',
-                '◇ SENTINEL AI ONLINE',
-                '◈ ZERO TOLERANCE FOR GHOSTING',
-                '◉ MERIT-BASED PROMOTIONS ONLY',
+                '[01] GRAPHIC DESIGN OPS AVAILABLE',
+                '[02] AI TRIAL EVALUATION ACTIVE',
+                '[03] TRUST ENGINE MONITORING',
+                '[04] QUEST BOARD LIVE',
+                '[05] NEW RANK TIERS: SS AND SSS',
+                '[06] SENTINEL AI ONLINE',
+                '[07] ZERO TOLERANCE FOR GHOSTING',
+                '[08] MERIT-BASED PROMOTIONS ONLY',
               ]).map((text, i) => (
                 <span key={i} className="font-cinzel text-[9px] text-portal-emerald/85 tracking-[0.3em] uppercase flex-shrink-0">
                   {text}
@@ -366,7 +357,7 @@ export default function LandingPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
                 <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-amber-400/50 transition-all duration-300 overflow-hidden">
-                  <div className="text-3xl mb-3">🕹️</div>
+                  <div className="font-mono text-xs text-amber-400/70 mb-3">PROTOCOL / 01</div>
                   <h3 className="font-cinzel font-bold text-sm sm:text-base text-amber-400 mb-2 tracking-widest">ARENA PROTOCOL</h3>
                   <p className="font-cormorant text-slate-500 text-sm leading-relaxed">
                     A structured mini-game engine — logic, typing, quiz, creative and social
@@ -375,7 +366,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-portal-emerald/50 transition-all duration-300 overflow-hidden">
-                  <div className="text-3xl mb-3">👻</div>
+                  <div className="font-mono text-xs text-portal-emerald/70 mb-3">PROTOCOL / 02</div>
                   <h3 className="font-cinzel font-bold text-sm sm:text-base text-portal-emerald mb-2 tracking-widest">GHOST PROTOCOL</h3>
                   <p className="font-cormorant text-slate-500 text-sm leading-relaxed">
                     Party games live in Guild Chat: Truth or Dare, Would You Rather, Two Truths
@@ -384,7 +375,7 @@ export default function LandingPage() {
                 </div>
 
                 <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-cyan-400/50 transition-all duration-300 overflow-hidden">
-                  <div className="text-3xl mb-3">◈</div>
+                  <div className="font-mono text-xs text-cyan-400/70 mb-3">PROTOCOL / 03</div>
                   <h3 className="font-cinzel font-bold text-sm sm:text-base text-cyan-400 mb-2 tracking-widest">SENTINEL GRID</h3>
                   <p className="font-cormorant text-slate-500 text-sm leading-relaxed">
                     The live perspective grid rendering beneath every screen — a signal that
@@ -443,9 +434,9 @@ export default function LandingPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
                 {[
-                  { icon: '🛡️', title: 'Admin Moderated',    desc: 'Every trial, quest, and submission reviewed by real admins — not automated bots.' },
-                  { icon: '⚡',  title: 'Merit-Only Ranking', desc: 'No shortcuts. No exceptions. Every rank is earned through consistent, quality output.' },
-                  { icon: '🔒', title: 'Zero Tolerance',      desc: 'Ghosting, dishonesty, and low quality are actioned instantly. Warnings stack. Bans happen.' },
+                  { icon: '01', title: 'Admin Moderated',    desc: 'Every trial, quest, and submission reviewed by real admins — not automated bots.' },
+                  { icon: '02',  title: 'Merit-Only Ranking', desc: 'No shortcuts. No exceptions. Every rank is earned through consistent, quality output.' },
+                  { icon: '03', title: 'Zero Tolerance',      desc: 'Ghosting, dishonesty, and low quality are actioned instantly. Warnings stack. Bans happen.' },
                 ].map((item, i) => (
                   <div key={i} className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-5 sm:p-6 group hover:border-portal-emerald/40 transition-all duration-300">
                     <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/30" />

@@ -5,36 +5,18 @@ import { useUserProgress } from '@/hooks/useUserProgress'
 
 const LivingBackground = dynamic(() => import('../LivingBackground'), { ssr: false })
 
-// A CSS-only stand-in for the 3D scene — used if WebGL genuinely can't
-// initialize in this browser/tab, so the page still looks intentional
-// instead of going blank.
+// A CSS-only stand-in for the 3D scene — used when WebGL is unavailable or
+// the browser refuses to create a context. It keeps the living-forest mood
+// without exposing an implementation detail to first-time visitors.
 function StaticFallbackBackground() {
   return (
     <div
       className="absolute inset-0"
       style={{
         background:
-          'radial-gradient(circle at 30% 20%, rgba(157,77,255,0.25), transparent 60%), radial-gradient(circle at 80% 70%, rgba(198,112,255,0.18), transparent 55%), #050510',
+          'radial-gradient(ellipse 55% 45% at 18% 12%, rgba(0,255,163,0.14), transparent 68%), radial-gradient(ellipse 60% 50% at 88% 74%, rgba(139,92,246,0.14), transparent 70%), radial-gradient(ellipse 45% 38% at 50% 48%, rgba(255,198,92,0.07), transparent 72%), #040A08',
       }}
     />
-  )
-}
-
-// TEMPORARY DEBUG OVERLAY — prints the actual mount error on-screen so we
-// don't need devtools open to read it. Remove once the Sentinel scene is
-// confirmed stable.
-function DebugErrorOverlay({ message, stack }: { message: string; stack?: string }) {
-  return (
-    <div
-      className="absolute top-4 left-4 right-4 max-h-[60vh] overflow-auto rounded-md border border-red-500/50 bg-black/90 p-3 text-xs text-red-300 font-mono whitespace-pre-wrap pointer-events-auto"
-      style={{ zIndex: 9999 }}
-    >
-      <div className="text-red-400 font-bold mb-1">
-        [SentinelBackground] Scene failed to mount:
-      </div>
-      <div>{message}</div>
-      {stack && <div className="mt-2 text-red-300/70">{stack}</div>}
-    </div>
   )
 }
 
@@ -61,12 +43,8 @@ class WebGLErrorBoundary extends Component<
 export default function SentinelBackground() {
   const [mounted, setMounted] = useState(false)
   const [reducedMotion, setReducedMotion] = useState(false)
-  // bumping this remounts <Scene>, since WebGL context failures are
-  // frequently transient (GPU process hiccup, tab was backgrounded, browser
-  // was momentarily over its context budget) and often succeed on a retry
-  const [attempt, setAttempt] = useState(0)
+  const [webglAvailable, setWebglAvailable] = useState<boolean | null>(null)
   const [permanentlyFailed, setPermanentlyFailed] = useState(false)
-  const [lastError, setLastError] = useState<{ message: string; stack?: string } | null>(null)
   const progress = useUserProgress()
 
   useEffect(() => {
@@ -75,29 +53,41 @@ export default function SentinelBackground() {
     setReducedMotion(mq.matches)
     const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches)
     mq.addEventListener('change', handler)
+
+    // Do a cheap capability check before mounting React Three Fiber. Some
+    // mobile browsers and sandboxed previews report WebGL support but still
+    // refuse the actual context; the error boundary below covers that case.
+    let supported = false
+    try {
+      const canvas = document.createElement('canvas')
+      supported = Boolean(
+        canvas.getContext('webgl2') ||
+        canvas.getContext('webgl') ||
+        canvas.getContext('experimental-webgl')
+      )
+    } catch {
+      supported = false
+    }
+    setWebglAvailable(supported)
+
     return () => mq.removeEventListener('change', handler)
   }, [])
 
   const handleFail = (message: string, stack?: string) => {
-    setLastError({ message, stack })
-    if (attempt < 1) {
-      const id = setTimeout(() => setAttempt(a => a + 1), 1500)
-      return () => clearTimeout(id)
-    }
+    // Keep the error available in logs for diagnosis, but never make it part
+    // of the visitor experience. A single failed mount should fall back.
+    console.error('[SentinelBackground] Falling back from 3D scene:', message, stack)
     setPermanentlyFailed(true)
   }
 
-  if (!mounted) return null
+  if (!mounted || webglAvailable === null) return null
 
   return (
     <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden" aria-hidden="true">
-      {permanentlyFailed ? (
-        <>
-          <StaticFallbackBackground />
-          {lastError && <DebugErrorOverlay message={lastError.message} stack={lastError.stack} />}
-        </>
+      {!webglAvailable || permanentlyFailed ? (
+        <StaticFallbackBackground />
       ) : (
-        <WebGLErrorBoundary key={attempt} onFail={handleFail}>
+        <WebGLErrorBoundary onFail={handleFail}>
           <LivingBackground reducedMotion={reducedMotion} progress={progress} />
         </WebGLErrorBoundary>
       )}
