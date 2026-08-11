@@ -217,3 +217,22 @@ h1, h2, h3, h4, h5, h6 {
 @media (prefers-reduced-motion: reduce) {
   .animate-glow-drift-a, .animate-glow-drift-b, .animate-glow-drift-c { animation: none; }
 }
+
+/* ── purple-glow — referenced on the landing page (Rank/Legitimacy/Final
+   CTA sections) but never actually defined, so it was a complete no-op.
+   Now a real soft violet/gold ambient wash behind those sections. ── */
+.bg-purple-glow {
+  background:
+    radial-gradient(ellipse 55% 45% at 25% 20%, rgba(139, 92, 246, 0.16) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 45% at 78% 75%, rgba(255, 198, 92, 0.10) 0%, transparent 65%);
+}
+
+/* ── Hero focal glow (landing page only) ── */
+@keyframes heroOrbPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.85; }
+  50%      { transform: translate(-50%, -50%) scale(1.12); opacity: 1; }
+}
+.animate-hero-orb-pulse { animation: heroOrbPulse 7s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-orb-pulse { animation: none; }
+}

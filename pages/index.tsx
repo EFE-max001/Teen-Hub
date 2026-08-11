@@ -98,6 +98,15 @@ export default function LandingPage() {
               }}
             />
 
+            {/* Hero focal glow — the 3D scene used to center on a portal
+                ring; now that's gone (mobile perf + visual clutter), this
+                slow-pulsing gradient orb behind the headline replaces it as
+                the hero's visual anchor. Pure CSS, no WebGL cost. */}
+            <div
+              className="absolute left-1/2 top-[38%] -translate-x-1/2 -translate-y-1/2 w-[36rem] h-[36rem] max-w-[90vw] max-h-[90vw] rounded-full pointer-events-none animate-hero-orb-pulse"
+              style={{ background: 'radial-gradient(circle, rgba(0,255,163,0.16) 0%, rgba(139,92,246,0.10) 45%, transparent 72%)' }}
+            />
+
             <div className="relative z-10 text-center max-w-5xl mx-auto w-full">
 
               {/* Status badge */}

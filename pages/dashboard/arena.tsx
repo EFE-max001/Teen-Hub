@@ -232,17 +232,36 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
     onSubmitted()
   }
 
-  function quizNext() {
+  const [checkFeedback, setCheckFeedback] = useState<{ correct: boolean; explanation: string | null } | null>(null)
+  const [checking, setChecking] = useState(false)
+
+  async function quizNext() {
     if (selectedOption === null) return setError('Pick an answer first')
     setError('')
+    setChecking(true)
+    // Instant per-question flash — reveals only THIS question's answer,
+    // fetched fresh each time so future questions stay hidden.
+    const r = await fetch(`/api/arena/${game.id}/check`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questionIndex: quizIndex, chosenIndex: selectedOption }),
+    })
+    const d = await r.json().catch(() => null)
+    setChecking(false)
+    if (r.ok && d) setCheckFeedback({ correct: d.correct, explanation: d.explanation })
+
     const nextAnswers = [...quizAnswers, selectedOption]
-    if (isLastQuizQuestion) {
-      doSubmit(JSON.stringify(nextAnswers))
-    } else {
-      setQuizAnswers(nextAnswers)
-      setSelectedOption(null)
-      setQuizIndex(i => i + 1)
+    const advance = () => {
+      setCheckFeedback(null)
+      if (isLastQuizQuestion) {
+        doSubmit(JSON.stringify(nextAnswers))
+      } else {
+        setQuizAnswers(nextAnswers)
+        setSelectedOption(null)
+        setQuizIndex(i => i + 1)
+      }
     }
+    // Give the flash a beat to register before moving on.
+    setTimeout(advance, r.ok ? 1400 : 0)
   }
 
   async function submit() {
@@ -341,25 +360,41 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
             </div>
             <p className="font-cormorant text-slate-200 text-sm mb-3">{currentQuizQuestion.question}</p>
             <div className="flex flex-col gap-2 mb-3">
-              {currentQuizQuestion.options.map((opt: string, i: number) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedOption(i)}
-                  disabled={expired}
-                  className={`text-left font-cormorant text-sm rounded-lg border px-3 py-2.5 transition-all disabled:opacity-40 ${
-                    selectedOption === i
-                      ? 'border-portal-emerald/60 bg-portal-emerald/10 text-white'
-                      : 'border-portal-emerald/20 bg-black/40 text-slate-300 hover:border-portal-emerald/40'
-                  }`}
-                >
-                  <span className="font-cinzel text-[10px] text-portal-emerald mr-2">{String.fromCharCode(65 + i)}</span>
-                  {opt}
-                </button>
-              ))}
+              {currentQuizQuestion.options.map((opt: string, i: number) => {
+                const revealed = !!checkFeedback
+                const isCorrectAnswer = revealed && i === selectedOption && checkFeedback?.correct
+                const isWrongPick = revealed && i === selectedOption && !checkFeedback?.correct
+                return (
+                  <button
+                    key={i}
+                    onClick={() => !revealed && setSelectedOption(i)}
+                    disabled={expired || revealed}
+                    className={`text-left font-cormorant text-sm rounded-lg border px-3 py-2.5 transition-all disabled:opacity-100 ${
+                      isCorrectAnswer ? 'border-green-500/60 bg-green-500/10 text-white' :
+                      isWrongPick ? 'border-red-500/60 bg-red-500/10 text-white' :
+                      selectedOption === i
+                        ? 'border-portal-emerald/60 bg-portal-emerald/10 text-white'
+                        : 'border-portal-emerald/20 bg-black/40 text-slate-300 hover:border-portal-emerald/40'
+                    }`}
+                  >
+                    <span className="font-cinzel text-[10px] text-portal-emerald mr-2">{String.fromCharCode(65 + i)}</span>
+                    {opt}
+                    {isCorrectAnswer && <span className="ml-2">✓</span>}
+                    {isWrongPick && <span className="ml-2">✗</span>}
+                  </button>
+                )
+              })}
             </div>
+            {checkFeedback && (
+              <div className={`mb-3 px-3 py-2 rounded-lg border text-xs font-cormorant ${
+                checkFeedback.correct ? 'border-green-500/30 bg-green-900/10 text-green-300' : 'border-red-500/30 bg-red-900/10 text-red-300'
+              }`}>
+                {checkFeedback.correct ? '✓ Correct! ' : '✗ Not quite. '}{checkFeedback.explanation}
+              </div>
+            )}
             {error && <p className="font-cormorant text-red-400 text-xs mb-2">{error}</p>}
-            <GlowButton variant="primary" size="md" loading={submitting} disabled={expired} onClick={quizNext} className="w-full">
-              {expired ? "Time's Up" : isLastQuizQuestion ? 'Finish Quiz' : 'Next Question →'}
+            <GlowButton variant="primary" size="md" loading={submitting || checking} disabled={expired || !!checkFeedback} onClick={quizNext} className="w-full">
+              {expired ? "Time's Up" : checkFeedback ? (isLastQuizQuestion ? 'Finishing…' : 'Next…') : isLastQuizQuestion ? 'Finish Quiz' : 'Lock In Answer'}
             </GlowButton>
           </>
         ) : isTapSpeed ? (

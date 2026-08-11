@@ -2,37 +2,25 @@
 // components/ui/PortalIntro.tsx
 //
 // QuestHub's arrival moment: after AppLoadingGate finishes loading assets,
-// this plays two videos back-to-back, full-screen and full-opacity —
-// portal-materializes.mp4, then glowing-portal-forest.mp4 — then fades out
-// to reveal the (already-loaded) homepage underneath. Shown once per
-// device (see the localStorage flag in AppLoadingGate).
+// this plays one full-screen, full-opacity video — portal-materializes.mp4
+// — then fades out to reveal the (already-loaded) homepage underneath.
+// Shown once per device (see the localStorage flag in AppLoadingGate).
 //
-// This is deliberately just the videos, foreground and full-strength — no
-// particle/butterfly/portal CSS choreography layered on or under them.
+// Used to chain a second clip (glowing-portal-forest.mp4) after this one,
+// making every first visit sit through ~20s of video. Cut back to just the
+// one clip.
+//
+// This is deliberately just the video, foreground and full-strength — no
+// particle/butterfly/portal CSS choreography layered on or under it.
 import { useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
-type Clip = { src: string }
-
-const CLIPS: Clip[] = [
-  { src: '/videos/portal-materializes.mp4' },
-  { src: '/videos/glowing-portal-forest.mp4' },
-]
+const CLIP_SRC = '/videos/portal-materializes.mp4'
 
 export default function PortalIntro({ onDone }: { onDone: () => void }) {
-  const [index, setIndex] = useState(0)
   const [revealing, setRevealing] = useState(false)
-  // guards against both the "last clip ends" path and the skip button
-  // firing the reveal twice
+  // guards against both "clip ends" and the skip button firing the reveal twice
   const revealStarted = useRef(false)
-
-  function handleEnded() {
-    if (index < CLIPS.length - 1) {
-      setIndex(i => i + 1)
-    } else {
-      startReveal()
-    }
-  }
 
   function startReveal() {
     if (revealStarted.current) return
@@ -49,26 +37,18 @@ export default function PortalIntro({ onDone }: { onDone: () => void }) {
       animate={{ opacity: revealing ? 0 : 1 }}
       transition={{ duration: 0.55, ease: 'easeInOut' }}
     >
-      <AnimatePresence mode="wait">
-        <motion.video
-          key={CLIPS[index].src}
-          className="absolute inset-0 w-full h-full object-cover"
-          src={CLIPS[index].src}
-          autoPlay
-          muted
-          playsInline
-          preload="auto"
-          onEnded={handleEnded}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
-        />
-      </AnimatePresence>
+      <video
+        className="absolute inset-0 w-full h-full object-cover"
+        src={CLIP_SRC}
+        autoPlay
+        muted
+        playsInline
+        preload="auto"
+        onEnded={startReveal}
+      />
 
-      {/* Skip — two 10s clips back-to-back is a real wait on a first visit;
-          this lets an impatient visitor straight through instead of
-          forcing the full ~20s every time. */}
+      {/* Skip — lets an impatient visitor straight through instead of
+          forcing the full clip every time. */}
       {!revealing && (
         <motion.button
           onClick={startReveal}
