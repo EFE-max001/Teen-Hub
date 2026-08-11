@@ -557,14 +557,20 @@ function Butterfly({ config }: { config: FlightConfig }) {
         // it flattened every bit of real shading (normal-map detail,
         // roughness response, the light/dark modeling that makes a wing
         // read as a textured surface instead of a paper cutout). That's
-        // the "can't see the surface" look. Dropping intensity to just
-        // enough to keep the wing visible against the dark background,
-        // while leaving the base map/normalMap/roughness alone, lets the
-        // actual scene lighting keep doing its job so wing texture and
-        // pattern detail stays visible instead of getting blown out.
+        // the "can't see the surface" look.
+        // Then dropped to 0.18 — which fixed the flattening, but the
+        // Portal ring / Crystals / HeartSeed that used to sit in this
+        // scene were also a meaningful source of ambient brightness (their
+        // own bloom-fed glow lit the surroundings even though they aren't
+        // literal point lights). With those removed for the mobile/clutter
+        // cleanup, 0.18 alone now reads as too dark to see anything,
+        // surface included. 0.32 is the middle ground: bright enough to
+        // actually see the wing against a now-emptier dark background,
+        // while staying well short of the intensity that blew out normal
+        // map / roughness detail before.
         std.emissive = new THREE.Color(0xffffff);
         std.emissiveMap = std.map;
-        std.emissiveIntensity = 0.18;
+        std.emissiveIntensity = 0.32;
       }
     });
 

@@ -94,10 +94,10 @@ export default function Scene({
     >
       {/* No opaque background color here on purpose — this Canvas sits
           inside LivingBackground on top of the CSS FogLayer. */}
-      <ambientLight intensity={0.5} color={COLORS.violet} />
-      <directionalLight position={[2, 4, 3]} intensity={0.65} color={COLORS.cyan} />
-      <directionalLight position={[-3, 2, -2]} intensity={0.4} color={COLORS.violet} />
-      <pointLight position={[0, 3, -4.5]} intensity={0.5} color={COLORS.gold} distance={14} decay={2} />
+      <ambientLight intensity={0.6} color={COLORS.violet} />
+      <directionalLight position={[2, 4, 3]} intensity={0.8} color={COLORS.cyan} />
+      <directionalLight position={[-3, 2, -2]} intensity={0.5} color={COLORS.violet} />
+      <pointLight position={[0, 3, -4.5]} intensity={0.6} color={COLORS.gold} distance={14} decay={2} />
 
       <CameraRig reducedMotion={reducedMotion} />
       <Stars isMobile={isMobile} />
