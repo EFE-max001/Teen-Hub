@@ -735,39 +735,75 @@ Reply JSON: { "prompt": string, "answer": string|null }`
 // scored instantly client-independent, with no AI grading ambiguity.
 // IMPORTANT: correctIndex must never be sent to the client before an attempt
 // is submitted — see the redaction in pages/api/arena.ts and start.ts.
-export async function generateArenaQuiz(category: string, difficulty: string): Promise<{
+export type ArenaQuizQuestion = {
   question: string
   options: string[]
   correctIndex: number
   explanation?: string
-}> {
-  const req = `Generate one fresh ${difficulty}-difficulty multiple choice "${category}" trivia/logic question for a competitive tech guild's Arena Protocol. Exactly 4 options, only one correct.
-Reply JSON: { "question": string, "options": string[4], "correctIndex": number (0-3), "explanation": string }`
+}
+
+// A varied fallback bank (not a single repeated question) for when the AI
+// call fails entirely — still deterministic and gradable, just not
+// AI-generated. Category is folded into question text where it fits.
+const QUIZ_FALLBACK_BANK: ArenaQuizQuestion[] = [
+  { question: 'Which of these best describes a well-run challenge?', options: ['Speed', 'Accuracy', 'Creativity', 'All of the above'], correctIndex: 3, explanation: 'Fallback question — AI generation was unavailable.' },
+  { question: 'What usually separates a good entry from a great one?', options: ['Length alone', 'Following the objective closely', 'Using big words', 'Submitting first'], correctIndex: 1, explanation: 'Fallback question — AI generation was unavailable.' },
+  { question: 'In a timed challenge, what matters most?', options: ['Rushing without reading', 'Reading the objective, then acting with focus', 'Ignoring the time limit', 'Copying a past entry'], correctIndex: 1, explanation: 'Fallback question — AI generation was unavailable.' },
+  { question: 'Which trait most helps in creative prompts?', options: ['Originality', 'Repetition', 'Vagueness', 'Length padding'], correctIndex: 0, explanation: 'Fallback question — AI generation was unavailable.' },
+  { question: 'What should you do if you\'re unsure of an objective?', options: ['Guess randomly', 'Re-read it carefully before answering', 'Submit blank', 'Skip the game'], correctIndex: 1, explanation: 'Fallback question — AI generation was unavailable.' },
+]
+
+// Generates a full multi-question quiz set (default 5) in a single AI call —
+// a "Quiz" game used to only ever get one question (generateArenaQuiz,
+// singular), which barely counted as a game. This is what Founders now get
+// when creating a Quiz-type Arena challenge.
+export async function generateArenaQuizSet(
+  category: string,
+  difficulty: string,
+  count: number = 5
+): Promise<ArenaQuizQuestion[]> {
+  const req = `Generate ${count} fresh, DISTINCT ${difficulty}-difficulty multiple choice "${category}" trivia/logic questions for a competitive tech guild's Arena Protocol quiz round. Exactly 4 options each, only one correct per question, no two questions testing the same fact.
+Reply JSON only: { "questions": [ { "question": string, "options": string[4], "correctIndex": number (0-3), "explanation": string }, ... ${count} items ] }`
 
   try {
     const raw = await openRouterChat([{ role: 'user', content: req }], {
       model: MODELS.router,
       fallbackModel: MODELS.routerFallback,
       nvidiaModel: NVIDIA_MODELS.general,
-      maxTokens: 300,
+      maxTokens: 300 * count,
       fallbackToMistral: true,
     })
-    const m = raw.match(/\{[\s\S]*?\}/)
+    const m = raw.match(/\{[\s\S]*\}/)
     if (m) {
       const parsed = JSON.parse(m[0])
-      if (parsed?.question && Array.isArray(parsed.options) && parsed.options.length === 4 &&
-          typeof parsed.correctIndex === 'number') {
-        return parsed
+      const qs = parsed?.questions
+      if (Array.isArray(qs) && qs.length > 0) {
+        const valid = qs.filter((q: any) =>
+          q?.question && Array.isArray(q.options) && q.options.length === 4 && typeof q.correctIndex === 'number'
+        )
+        if (valid.length > 0) return valid.slice(0, count)
       }
+      console.error('[generateArenaQuizSet] AI response had no usable questions, using fallback bank. Raw:', raw.slice(0, 300))
+    } else {
+      console.error('[generateArenaQuizSet] AI response had no JSON to parse, using fallback bank. Raw:', raw.slice(0, 300))
     }
-  } catch {}
-
-  return {
-    question: `Which of these best describes a "${category}" challenge?`,
-    options: ['Speed', 'Accuracy', 'Creativity', 'All of the above'],
-    correctIndex: 3,
-    explanation: 'Fallback question — AI generation was unavailable.',
+  } catch (err: any) {
+    // Every provider (OpenRouter x2 keys, NVIDIA, Mistral) failed silently
+    // by design in openRouterChat — this is the one place that actually
+    // logs why, since otherwise a fallback question ships with zero trace
+    // of the real cause (bad/missing API key, rate limit, etc).
+    console.error('[generateArenaQuizSet] all AI providers failed, using fallback bank:', err?.message || err)
   }
+
+  // AI unavailable or returned something unusable — fall back to a varied
+  // bank rather than one question repeated, so it's still a real round.
+  return QUIZ_FALLBACK_BANK.slice(0, count)
+}
+
+/** @deprecated use generateArenaQuizSet — kept only in case anything else still imports the single-question version. */
+export async function generateArenaQuiz(category: string, difficulty: string): Promise<ArenaQuizQuestion> {
+  const [q] = await generateArenaQuizSet(category, difficulty, 1)
+  return q
 }
 
 // ─── GHOST PROTOCOL: Community Party Games ─────────────────────────────────

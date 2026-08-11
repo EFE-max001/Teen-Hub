@@ -19,13 +19,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     },
   })
 
-  // Never ship the correct answer to the client before a quiz is submitted —
-  // it lives in config.quiz on the DB row, generated in founder/arena.ts.
+  // Never ship correct answers to the client before a quiz is submitted —
+  // they live in config.quiz.questions[].correctIndex on the DB row,
+  // generated in founder/arena.ts.
   const safeChallenges = challenges.map(c => {
     const config = (c.config as any) || {}
-    if (config.quiz) {
-      const { correctIndex, explanation, ...safeQuiz } = config.quiz
-      return { ...c, config: { ...config, quiz: safeQuiz } }
+    if (Array.isArray(config.quiz?.questions)) {
+      const safeQuestions = config.quiz.questions.map((q: any) => {
+        const { correctIndex, explanation, ...safeQ } = q
+        return safeQ
+      })
+      return { ...c, config: { ...config, quiz: { questions: safeQuestions } } }
     }
     return c
   })

@@ -87,6 +87,8 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
   const [expired, setExpired] = useState(false)
   const [selectedOption, setSelectedOption] = useState<number | null>(null)
+  const [quizIndex, setQuizIndex] = useState(0)
+  const [quizAnswers, setQuizAnswers] = useState<number[]>([])
   const [taps, setTaps] = useState(0)
   const [tapWindowLeft, setTapWindowLeft] = useState<number | null>(null)
   const [tapDone, setTapDone] = useState(false)
@@ -97,7 +99,10 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
   const config = game.config || {}
   const mechanicsType = config.mechanics?.type
   const isVoteBattle = mechanicsType === 'creative' || mechanicsType === 'social_task'
-  const isQuiz = mechanicsType === 'quiz' && !!config.quiz
+  const isQuiz = mechanicsType === 'quiz' && Array.isArray(config.quiz?.questions) && config.quiz.questions.length > 0
+  const quizQuestions: any[] = isQuiz ? config.quiz.questions : []
+  const currentQuizQuestion = quizQuestions[quizIndex]
+  const isLastQuizQuestion = quizIndex === quizQuestions.length - 1
   const isTapSpeed = mechanicsType === 'tap_speed'
   const timeLimitSeconds: number = config.time_limit_seconds || 0
   // Tap Speed is a short reaction burst, not a long "answer the objective"
@@ -173,7 +178,7 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
         setStarting(false)
         if (err.message === 'ROUTE_NOT_FOUND') {
           setStartError(
-            "This game's timer endpoint isn't reachable on the server. Make sure pages/api/arena/[id]/start.ts exists in your deployment, then restart/redeploy — a plain code save often isn't enough to register a brand-new API route."
+            `This game's timer endpoint isn't reachable. To check directly, visit /api/arena/${game.id}/start in your browser — if that also 404s, the file pages/api/arena/[id]/start.ts isn't deployed yet; restart/redeploy after confirming it exists.`
           )
         } else if (err.message?.includes('closed') || err.message?.includes('Unauthorized')) {
           setStartError(err.message)
@@ -227,12 +232,20 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
     onSubmitted()
   }
 
-  async function submit() {
-    if (isQuiz) {
-      if (selectedOption === null) return setError('Pick an answer first')
-      if (expired) return setError("Time's up for this attempt")
-      return doSubmit(String(selectedOption))
+  function quizNext() {
+    if (selectedOption === null) return setError('Pick an answer first')
+    setError('')
+    const nextAnswers = [...quizAnswers, selectedOption]
+    if (isLastQuizQuestion) {
+      doSubmit(JSON.stringify(nextAnswers))
+    } else {
+      setQuizAnswers(nextAnswers)
+      setSelectedOption(null)
+      setQuizIndex(i => i + 1)
     }
+  }
+
+  async function submit() {
     if (!response.trim()) return setError('Enter a response first')
     if (expired) return setError("Time's up for this attempt")
     return doSubmit(response)
@@ -314,9 +327,21 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
           </div>
         ) : isQuiz ? (
           <>
-            <p className="font-cormorant text-slate-200 text-sm mb-3">{config.quiz.question}</p>
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-cinzel text-[10px] text-portal-emerald tracking-widest uppercase">
+                Question {quizIndex + 1} of {quizQuestions.length}
+              </span>
+              <div className="flex gap-1">
+                {quizQuestions.map((_: any, i: number) => (
+                  <span key={i} className={`w-1.5 h-1.5 rounded-full ${
+                    i < quizIndex ? 'bg-portal-emerald' : i === quizIndex ? 'bg-portal-emerald/60' : 'bg-slate-700'
+                  }`} />
+                ))}
+              </div>
+            </div>
+            <p className="font-cormorant text-slate-200 text-sm mb-3">{currentQuizQuestion.question}</p>
             <div className="flex flex-col gap-2 mb-3">
-              {config.quiz.options.map((opt: string, i: number) => (
+              {currentQuizQuestion.options.map((opt: string, i: number) => (
                 <button
                   key={i}
                   onClick={() => setSelectedOption(i)}
@@ -333,8 +358,8 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
               ))}
             </div>
             {error && <p className="font-cormorant text-red-400 text-xs mb-2">{error}</p>}
-            <GlowButton variant="primary" size="md" loading={submitting} disabled={expired} onClick={submit} className="w-full">
-              {expired ? "Time's Up" : 'Lock In Answer'}
+            <GlowButton variant="primary" size="md" loading={submitting} disabled={expired} onClick={quizNext} className="w-full">
+              {expired ? "Time's Up" : isLastQuizQuestion ? 'Finish Quiz' : 'Next Question →'}
             </GlowButton>
           </>
         ) : isTapSpeed ? (
