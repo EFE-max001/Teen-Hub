@@ -17,7 +17,7 @@ export default function Navbar() {
     { href: '/#how-it-works', label: 'How It Works' },
     { href: '/#ranks',        label: 'Ranks'        },
     { href: '/#quests',       label: 'Quests'       },
-    { href: '/#arena',        label: 'Protocols'    },
+    { href: '/#arena',        label: 'Community'    },
   ]
 
   return (
