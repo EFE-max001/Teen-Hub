@@ -299,7 +299,7 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* ── SENTINEL AI ──────────────────────────────────────── */}
+          {/* ── SMART MATCHING ENGINE ──────────────────────────────────────── */}
           <section className="py-20 sm:py-28 px-4 sm:px-6 bg-portal-black/45 backdrop-blur-sm relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-portal-emerald/30 to-transparent pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-portal-emerald/30 to-transparent pointer-events-none" />
@@ -478,7 +478,7 @@ export default function LandingPage() {
                 </Link>
                 <Link href="/auth/register">
                   <GlowButton size="lg" variant="secondary" className="w-52 sm:w-auto">
-                    Create Account First
+                    Create Your Account
                   </GlowButton>
                 </Link>
               </div>
