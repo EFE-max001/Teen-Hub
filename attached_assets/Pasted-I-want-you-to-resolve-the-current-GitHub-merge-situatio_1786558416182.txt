@@ -1,0 +1,109 @@
+I want you to resolve the current GitHub merge situation, but I have
+changed the merge strategy.
+
+IMPORTANT:
+The CURRENT MAIN/REPLIT version of the landing page is the design I want.
+Do NOT replace it with Qwen's pages/index.tsx.
+
+PROJECT:
+The application is called "QuestHub Guild ⚡".
+
+QuestHub Guild is a teen guild/community for ambitious teens.
+
+The goal is to create an active, useful community where teens can:
+- connect with other ambitious teens
+- discover and develop useful skills
+- participate in fun challenges and events
+- work on creative projects
+- build experience and portfolios
+- eventually take on real small jobs/projects called "Quests"
+- earn opportunities as the platform grows
+
+The long-term vision is to help talented teens get real opportunities
+and build something bigger together.
+
+CORE IDEAS:
+🎮 Fun challenges & events
+🤝 A chill but active teen community
+📈 Skill growth and rankings
+🧠 Creative projects
+⚡ Quests/opportunities
+💼 Real-world small projects as the platform develops
+
+The application should feel like a REAL organized guild/community,
+not just another dead teen group that becomes inactive after a few days.
+
+IMPORTANT PROJECT PHILOSOPHY:
+QuestHub should reward actual effort, consistency, skill and
+participation. Ranks should feel earned. The platform should encourage
+teens to build useful skills and eventually demonstrate those skills
+through real projects.
+
+NOW THE GIT MERGE:
+
+1. KEEP THE CURRENT MAIN/REPLIT VERSION OF:
+   - pages/index.tsx
+   - landing-page layout
+   - hero design
+   - animations
+   - visual styling
+   - responsive design
+   - cards
+   - panels
+   - buttons
+   - overall landing-page experience
+
+2. DO NOT merge Qwen's pages/index.tsx into main.
+   Treat the current Replit/main pages/index.tsx as the source of truth
+   for the landing page.
+
+3. For every OTHER file changed by Qwen that has NO merge conflict,
+   accept/bring those changes into main.
+
+4. For conflicting files other than pages/index.tsx, inspect the changes
+   and preserve useful functionality without damaging the current app.
+
+5. After the non-conflicting Qwen files have been brought in, update
+   the CURRENT Replit landing page using the QuestHub information above.
+
+6. Do NOT redesign the landing page from scratch.
+   I LIKE THE CURRENT REPLIT DESIGN.
+
+7. Do NOT copy Qwen's landing-page structure into the Replit landing page.
+   Instead, adapt the CURRENT Replit design so its text/content accurately
+   represents QuestHub Guild.
+
+8. Make the landing page communicate:
+   - what QuestHub is
+   - who it is for
+   - what teens can do there
+   - how skills/ranks work
+   - what Quests are
+   - the long-term opportunity/community vision
+
+9. Keep the writing concise and exciting. Do not fill the landing page
+   with huge paragraphs.
+
+10. Remove all Git conflict markers from the project:
+   <<<<<<<
+   =======
+   >>>>>>>
+
+11. Run the application after the merge and fix any TypeScript,
+    React, import, or build errors.
+
+12. Do not delete useful Qwen functionality simply because the landing
+    page is being kept from the Replit version.
+
+FINAL GOAL:
+
+Qwen's useful NON-CONFLICTING CODE/FILES
+                +
+        CURRENT REPLIT DESIGN
+                +
+      accurate QuestHub information
+                =
+        ONE CLEAN QUESTHUB APP
+
+Before making changes, inspect the current project and the incoming
+changes so you don't accidentally overwrite working Replit code.

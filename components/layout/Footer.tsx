@@ -11,7 +11,7 @@ export default function Footer() {
             <div className="font-cinzel font-black text-white text-lg tracking-widest mb-1">QUESTHUB</div>
             <div className="font-cormorant text-cyan-400 tracking-[0.3em] text-sm mb-4">GUILD</div>
             <p className="text-slate-500 text-sm font-cormorant leading-relaxed">
-              An elite guild platform for talented teens ready to prove themselves and rise through the ranks.
+              A living teen guild for ambitious people who want to connect, grow useful skills, build together, and reach real paid opportunities.
             </p>
           </div>
 
@@ -48,7 +48,7 @@ export default function Footer() {
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               <span className="text-slate-500 text-sm font-cormorant">Systems Online</span>
             </div>
-            <p className="text-slate-600 text-xs font-cormorant mt-3">Accepting applications</p>
+            <p className="text-slate-600 text-xs font-cormorant mt-3">Community growing · Quest board developing</p>
           </div>
         </div>
 
@@ -57,7 +57,7 @@ export default function Footer() {
             © {new Date().getFullYear()} QUESTHUB GUILD. ALL RIGHTS RESERVED.
           </p>
           <p className="text-slate-700 text-xs font-cormorant tracking-wider">
-            BUILT FOR THE ELITE. EARNED BY THE WORTHY.
+            BUILD TOGETHER. EARN WHAT YOU CAN DO.
           </p>
         </div>
       </div>

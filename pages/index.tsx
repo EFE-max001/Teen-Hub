@@ -10,22 +10,22 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 
 const RANKS = [
-  { rank: 'F',   label: 'Initiate',   color: 'text-slate-400',  border: 'border-slate-600/40',  glow: '',                                  desc: 'Unproven. The starting point for every operative.' },
-  { rank: 'E',   label: 'Operative',  color: 'text-green-400',  border: 'border-green-600/40',  glow: 'shadow-[0_0_15px_rgba(74,222,128,0.15)]',  desc: 'Proven active. Basic member rights unlocked.' },
-  { rank: 'D',   label: 'Specialist', color: 'text-blue-400',   border: 'border-blue-600/40',   glow: 'shadow-[0_0_15px_rgba(96,165,250,0.15)]',  desc: 'Skilled contributor. Quest access widens.' },
-  { rank: 'C',   label: 'Vanguard',   color: 'text-yellow-400', border: 'border-yellow-600/40', glow: 'shadow-[0_0_15px_rgba(250,204,21,0.15)]',  desc: 'Dependable force. High-value tasks open.' },
-  { rank: 'B',   label: 'Commander',  color: 'text-orange-400', border: 'border-orange-500/50', glow: 'shadow-[0_0_15px_rgba(251,146,60,0.2)]',   desc: 'Strong track record. Leadership adjacent.' },
-  { rank: 'A',   label: 'Elite',      color: 'text-portal-emerald', border: 'border-portal-emerald/60', glow: 'shadow-[0_0_20px_rgba(0,255,163,0.25)]',  desc: 'Top performer. Guild\'s most trusted operatives.' },
-  { rank: 'S',   label: 'Sovereign',  color: 'text-pink-400',   border: 'border-pink-500/60',   glow: 'shadow-[0_0_20px_rgba(236,72,153,0.25)]',  desc: 'Living legend. Rare. Chosen by the council.' },
-  { rank: 'SS',  label: 'Warlord',    color: 'text-red-400',    border: 'border-red-500/60',    glow: 'shadow-[0_0_25px_rgba(239,68,68,0.3)]',    desc: 'Mythic performer. One of the guild\'s pillars.' },
-  { rank: 'SSS', label: 'Mythic',     color: 'text-amber-300',  border: 'border-amber-400/70',  glow: 'shadow-[0_0_30px_rgba(252,211,77,0.35)]',  desc: 'Ultra-rare. The absolute pinnacle. Unchallengeable.' },
+  { rank: 'F',   label: 'Initiate',   color: 'text-slate-400',  border: 'border-slate-600/40',  glow: '',                                  desc: 'Your starting point. Show up, explore, and find your lane.' },
+  { rank: 'E',   label: 'Contributor',color: 'text-green-400',  border: 'border-green-600/40',  glow: 'shadow-[0_0_15px_rgba(74,222,128,0.15)]',  desc: 'Active in the guild and building momentum.' },
+  { rank: 'D',   label: 'Specialist', color: 'text-blue-400',   border: 'border-blue-600/40',   glow: 'shadow-[0_0_15px_rgba(96,165,250,0.15)]',  desc: 'Growing a useful skill and taking on bigger challenges.' },
+  { rank: 'C',   label: 'Vanguard',   color: 'text-yellow-400', border: 'border-yellow-600/40', glow: 'shadow-[0_0_15px_rgba(250,204,21,0.15)]',  desc: 'Reliable, consistent, and ready for team projects.' },
+  { rank: 'B',   label: 'Builder',    color: 'text-orange-400', border: 'border-orange-500/50', glow: 'shadow-[0_0_20px_rgba(251,146,60,0.2)]',   desc: 'A proven track record that opens more opportunities.' },
+  { rank: 'A',   label: 'Elite',      color: 'text-portal-emerald', border: 'border-portal-emerald/60', glow: 'shadow-[0_0_20px_rgba(0,255,163,0.25)]',  desc: 'One of the guild\'s most trusted contributors.' },
+  { rank: 'S',   label: 'Sovereign',  color: 'text-pink-400',   border: 'border-pink-500/60',   glow: 'shadow-[0_0_20px_rgba(236,72,153,0.25)]',  desc: 'A standout creator others want on their team.' },
+  { rank: 'SS',  label: 'Warlord',    color: 'text-red-400',    border: 'border-red-500/60',    glow: 'shadow-[0_0_25px_rgba(239,68,68,0.3)]',    desc: 'A pillar of the community and a dependable lead.' },
+  { rank: 'SSS', label: 'Mythic',     color: 'text-amber-300',  border: 'border-amber-400/70',  glow: 'shadow-[0_0_30px_rgba(252,211,77,0.35)]',  desc: 'A rare builder shaping what the Guild becomes next.' },
 ]
 
 const STEPS = [
-  { step: '01', title: 'Create Account',    icon: 'I', desc: 'Register your operative profile. Your identity in the guild network starts here.' },
-  { step: '02', title: 'Submit Application', icon: 'II', desc: 'Fill out the guild application. The Council reviews every submission personally.' },
-  { step: '03', title: 'Complete Trial',     icon: 'III', desc: 'Assigned a real task. Scored on quality, speed, reliability, and attitude.' },
-  { step: '04', title: 'Rise Through Ranks', icon: 'IV', desc: 'Accepted into the guild. Earn XP, complete quests, and climb from F to SSS.' },
+  { step: '01', title: 'Enter the Guild',    icon: 'I', desc: 'Meet ambitious teens, find your people, and join a community built to stay active.' },
+  { step: '02', title: 'Learn & Participate', icon: 'II', desc: 'Jump into challenges, events, and creative projects that make building skills fun.' },
+  { step: '03', title: 'Build Your Proof',     icon: 'III', desc: 'Complete trials and projects that turn effort into a visible record of what you can do.' },
+  { step: '04', title: 'Take a Paid Quest', icon: 'IV', desc: 'As opportunities grow, apply for real small projects with real deliverables and real pay.' },
 ]
 
 const QUEST_TYPES = [
@@ -38,18 +38,18 @@ const QUEST_TYPES = [
 ]
 
 const AI_FEATURES = [
-  { title: 'Trial Evaluation',  desc: 'SENTINEL AI scores every trial submission — quality, reliability, attitude — and generates a recommendation for the council.' },
-  { title: 'Trust Scoring',     desc: 'Every action is logged. Quest completions, abandonments, warnings. Your trust score is calculated in real-time.' },
-  { title: 'Risk Detection',    desc: 'Anomaly detection flags ghosting patterns, quality drops, and suspicious behavior before it becomes a problem.' },
-  { title: 'Achievement Engine',desc: 'AI monitors member progress and auto-awards achievements the moment you hit a qualifying milestone.' },
+  { title: 'Trial Feedback',  desc: 'SENTINEL helps the council evaluate quality, reliability, and attitude so growth is based on more than hype.' },
+  { title: 'Trust & Reliability',     desc: 'Participation, project completions, and follow-through build a record people can trust.' },
+  { title: 'Opportunity Matching',    desc: 'As the quest board grows, your skills and track record help surface projects that fit your lane.' },
+  { title: 'Milestone Engine',desc: 'Progress is recognized as you hit meaningful milestones, from your first challenge to your first paid quest.' },
 ]
 
 export default function LandingPage() {
   return (
     <>
       <Head>
-        <title>QuestHub Guild — Elite Teen Talent Platform</title>
-        <meta name="description" content="An elite guild for talented teens. Apply, survive the trial, rank up, and complete real quests that build a reputation that matters." />
+        <title>QuestHub Guild — A Teen Community for Skills, Projects & Paid Quests</title>
+        <meta name="description" content="QuestHub Guild is an active community for ambitious teens to connect, grow skills, join challenges, build proof, and take on real small projects that pay." />
       </Head>
 
       <div className="min-h-screen bg-transparent flex flex-col">
@@ -111,7 +111,7 @@ export default function LandingPage() {
               {/* Status badge */}
               <div className="hero-assemble inline-flex items-center gap-3 mb-6 border border-portal-emerald/25 bg-portal-emerald/[0.06] px-4 py-2 backdrop-blur-sm rounded-full" style={{ animationDelay: '40ms' }}>
                 <div className="w-1.5 h-1.5 rounded-full bg-portal-emerald animate-pulse" />
-                <span className="font-cinzel text-[9px] sm:text-[10px] text-portal-moonlight/70 tracking-[0.35em] uppercase">Guild Network / Open Intake</span>
+                 <span className="font-cinzel text-[9px] sm:text-[10px] text-portal-moonlight/70 tracking-[0.35em] uppercase">Teen Guild / Open Doors</span>
                 <div className="w-1.5 h-1.5 rounded-full bg-portal-emerald animate-pulse" style={{ animationDelay: '0.5s' }} />
               </div>
 
@@ -126,11 +126,11 @@ export default function LandingPage() {
                     </h1>
                   </div>
                   <div className="hero-assemble flex items-center lg:justify-start justify-center gap-4 mb-2" style={{ animationDelay: '220ms' }}>
-                    <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Elite Talent Platform</span>
+                    <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Teen Community / Skills → Projects → Paid Quests</span>
                   </div>
                   <div className="hero-assemble mb-6 lg:mx-0" style={{ animationDelay: '260ms' }}><OrnamentDivider color="#FFC65C" /></div>
                   <p className="hero-assemble font-cormorant text-lg sm:text-xl md:text-2xl text-slate-300/90 max-w-2xl mb-8 leading-relaxed px-2 lg:px-0 italic" style={{ animationDelay: '340ms' }}>
-                    Talent is common. <span className="text-portal-moonlight not-italic font-semibold">Proof is rare.</span> Apply, survive the trial, and climb from <span className="text-portal-moonlight font-semibold not-italic">F to SSS</span> through work that builds a reputation worth carrying.
+                    Find your people. Build real skills. <span className="text-portal-moonlight not-italic font-semibold">Get paid to do work you’re proud of.</span> QuestHub is the teen guild where challenges and creative projects can lead to real small jobs, a stronger portfolio, and a reputation worth carrying.
                   </p>
                   <div className="flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-3 sm:gap-4 mb-8">
                     <Link href="/apply"><GlowButton size="lg" variant="primary" className="w-52 sm:w-auto animate-pulse-glow">Apply to Join</GlowButton></Link>
@@ -142,17 +142,17 @@ export default function LandingPage() {
                 <aside className="hero-assemble hero-panel relative overflow-hidden border border-portal-emerald/25 bg-portal-black/65 backdrop-blur-md p-5 sm:p-6 text-left" style={{ animationDelay: '420ms' }} aria-label="Guild status">
                   <div className="guild-signal absolute top-0 left-0 right-0 h-px" />
                   <div className="flex items-center justify-between border-b border-portal-emerald/15 pb-4 mb-5">
-                    <div><span className="font-cinzel text-[9px] tracking-[.3em] text-portal-gold uppercase">Council Brief</span><h2 className="font-cinzel text-lg text-portal-moonlight mt-1">The gate is open.</h2></div>
+                    <div><span className="font-cinzel text-[9px] tracking-[.3em] text-portal-gold uppercase">Guild Brief</span><h2 className="font-cinzel text-lg text-portal-moonlight mt-1">Build something real.</h2></div>
                     <span className="font-mono text-[10px] text-portal-emerald">LIVE / 01</span>
                   </div>
                   <div className="space-y-4 font-mono text-[11px]">
-                    <div className="flex justify-between gap-4"><span className="text-slate-500">INTAKE STATUS</span><span className="text-portal-emerald">ACCEPTING APPLICATIONS</span></div>
+                    <div className="flex justify-between gap-4"><span className="text-slate-500">GUILD STATUS</span><span className="text-portal-emerald">OPEN TO AMBITIOUS TEENS</span></div>
                     <div className="h-px bg-portal-emerald/10"><div className="h-px w-[68%] bg-gradient-to-r from-portal-emerald to-portal-gold" /></div>
                     <div className="grid grid-cols-2 gap-3 pt-1">
-                      <div className="border-l border-portal-gold/50 pl-3"><div className="text-portal-gold text-lg font-cinzel">F → SSS</div><div className="text-slate-500 text-[10px] mt-1">MERIT LADDER</div></div>
-                      <div className="border-l border-portal-cyan/50 pl-3"><div className="text-portal-cyan text-lg font-cinzel">REAL</div><div className="text-slate-500 text-[10px] mt-1">WORK TRIALS</div></div>
+                      <div className="border-l border-portal-gold/50 pl-3"><div className="text-portal-gold text-lg font-cinzel">GROW</div><div className="text-slate-500 text-[10px] mt-1">SKILLS + RANKS</div></div>
+                      <div className="border-l border-portal-cyan/50 pl-3"><div className="text-portal-cyan text-lg font-cinzel">EARN</div><div className="text-slate-500 text-[10px] mt-1">PAID QUESTS</div></div>
                     </div>
-                    <p className="text-slate-400 leading-relaxed pt-2">The Guild does not promise a shortcut. It gives you a place to make your record impossible to ignore.</p>
+                    <p className="text-slate-400 leading-relaxed pt-2">Start with the community. Build your proof. When a paid opportunity fits, take the quest and deliver.</p>
                   </div>
                 </aside>
               </div>
@@ -160,10 +160,10 @@ export default function LandingPage() {
               {/* Stats bar */}
               <div className="mt-8 lg:mt-10 w-full lg:w-auto inline-flex flex-col sm:flex-row items-center gap-0 sm:gap-px border border-portal-emerald/20 bg-portal-black/50 backdrop-blur-md overflow-hidden">
                 {[
-                  ['9', 'Rank Tiers'],
-                  ['∞', 'Operations'],
-                  ['AI', 'Powered'],
-                  ['0', 'Excuses Tolerated'],
+                  ['LIVE', 'Community'],
+                  ['∞', 'Ways to Grow'],
+                  ['REAL', 'Projects'],
+                  ['$', 'Paid Quests'],
                 ].map(([val, label], i) => (
                   <div
                     key={label}
@@ -187,14 +187,14 @@ export default function LandingPage() {
           <div className="border-y border-portal-emerald/20 bg-portal-black/75 backdrop-blur-sm overflow-hidden py-2.5">
             <div className="flex items-center gap-8 whitespace-nowrap animate-marquee">
               {Array.from({ length: 3 }).flatMap(() => [
-                '[01] GRAPHIC DESIGN OPS AVAILABLE',
-                '[02] AI TRIAL EVALUATION ACTIVE',
-                '[03] TRUST ENGINE MONITORING',
-                '[04] QUEST BOARD LIVE',
-                '[05] NEW RANK TIERS: SS AND SSS',
-                '[06] SENTINEL AI ONLINE',
-                '[07] ZERO TOLERANCE FOR GHOSTING',
-                '[08] MERIT-BASED PROMOTIONS ONLY',
+                '[01] CHALLENGE ARENA ACTIVE',
+                '[02] GUILD HALL OPEN',
+                '[03] PROJECT LAB ONLINE',
+                '[04] QUEST BOARD GROWING',
+                '[05] BUILD SKILLS / BUILD PROOF',
+                '[06] PAID QUESTS AS OPPORTUNITIES LAND',
+                '[07] ACTIVE COMMUNITY / REAL PEOPLE',
+                '[08] RANKS EARNED THROUGH CONTRIBUTION',
               ]).map((text, i) => (
                 <span key={i} className="font-cinzel text-[9px] text-portal-emerald/85 tracking-[0.3em] uppercase flex-shrink-0">
                   {text}
@@ -207,9 +207,9 @@ export default function LandingPage() {
           <section id="how-it-works" className="py-20 sm:py-28 px-4 sm:px-6 bg-portal-black/45 backdrop-blur-sm relative">
             <div className="max-w-6xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
-                <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Initiation Protocol</span>
+                <span className="font-cinzel text-[10px] text-portal-gold/80 tracking-[0.4em] uppercase">Your Guild Loop</span>
                 <h2 className="glow-sweep-text font-cinzel font-semibold text-2xl sm:text-3xl md:text-4xl text-portal-moonlight mt-3 mb-4">
-                  The Path Forward
+                  From Hangout to Opportunity
                 </h2>
                 <OrnamentDivider color="#00FFA3" />
               </div>
@@ -255,14 +255,14 @@ export default function LandingPage() {
 
             <div className="max-w-7xl mx-auto relative z-10">
               <div className="text-center mb-12 sm:mb-16">
-                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Power Structure</span>
+                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Progress You Can See</span>
                 <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
-                  THE HIERARCHY
+                  THE GUILD LADDER
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
                 <p className="font-cormorant text-slate-500 text-sm sm:text-base max-w-lg mx-auto">
-                  Nine tiers of power. F to SSS. Every rank is earned — never given.
-                  SS and SSS are reserved for the legends.
+                  Nine tiers of progress. F to SSS. Every rank reflects your effort,
+                  consistency, and the quality of what you contribute.
                 </p>
               </div>
 
@@ -308,21 +308,21 @@ export default function LandingPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                 {/* Left */}
                 <div>
-                  <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">AI Automation Layer</span>
+                  <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">The Guild Support Layer</span>
                   <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
-                    SENTINEL AI
+                    SENTINEL
                   </h2>
                   <div className="w-20 h-px bg-gradient-to-r from-portal-emerald to-transparent mb-6" />
                   <p className="font-cormorant text-slate-400 text-base sm:text-lg leading-relaxed mb-6">
-                    Every operative is watched by SENTINEL — our AI layer that scores trials,
-                    tracks trust, detects risk, and awards achievements in real-time.
-                    You cannot fake your way to the top.
+                    SENTINEL helps the Guild stay fair, active, and useful — from giving
+                    trial feedback to tracking follow-through and helping the right
+                    opportunities find the right contributors.
                   </p>
                   <div className="bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-4 font-mono text-xs">
-                    <div className="text-green-400/80 mb-1">{'>'} SENTINEL.evaluate(trial_submission)</div>
-                    <div className="text-slate-500 mb-1">{'>'} Scoring quality... reliability... attitude...</div>
-                    <div className="text-portal-emerald mb-1">{'>'} Trust delta: <span className="text-green-400">+12pts</span></div>
-                    <div className="text-slate-500">{'>'} Recommendation: <span className="text-green-400">ACCEPT</span></div>
+                    <div className="text-green-400/80 mb-1">{'>'} SENTINEL.review(member_progress)</div>
+                    <div className="text-slate-500 mb-1">{'>'} Checking effort... quality... follow-through...</div>
+                    <div className="text-portal-emerald mb-1">{'>'} Momentum: <span className="text-green-400">RISING</span></div>
+                    <div className="text-slate-500">{'>'} Next step: <span className="text-green-400">BUILD PROOF</span></div>
                   </div>
                 </div>
 
@@ -345,41 +345,41 @@ export default function LandingPage() {
             <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
             <div className="max-w-6xl mx-auto relative z-10">
               <div className="text-center mb-12 sm:mb-16">
-                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Beyond The Trial</span>
+                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">The Guild Stays Moving</span>
                 <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
-                  THE PROTOCOLS
+                  COMMUNITY IN MOTION
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
                 <p className="font-cormorant text-slate-500 text-sm sm:text-base max-w-xl mx-auto">
-                  Compete, socialize, and watch the Grid come alive around you.
+                  Challenges, conversations, and creative projects give the Guild a reason to come back tomorrow.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
                 <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-amber-400/50 transition-all duration-300 overflow-hidden">
-                  <div className="font-mono text-xs text-amber-400/70 mb-3">PROTOCOL / 01</div>
-                  <h3 className="font-cinzel font-bold text-sm sm:text-base text-amber-400 mb-2 tracking-widest">ARENA PROTOCOL</h3>
+                  <div className="font-mono text-xs text-amber-400/70 mb-3">GUILD MODE / 01</div>
+                  <h3 className="font-cinzel font-bold text-sm sm:text-base text-amber-400 mb-2 tracking-widest">CHALLENGE ARENA</h3>
                   <p className="font-cormorant text-slate-500 text-sm leading-relaxed">
-                    A structured mini-game engine — logic, typing, quiz, creative and social
-                    challenges, all scored by AI. Rotating daily challenge, live leaderboard, real XP.
+                    Logic, typing, quiz, creative, and social challenges keep the energy high.
+                    Jump in, have fun, earn XP, and discover what you’re good at.
                   </p>
                 </div>
 
                 <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-portal-emerald/50 transition-all duration-300 overflow-hidden">
-                  <div className="font-mono text-xs text-portal-emerald/70 mb-3">PROTOCOL / 02</div>
-                  <h3 className="font-cinzel font-bold text-sm sm:text-base text-portal-emerald mb-2 tracking-widest">GHOST PROTOCOL</h3>
+                  <div className="font-mono text-xs text-portal-emerald/70 mb-3">GUILD MODE / 02</div>
+                  <h3 className="font-cinzel font-bold text-sm sm:text-base text-portal-emerald mb-2 tracking-widest">GUILD HALL</h3>
                   <p className="font-cormorant text-slate-500 text-sm leading-relaxed">
-                    Party games live in Guild Chat: Truth or Dare, Would You Rather, Two Truths
-                    and a Lie — triggered instantly with slash commands like <span className="text-portal-emerald">/party</span>.
+                    A chill place to talk, share ideas, find teammates, and actually make
+                    friends — with events and party games ready when the chat needs a spark.
                   </p>
                 </div>
 
                 <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-cyan-400/50 transition-all duration-300 overflow-hidden">
-                  <div className="font-mono text-xs text-cyan-400/70 mb-3">PROTOCOL / 03</div>
-                  <h3 className="font-cinzel font-bold text-sm sm:text-base text-cyan-400 mb-2 tracking-widest">SENTINEL GRID</h3>
+                  <div className="font-mono text-xs text-cyan-400/70 mb-3">GUILD MODE / 03</div>
+                  <h3 className="font-cinzel font-bold text-sm sm:text-base text-cyan-400 mb-2 tracking-widest">PROJECT LAB</h3>
                   <p className="font-cormorant text-slate-500 text-sm leading-relaxed">
-                    The live perspective grid rendering beneath every screen — a signal that
-                    the Sentinel network is always watching, always active.
+                    Turn ideas into portfolio pieces with other members. Build together
+                    before you’re ready to build for someone else.
                   </p>
                 </div>
               </div>
@@ -391,13 +391,14 @@ export default function LandingPage() {
             <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
             <div className="max-w-6xl mx-auto relative z-10">
               <div className="text-center mb-12 sm:mb-16">
-                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Active Operations</span>
+                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Small Work / Real Opportunity</span>
                 <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
-                  QUEST TYPES
+                  THE QUEST BOARD
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
                 <p className="font-cormorant text-slate-500 text-sm sm:text-base max-w-xl mx-auto">
-                  Real work. Real skills. Some quests pay cash. All quests pay XP.
+                  Build the skill first, then put it to work. Quests are small projects
+                  with clear deliverables — and quests marked paid come with real pay.
                 </p>
               </div>
 
@@ -421,22 +422,23 @@ export default function LandingPage() {
             <div className="absolute inset-0 bg-purple-glow opacity-10 pointer-events-none" />
             <div className="max-w-5xl mx-auto relative z-10">
               <div className="text-center mb-10">
-                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Legitimacy</span>
+                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Built for Momentum</span>
                 <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
-                  THIS IS REAL.
+                  NOT ANOTHER DEAD GROUP.
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
                 <p className="font-cormorant text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-                  QuestHub Guild is not a game. Quests are real work with real consequences.
-                  Every action is logged. Every rank is earned. The council is always watching.
+                  QuestHub Guild is a living teen community — a place to connect, learn,
+                  make things, and grow into real opportunities. The fun keeps it active.
+                  The proof makes the opportunities possible.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
-                {[
-                  { icon: '01', title: 'Admin Moderated',    desc: 'Every trial, quest, and submission reviewed by real admins — not automated bots.' },
-                  { icon: '02',  title: 'Merit-Only Ranking', desc: 'No shortcuts. No exceptions. Every rank is earned through consistent, quality output.' },
-                  { icon: '03', title: 'Zero Tolerance',      desc: 'Ghosting, dishonesty, and low quality are actioned instantly. Warnings stack. Bans happen.' },
+                  {[
+                   { icon: '01', title: 'Active by Design',    desc: 'Challenges, events, projects, and conversation give members reasons to return and contribute.' },
+                   { icon: '02',  title: 'Proof Over Hype', desc: 'Ranks come from effort, consistency, and quality — not follower counts or empty self-promotion.' },
+                   { icon: '03', title: 'Real Opportunity',      desc: 'Paid quests are built around clear work, clear expectations, and contributions people can stand behind.' },
                 ].map((item, i) => (
                   <div key={i} className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-5 sm:p-6 group hover:border-portal-emerald/40 transition-all duration-300">
                     <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/30" />
@@ -456,17 +458,17 @@ export default function LandingPage() {
             <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-portal-emerald/50 to-transparent pointer-events-none" />
 
             <div className="max-w-3xl mx-auto text-center relative z-10">
-              <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase block mb-4">The Question Is Simple</span>
+               <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase block mb-4">Start Where You Are</span>
               <h2 className="font-cinzel font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-4 leading-none">
-                DO YOU HAVE
+                 BUILD YOUR
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-portal-emerald via-fuchsia-400 to-pink-500 mt-1">
-                  WHAT IT TAKES?
+                   NEXT QUEST.
                 </span>
               </h2>
               <div className="w-24 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto my-6" />
               <p className="font-cormorant text-slate-400 text-sm sm:text-base md:text-lg mb-10 leading-relaxed">
-                Create your account, submit your application, and let the Guild Council decide.
-                Most applicants don't make it. The ones who do don't forget it.
+                 Join the community, try a challenge, learn something useful, and start
+                 building proof. The next paid project could begin with the thing you make today.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link href="/apply">
