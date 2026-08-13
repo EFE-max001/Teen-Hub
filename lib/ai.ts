@@ -871,3 +871,137 @@ The lie was statement #${lieIndex + 1}. Write one short, dramatic reveal line (m
     return `The truth is out — statement #${lieIndex + 1} was the lie all along!`
   }
 }
+// ═══════════════════════════════════════════════════════════════════════════
+// PAYMENT CENTER — AI ASSISTANCE (never the payment authority — see lib/paystack.ts
+// and pages/api/webhooks/paystack.ts for the deterministic, database-backed
+// truth about money. AI here only assists: risk flags, drafting, summaries.)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── A. Payment risk analysis ──────────────────────────────────────────────
+// Flags a PaymentRequest for Founder review — never blocks or auto-rejects
+// legitimate money. High-risk just means "a human should look at this".
+export async function assessPaymentRisk(context: {
+  baseAmount: number
+  currency: string
+  clientEmail: string
+  clientPhone: string
+  isNewClient: boolean
+  recentRequestsFromSameEmail: number
+  recentFailedAttempts: number
+  hasLinkedQuest: boolean
+}): Promise<{ riskLevel: 'LOW' | 'MEDIUM' | 'HIGH'; reason: string }> {
+  const prompt = `Assess fraud/risk signals for a client payment request on a teen freelance guild platform. This is advisory only — it will never block the payment, only flag it for founder review.
+
+Amount: ${context.currency} ${context.baseAmount}
+Client email: ${context.clientEmail}
+Client phone: ${context.clientPhone}
+New client (no prior payment history): ${context.isNewClient}
+Other payment requests recently from this same email: ${context.recentRequestsFromSameEmail}
+Recent failed payment attempts on this request: ${context.recentFailedAttempts}
+Linked to an existing quest: ${context.hasLinkedQuest}
+
+Reply JSON only: { "riskLevel": "LOW"|"MEDIUM"|"HIGH", "reason": string (max 25 words) }`
+
+  try {
+    const raw = await riskAnalysis([{ role: 'user', content: prompt }], { maxTokens: 150 })
+    const m = raw.match(/\{[\s\S]*?\}/)
+    if (m) {
+      const parsed = JSON.parse(m[0])
+      if (['LOW', 'MEDIUM', 'HIGH'].includes(parsed.riskLevel)) return parsed
+    }
+  } catch {
+    // fall through to deterministic fallback below
+  }
+
+  // Deterministic fallback if every AI provider fails — never leaves risk
+  // assessment silently blank, but stays conservative (defaults to LOW
+  // rather than inventing alarm).
+  let score = 0
+  if (context.recentFailedAttempts >= 3) score += 2
+  if (context.recentRequestsFromSameEmail >= 4) score += 1
+  if (context.isNewClient && context.baseAmount > 200000) score += 1
+  const riskLevel = score >= 3 ? 'HIGH' : score >= 1 ? 'MEDIUM' : 'LOW'
+  return { riskLevel, reason: 'Automated fallback scoring (AI providers unavailable).' }
+}
+
+// ─── B. Payment request writing assistant ──────────────────────────────────
+// Founder types rough notes; AI drafts a professional title/description.
+// Founder can edit before saving — this never auto-creates a request.
+export async function draftPaymentRequest(notes: string): Promise<{
+  title: string
+  description: string
+}> {
+  const prompt = `A founder running a teen freelance guild is creating a client payment request. Turn their rough notes into a short professional title and a 1-3 sentence description of the deliverables. Notes: "${notes}"
+
+Reply JSON only: { "title": string (max 8 words), "description": string }`
+
+  try {
+    const raw = await openRouterChat([{ role: 'user', content: prompt }], {
+      model: MODELS.router,
+      fallbackModel: MODELS.routerFallback,
+      maxTokens: 200,
+      fallbackToMistral: true,
+    })
+    const m = raw.match(/\{[\s\S]*?\}/)
+    if (m) {
+      const parsed = JSON.parse(m[0])
+      if (parsed.title && parsed.description) return parsed
+    }
+  } catch {
+    // fall through
+  }
+  return { title: notes.slice(0, 60), description: notes }
+}
+
+// ─── C. Founder payment summary ────────────────────────────────────────────
+// Numbers are computed by the caller from the database (never fabricated
+// here) — this only turns them into a short, readable sentence.
+export async function summarizePaymentActivity(stats: {
+  periodLabel: string
+  receivedCount: number
+  receivedTotal: number
+  currency: string
+  pendingCount: number
+  expiringSoonCount: number
+}): Promise<string> {
+  const prompt = `Write one short, plain-English sentence (max 2 sentences) summarizing this founder's payment activity. Use the exact numbers given — never invent or round differently.
+
+Period: ${stats.periodLabel}
+Payments received: ${stats.receivedCount} totaling ${stats.currency} ${stats.receivedTotal}
+Pending/unpaid requests: ${stats.pendingCount}
+Requests expiring soon: ${stats.expiringSoonCount}`
+
+  try {
+    return await openRouterChat([{ role: 'user', content: prompt }], {
+      model: MODELS.router,
+      fallbackModel: MODELS.routerFallback,
+      maxTokens: 100,
+      fallbackToMistral: true,
+    })
+  } catch {
+    return `You received ${stats.receivedCount} payment(s) ${stats.periodLabel.toLowerCase()} totaling ${stats.currency} ${stats.receivedTotal}. ${stats.pendingCount} request(s) remain unpaid${stats.expiringSoonCount ? `, ${stats.expiringSoonCount} expiring soon` : ''}.`
+  }
+}
+
+// ─── D. Smart reminder assistant ───────────────────────────────────────────
+// Drafts reminder copy only — sending is governed by deterministic rules /
+// explicit founder action in the API route, never by this function.
+export async function draftPaymentReminder(context: {
+  clientName: string
+  title: string
+  amountDue: string
+  daysSinceCreated: number
+}): Promise<string> {
+  const prompt = `Draft a short, professional, friendly payment reminder message (max 3 sentences) for a client. Client: ${context.clientName}. What they owe for: "${context.title}". Amount due: ${context.amountDue}. Days since the request was sent: ${context.daysSinceCreated}.`
+
+  try {
+    return await openRouterChat([{ role: 'user', content: prompt }], {
+      model: MODELS.router,
+      fallbackModel: MODELS.routerFallback,
+      maxTokens: 120,
+      fallbackToMistral: true,
+    })
+  } catch {
+    return `Hi ${context.clientName}, just a friendly reminder that ${context.amountDue} is still due for ${context.title}. Let us know if you have any questions!`
+  }
+}

@@ -119,7 +119,7 @@ export default function LandingPage() {
                 <div className="text-center lg:text-left">
                   <div className="hero-assemble mb-4" style={{ animationDelay: '120ms' }}>
                     <h1 className="font-cinzel font-semibold leading-[.92] tracking-wide">
-                      <span className="block text-[clamp(3.1rem,12vw,8rem)] text-portal-moonlight">
+                      <span className="block text-[clamp(3.1rem,12vw,8rem)] text-portal-moonlight hero-land-target">
                         Quest<span className="text-transparent bg-clip-text bg-gradient-to-r from-portal-gold via-portal-emerald to-portal-cyan">Hub</span>
                       </span>
                       <span className="block text-xl sm:text-2xl md:text-3xl text-slate-400 tracking-[0.3em] mt-4 font-normal">Guild</span>
@@ -139,7 +139,7 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <aside className="hero-assemble hero-panel relative overflow-hidden border border-portal-emerald/25 bg-portal-black/65 backdrop-blur-md p-5 sm:p-6 text-left" style={{ animationDelay: '420ms' }} aria-label="Guild status">
+                <aside className="hero-assemble hero-panel crystal-glass relative overflow-hidden border border-portal-emerald/25 bg-portal-black/65 backdrop-blur-md p-5 sm:p-6 text-left" style={{ animationDelay: '420ms' }} aria-label="Guild status">
                   <div className="guild-signal absolute top-0 left-0 right-0 h-px" />
                   <div className="flex items-center justify-between border-b border-portal-emerald/15 pb-4 mb-5">
                     <div><span className="font-cinzel text-[9px] tracking-[.3em] text-portal-gold uppercase">Guild Brief</span><h2 className="font-cinzel text-lg text-portal-moonlight mt-1">Build something real.</h2></div>
@@ -158,7 +158,7 @@ export default function LandingPage() {
               </div>
 
               {/* Stats bar */}
-              <div className="mt-8 lg:mt-10 w-full lg:w-auto inline-flex flex-col sm:flex-row items-center gap-0 sm:gap-px border border-portal-emerald/20 bg-portal-black/50 backdrop-blur-md overflow-hidden">
+              <div className="crystal-glass mt-8 lg:mt-10 w-full lg:w-auto inline-flex flex-col sm:flex-row items-center gap-0 sm:gap-px border border-portal-emerald/20 bg-portal-black/50 backdrop-blur-md overflow-hidden">
                 {[
                   ['LIVE', 'Community'],
                   ['∞', 'Ways to Grow'],
@@ -221,7 +221,7 @@ export default function LandingPage() {
                     {i < STEPS.length - 1 && (
                       <div className="hidden lg:block absolute top-10 left-full w-full h-px bg-gradient-to-r from-portal-emerald/30 to-transparent z-10 translate-x-[-50%]" style={{ width: 'calc(100% - 2.5rem)', left: '100%', transform: 'none', right: '-50%' }} />
                     )}
-                    <div className="relative rounded-2xl bg-white/[0.03] border border-portal-emerald/15 backdrop-blur-sm p-5 sm:p-6 group hover:border-portal-gold/40 hover:bg-portal-emerald/[0.04] transition-all duration-300 overflow-hidden">
+                    <div className="crystal-glass relative rounded-2xl bg-white/[0.03] border border-portal-emerald/15 backdrop-blur-sm p-5 sm:p-6 group hover:border-portal-gold/40 hover:bg-portal-emerald/[0.04] transition-all duration-300 overflow-hidden">
                       {/* Soft inner highlight sweeping in on hover, standing
                           in for the "carved from crystal" reflection from
                           the brief instead of flat glass */}
@@ -257,7 +257,7 @@ export default function LandingPage() {
               <div className="text-center mb-12 sm:mb-16">
                 <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Progress You Can See</span>
                 <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
-                  THE GUILD LADDER
+                  <span className="rank-land-target">THE GUILD LADDER</span>
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
                 <p className="font-cormorant text-slate-500 text-sm sm:text-base max-w-lg mx-auto">
@@ -270,7 +270,7 @@ export default function LandingPage() {
                 {RANKS.map((r, i) => (
                   <div
                     key={r.rank}
-                    className={`relative bg-black/80 border ${r.border} ${r.glow} p-3 sm:p-4 text-center group hover:scale-105 transition-all duration-300 cursor-default`}
+                    className={`crystal-glass relative bg-black/80 border ${r.border} ${r.glow} p-3 sm:p-4 text-center group hover:scale-105 transition-all duration-300 cursor-default`}
                     title={`${r.label}: ${r.desc}`}
                   >
                     <span className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-current opacity-20" />
@@ -310,7 +310,7 @@ export default function LandingPage() {
                 <div>
                   <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">The Guild Support Layer</span>
                   <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
-                    SENTINEL
+                    <span className="sentinel-land-target">SENTINEL</span>
                   </h2>
                   <div className="w-20 h-px bg-gradient-to-r from-portal-emerald to-transparent mb-6" />
                   <p className="font-cormorant text-slate-400 text-base sm:text-lg leading-relaxed mb-6">
@@ -318,7 +318,7 @@ export default function LandingPage() {
                     trial feedback to tracking follow-through and helping the right
                     opportunities find the right contributors.
                   </p>
-                  <div className="bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-4 font-mono text-xs">
+                  <div className="crystal-glass bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-4 font-mono text-xs">
                     <div className="text-green-400/80 mb-1">{'>'} SENTINEL.review(member_progress)</div>
                     <div className="text-slate-500 mb-1">{'>'} Checking effort... quality... follow-through...</div>
                     <div className="text-portal-emerald mb-1">{'>'} Momentum: <span className="text-green-400">RISING</span></div>
@@ -329,7 +329,7 @@ export default function LandingPage() {
                 {/* Right */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {AI_FEATURES.map((f, i) => (
-                    <div key={i} className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-4 sm:p-5 group hover:border-portal-emerald/50 transition-all duration-300">
+                    <div key={i} className="crystal-glass relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-4 sm:p-5 group hover:border-portal-emerald/50 transition-all duration-300">
                       <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/40 group-hover:border-portal-emerald transition-colors" />
                       <div className="font-cinzel font-bold text-xs sm:text-sm text-portal-emerald mb-2">{f.title}</div>
                       <p className="font-cormorant text-slate-500 text-xs sm:text-sm leading-relaxed">{f.desc}</p>
@@ -356,7 +356,7 @@ export default function LandingPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-                <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-amber-400/50 transition-all duration-300 overflow-hidden">
+                <div className="crystal-glass relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-amber-400/50 transition-all duration-300 overflow-hidden">
                   <div className="font-mono text-xs text-amber-400/70 mb-3">GUILD MODE / 01</div>
                   <h3 className="font-cinzel font-bold text-sm sm:text-base text-amber-400 mb-2 tracking-widest">CHALLENGE ARENA</h3>
                   <p className="font-cormorant text-slate-500 text-sm leading-relaxed">
@@ -365,7 +365,7 @@ export default function LandingPage() {
                   </p>
                 </div>
 
-                <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-portal-emerald/50 transition-all duration-300 overflow-hidden">
+                <div className="crystal-glass relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-portal-emerald/50 transition-all duration-300 overflow-hidden">
                   <div className="font-mono text-xs text-portal-emerald/70 mb-3">GUILD MODE / 02</div>
                   <h3 className="font-cinzel font-bold text-sm sm:text-base text-portal-emerald mb-2 tracking-widest">GUILD HALL</h3>
                   <p className="font-cormorant text-slate-500 text-sm leading-relaxed">
@@ -374,7 +374,7 @@ export default function LandingPage() {
                   </p>
                 </div>
 
-                <div className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-cyan-400/50 transition-all duration-300 overflow-hidden">
+                <div className="crystal-glass relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-6 group hover:border-cyan-400/50 transition-all duration-300 overflow-hidden">
                   <div className="font-mono text-xs text-cyan-400/70 mb-3">GUILD MODE / 03</div>
                   <h3 className="font-cinzel font-bold text-sm sm:text-base text-cyan-400 mb-2 tracking-widest">PROJECT LAB</h3>
                   <p className="font-cormorant text-slate-500 text-sm leading-relaxed">
@@ -393,7 +393,7 @@ export default function LandingPage() {
               <div className="text-center mb-12 sm:mb-16">
                 <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase">Small Work / Real Opportunity</span>
                 <h2 className="font-cinzel font-black text-2xl sm:text-3xl md:text-4xl text-white mt-3 mb-4">
-                  THE QUEST BOARD
+                  <span className="quest-land-target">THE QUEST BOARD</span>
                 </h2>
                 <div className="w-20 h-px bg-gradient-to-r from-transparent via-portal-emerald to-transparent mx-auto mb-4" />
                 <p className="font-cormorant text-slate-500 text-sm sm:text-base max-w-xl mx-auto">
@@ -406,7 +406,7 @@ export default function LandingPage() {
                 {QUEST_TYPES.map((q, i) => (
                   <div
                     key={i}
-                    className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/15 p-5 sm:p-6 group hover:border-portal-emerald/40 hover:bg-portal-black/10 transition-all duration-300"
+                    className="crystal-glass relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/15 p-5 sm:p-6 group hover:border-portal-emerald/40 hover:bg-portal-black/10 transition-all duration-300"
                   >
                     <div className={`font-cinzel text-3xl ${q.color} mb-3 group-hover:glow-text transition-all`}>{q.icon}</div>
                     <h3 className={`font-cinzel font-bold text-sm sm:text-base ${q.color} mb-2`}>{q.label}</h3>
@@ -440,7 +440,7 @@ export default function LandingPage() {
                    { icon: '02',  title: 'Proof Over Hype', desc: 'Ranks come from effort, consistency, and quality — not follower counts or empty self-promotion.' },
                    { icon: '03', title: 'Real Opportunity',      desc: 'Paid quests are built around clear work, clear expectations, and contributions people can stand behind.' },
                 ].map((item, i) => (
-                  <div key={i} className="relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-5 sm:p-6 group hover:border-portal-emerald/40 transition-all duration-300">
+                  <div key={i} className="crystal-glass relative bg-black/60 backdrop-blur-sm rounded-xl border border-portal-emerald/20 p-5 sm:p-6 group hover:border-portal-emerald/40 transition-all duration-300">
                     <span className="absolute top-0 left-0 w-3 h-3 border-t border-l border-portal-emerald/30" />
                     <div className="text-2xl sm:text-3xl mb-3">{item.icon}</div>
                     <h3 className="font-cinzel font-bold text-sm text-white mb-2">{item.title}</h3>
@@ -460,7 +460,7 @@ export default function LandingPage() {
             <div className="max-w-3xl mx-auto text-center relative z-10">
                <span className="font-cinzel text-[9px] text-portal-emerald tracking-[0.5em] uppercase block mb-4">Start Where You Are</span>
               <h2 className="font-cinzel font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-4 leading-none">
-                 BUILD YOUR
+                 <span className="cta-land-target">BUILD YOUR</span>
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-portal-emerald via-fuchsia-400 to-pink-500 mt-1">
                    NEXT QUEST.
                 </span>

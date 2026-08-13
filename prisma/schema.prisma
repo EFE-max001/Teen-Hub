@@ -34,6 +34,31 @@ enum QuestStatus {
   OPEN
   FULL
   CLOSED
+  FUNDED
+}
+
+// ── Payment Center (Founder-controlled client payments) ──────────────────
+enum PaymentRequestStatus {
+  DRAFT
+  ACTIVE
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  CANCELLED
+  REFUNDED
+}
+
+enum FeeMode {
+  CLIENT_PAYS
+  FOUNDER_PAYS
+  SPLIT_50_50
+}
+
+enum PaymentRiskLevel {
+  LOW
+  MEDIUM
+  HIGH
 }
 
 enum ClaimStatus {
@@ -166,6 +191,9 @@ model User {
 
   // Founder ghost identity
   ghostIdentity      FounderGhostIdentity?
+
+  // Payment Center — payment requests this user (Founder) created
+  paymentRequestsCreated PaymentRequest[] @relation("PaymentRequestCreatedBy")
 }
 
 model Account {
@@ -238,6 +266,7 @@ model Quest {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   claims          QuestClaim[]
+  paymentRequests PaymentRequest[]
 }
 
 model QuestClaim {
@@ -261,6 +290,119 @@ model QuestClaim {
   @@unique([questId, userId])
   @@index([userId])
   @@index([questId])
+}
+
+// ── Payment Center ─────────────────────────────────────────────────────
+// The Founder creates a PaymentRequest, shares its public link, and an
+// external client (no Teen Hub account required) pays through Paystack.
+// This is deliberately its own model — it is NOT the internal
+// Quest/QuestClaim payout system (member earnings), which stays governed
+// by QuestClaim.payoutStatus exactly as before.
+model PaymentRequest {
+  id            String                @id @default(cuid())
+  publicToken   String                @unique // high-entropy — used in /pay/[token], never a raw db id
+  reference     String                @unique // human-facing reference, e.g. QH-8F7X2A9K
+  status        PaymentRequestStatus  @default(DRAFT)
+
+  title         String
+  description   String
+
+  baseAmount      Float               // service amount in the smallest display unit (Naira), authoritative
+  currency        String              @default("NGN")
+  feeMode         FeeMode             @default(CLIENT_PAYS)
+  processingFee   Float               @default(0)   // fee portion charged to the client (0 if FOUNDER_PAYS)
+  founderFeeShare Float               @default(0)   // fee portion absorbed by the founder (SPLIT_50_50 / FOUNDER_PAYS)
+  customerTotal   Float               // what the client is actually charged = baseAmount + processingFee (client share)
+
+  clientName    String?
+  clientEmail   String?
+  clientPhone   String?
+  clientCompany String?
+  clientNote    String?
+
+  createdById   String
+  createdBy     User                  @relation("PaymentRequestCreatedBy", fields: [createdById], references: [id])
+
+  linkedQuestId String?
+  linkedQuest   Quest?                @relation(fields: [linkedQuestId], references: [id])
+
+  founderNote   String?
+
+  expiresAt     DateTime?
+  paidAt        DateTime?
+
+  paystackReference     String?      @unique
+  paystackTransactionId String?
+  paymentChannel        String?
+
+  riskLevel     PaymentRiskLevel?
+  riskReason    String?
+
+  reminderCount  Int      @default(0)
+  lastReminderAt DateTime?
+
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  transactions  PaymentTransaction[]
+  emailLogs     PaymentEmailLog[]
+  auditLogs     PaymentAuditLog[]
+
+  @@index([status])
+  @@index([createdById])
+  @@index([clientEmail])
+}
+
+// One PaymentRequest can have multiple transaction attempts (retries after
+// a failed/abandoned checkout). Only one should ever end SUCCESS.
+model PaymentTransaction {
+  id               String         @id @default(cuid())
+  paymentRequestId String
+  paymentRequest   PaymentRequest @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
+
+  paystackReference String        @unique
+  status            String        @default("PENDING") // PENDING | SUCCESS | FAILED | ABANDONED
+  amount            Float
+  channel           String?
+  paidAt            DateTime?
+
+  rawEvent          Json?         // last known Paystack event payload, for audit/debugging
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([paymentRequestId])
+}
+
+// Idempotency guard for transactional emails — never send the same
+// payment-success email twice because of a duplicate webhook delivery.
+model PaymentEmailLog {
+  id               String         @id @default(cuid())
+  paymentRequestId String
+  paymentRequest   PaymentRequest @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
+  template         String         // payment-created | payment-success-client | ...
+  recipient        String
+  status           String         @default("SENT") // SENT | FAILED
+  error            String?
+  createdAt        DateTime       @default(now())
+
+  @@unique([paymentRequestId, template, recipient])
+}
+
+// Durable financial audit trail — decoupled from ActivityLog (which
+// requires an authenticated User) since public clients and the Paystack
+// webhook also generate events here.
+model PaymentAuditLog {
+  id               String         @id @default(cuid())
+  paymentRequestId String?
+  paymentRequest   PaymentRequest? @relation(fields: [paymentRequestId], references: [id], onDelete: SetNull)
+  action           String         // PAYMENT_REQUEST_CREATED | PAYMENT_SUCCESS | ...
+  actor            String         // "founder:<userId>" | "client" | "webhook" | "system"
+  metadata         Json?
+  createdAt        DateTime       @default(now())
+
+  @@index([paymentRequestId])
+  @@index([action])
 }
 
 model QuestSuggestion {

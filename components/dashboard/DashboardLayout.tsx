@@ -88,6 +88,7 @@ const NAV_ITEMS: NavItem[] = [
 const ADMIN_NAV: NavItem[] = [
   { href: '/admin',   label: 'Admin Panel',      icon: '⬛', adminOnly: true },
   { href: '/founder', label: 'Founder War Room',  icon: '★', founderOnly: true },
+  { href: '/founder/payments', label: 'Payment Center', icon: '₦', founderOnly: true },
 ]
 
 interface DashboardLayoutProps {

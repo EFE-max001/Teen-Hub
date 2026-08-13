@@ -1,158 +1,204 @@
 // Teen-Hub/lib/paystack.ts
 //
-// Paystack payment integration for quest payments and guild transactions
-// - Client-side checkout with inline popup
-// - Server-side transaction verification
-// - Automatic XP award on successful payment
-// - Founder-configurable commission rates
+// Server-side ONLY — never import this from a component that ships to the
+// browser. PAYSTACK_SECRET_KEY must never reach the client bundle.
 //
-// AI Automation: Fraud detection, payment pattern analysis
-// Founder Control: Custom commission tiers, payout thresholds
+// QuestHub's payment model: the FOUNDER creates a PaymentRequest and shares
+// its public link. An external client (no Teen Hub account) opens that
+// link and pays through Paystack's hosted checkout. This file owns all the
+// money math and all direct Paystack API calls, so there is exactly one
+// place that fee formula and payment verification logic lives.
+//
+// AI Automation: payment risk scoring lives in lib/ai.ts (assessPaymentRisk),
+// reusing QuestHub's existing AI routing rather than a second AI pipeline.
+// Founder Control: fee responsibility (who pays the Paystack fee) is chosen
+// per payment request by the Founder — see FeeMode below.
 
 import crypto from 'crypto'
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY
-const PAYSTACK_PUBLIC_KEY = process.env.PAYSTACK_PUBLIC_KEY
+const PAYSTACK_BASE = 'https://api.paystack.co'
+const SECRET_KEY = () => process.env.PAYSTACK_SECRET_KEY || ''
 
-if (!PAYSTACK_SECRET_KEY) {
-  console.warn('[Paystack] PAYSTACK_SECRET_KEY not found in environment variables')
+// ─── Fee calculation (Nigeria, local cards/transfer) ───────────────────────
+// Paystack's documented local-transaction formula: 1.5% + ₦100, with the
+// ₦100 flat fee waived under ₦2,500, and the total fee capped at ₦2,000.
+export function calculatePaystackFee(amount: number): number {
+  if (!Number.isFinite(amount) || amount <= 0) return 0
+  const percentageFee = amount * 0.015
+  const flatFee = amount < 2500 ? 0 : 100
+  const rawFee = percentageFee + flatFee
+  return Math.min(Math.round(rawFee * 100) / 100, 2000)
 }
 
-interface PaymentRequest {
-  email: string
-  amount: number // Amount in kobo (multiply naira by 100)
-  currency?: string
-  reference: string
-  metadata?: Record<string, any>
-  callback_url?: string
+// When the fee is passed on to the customer, Paystack deducts its cut from
+// the fee-INCLUSIVE total, so naively adding calculatePaystackFee(base)
+// under-collects. This resolves the inclusive formula:
+//   total = base + fee(total)   where fee(x) = min(x*0.015 + flat(x), 2000)
+// which is linear below the ₦2,000 cap, so re-deriving the fee against the
+// first-pass total converges exactly — this is what "customer bears the
+// fee" resolves to in practice.
+export function calculateCustomerPassedOnFee(baseAmount: number): number {
+  if (!Number.isFinite(baseAmount) || baseAmount <= 0) return 0
+  const firstPassFee = calculatePaystackFee(baseAmount)
+  const total = baseAmount + firstPassFee
+  return calculatePaystackFee(total)
 }
 
-interface TransactionVerificationResponse {
-  status: boolean
-  message: string
-  data: {
-    id: number
-    status: string
-    reference: string
-    amount: number
-    currency: string
-    channel: string
-    paid_at: string
-    metadata: Record<string, any>
-    customer: {
-      email: string
-      first_name?: string
-      last_name?: string
+export type FeeBreakdown = {
+  baseAmount: number
+  processingFee: number   // charged to the client
+  founderFeeShare: number // absorbed by the founder
+  customerTotal: number   // what the client actually pays
+}
+
+export type FeeMode = 'CLIENT_PAYS' | 'FOUNDER_PAYS' | 'SPLIT_50_50'
+
+// CLIENT_PAYS is the default across the app — Paystack explicitly supports
+// passing the transaction fee to the customer for Nigerian payments, so
+// there's no reason to eat it on every payment by default. The Founder can
+// still choose FOUNDER_PAYS or SPLIT_50_50 per request.
+export function computeFeeBreakdown(
+  baseAmount: number,
+  feeMode: FeeMode = 'CLIENT_PAYS'
+): FeeBreakdown {
+  if (feeMode === 'FOUNDER_PAYS') {
+    return {
+      baseAmount,
+      processingFee: 0,
+      founderFeeShare: calculatePaystackFee(baseAmount),
+      customerTotal: baseAmount,
     }
+  }
+
+  if (feeMode === 'SPLIT_50_50') {
+    const fullFee = calculateCustomerPassedOnFee(baseAmount)
+    const half = Math.round((fullFee / 2) * 100) / 100
+    return {
+      baseAmount,
+      processingFee: half,
+      founderFeeShare: half,
+      customerTotal: Math.round((baseAmount + half) * 100) / 100,
+    }
+  }
+
+  // CLIENT_PAYS (default)
+  const fullFee = calculateCustomerPassedOnFee(baseAmount)
+  return {
+    baseAmount,
+    processingFee: fullFee,
+    founderFeeShare: 0,
+    customerTotal: Math.round((baseAmount + fullFee) * 100) / 100,
   }
 }
 
-/**
- * Initialize Paystack payment
- * Returns authorization URL for redirect or inline popup
- */
-export async function initializePayment(payment: PaymentRequest): Promise<{
+// ─── Token / reference generation ──────────────────────────────────────────
+
+// High-entropy, URL-safe — used in /pay/[token]. Never a sequential/db id,
+// so a payment link can't be enumerated or guessed.
+export function generatePublicToken(): string {
+  return 'qh_' + crypto.randomBytes(24).toString('base64url')
+}
+
+// Human-facing payment request reference, shown to both Founder and client.
+export function generateReference(prefix = 'QH'): string {
+  const rand = crypto.randomBytes(5).toString('hex').toUpperCase()
+  return `${prefix}-${rand}`
+}
+
+// Distinct from the PaymentRequest reference — one request can have several
+// transaction attempts (retries after an abandoned checkout), each needs
+// its own unique Paystack reference.
+export function generatePaystackTxReference(paymentRequestReference: string): string {
+  const rand = crypto.randomBytes(6).toString('hex')
+  return `${paymentRequestReference}-${rand}`
+}
+
+// ─── Paystack API calls (server-side only) ─────────────────────────────────
+
+type InitializeParams = {
+  email: string
+  amountNaira: number // converted to kobo internally
+  reference: string
+  callbackUrl: string
+  metadata?: Record<string, any>
+}
+
+export async function initializePayment(params: InitializeParams): Promise<{
   success: boolean
   authorization_url?: string
   access_code?: string
   reference: string
   error?: string
 }> {
-  if (!PAYSTACK_SECRET_KEY) {
-    return { 
-      success: false, 
-      reference: payment.reference,
-      error: 'Paystack not configured' 
-    }
+  if (!SECRET_KEY()) {
+    return { success: false, reference: params.reference, error: 'Paystack not configured' }
   }
-
   try {
-    const response = await fetch('https://api.paystack.co/transaction/initialize', {
+    const response = await fetch(`${PAYSTACK_BASE}/transaction/initialize`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
+        Authorization: `Bearer ${SECRET_KEY()}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: payment.email,
-        amount: payment.amount,
-        currency: payment.currency || 'NGN',
-        reference: payment.reference,
-        metadata: payment.metadata,
-        callback_url: payment.callback_url || `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/callback`,
+        email: params.email,
+        amount: Math.round(params.amountNaira * 100), // kobo
+        reference: params.reference,
+        callback_url: params.callbackUrl,
+        currency: 'NGN',
+        metadata: params.metadata || {},
       }),
     })
-
     const data = await response.json()
-
     if (!data.status) {
-      return {
-        success: false,
-        reference: payment.reference,
-        error: data.message || 'Failed to initialize payment',
-      }
+      return { success: false, reference: params.reference, error: data.message || 'Failed to initialize payment' }
     }
-
     return {
       success: true,
       authorization_url: data.data.authorization_url,
       access_code: data.data.access_code,
-      reference: payment.reference,
+      reference: params.reference,
     }
   } catch (error) {
     console.error('[Paystack] Initialization error:', error)
     return {
       success: false,
-      reference: payment.reference,
+      reference: params.reference,
       error: error instanceof Error ? error.message : 'Unknown error',
     }
   }
 }
 
-/**
- * Verify transaction after payment completion
- * Call this from your API route when user returns from Paystack
- */
+export type VerifiedTransaction = {
+  id: number
+  status: string // 'success' | 'failed' | 'abandoned' | ...
+  reference: string
+  amount: number // kobo
+  currency: string
+  channel: string
+  paid_at: string | null
+  metadata: Record<string, any>
+  customer: { email: string }
+}
+
 export async function verifyTransaction(reference: string): Promise<{
   success: boolean
   verified: boolean
-  data?: TransactionVerificationResponse['data']
+  data?: VerifiedTransaction
   error?: string
 }> {
-  if (!PAYSTACK_SECRET_KEY) {
-    return { 
-      success: false, 
-      verified: false,
-      error: 'Paystack not configured' 
-    }
+  if (!SECRET_KEY()) {
+    return { success: false, verified: false, error: 'Paystack not configured' }
   }
-
   try {
-    const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-      },
+    const response = await fetch(`${PAYSTACK_BASE}/transaction/verify/${encodeURIComponent(reference)}`, {
+      headers: { Authorization: `Bearer ${SECRET_KEY()}` },
     })
-
-    const data: TransactionVerificationResponse = await response.json()
-
+    const data = await response.json()
     if (!data.status) {
-      return {
-        success: false,
-        verified: false,
-        error: data.message || 'Verification failed',
-      }
+      return { success: false, verified: false, error: data.message || 'Verification failed' }
     }
-
-    const isSuccessful = data.data.status === 'success'
-
-    return {
-      success: true,
-      verified: isSuccessful,
-      data: data.data,
-    }
+    return { success: true, verified: data.data.status === 'success', data: data.data }
   } catch (error) {
     console.error('[Paystack] Verification error:', error)
     return {
@@ -163,135 +209,18 @@ export async function verifyTransaction(reference: string): Promise<{
   }
 }
 
-/**
- * Generate unique transaction reference
- * Format: QH_YYYYMMDD_XXXXXXXX
- */
-export function generateReference(prefix = 'QH'): string {
-  const date = new Date().toISOString().slice(0, 10).replace(/-/g, '')
-  const random = crypto.randomBytes(4).toString('hex').toUpperCase()
-  return `${prefix}_${date}_${random}`
-}
-
-/**
- * Calculate founder commission based on rank and configuration
- * AI can adjust rates dynamically based on trust score, history
- */
-export function calculateCommission(
-  amount: number,
-  userRank: string,
-  trustScore: number = 50
-): {
-  platformFee: number
-  creatorAmount: number
-  commissionRate: number
-} {
-  // Base commission rate (founder configurable via admin panel)
-  let baseRate = 0.10 // 10% default
-  
-  // Rank-based discounts (higher rank = lower fees)
-  const rankDiscounts: Record<string, number> = {
-    'F': 0,
-    'E': 0.01,
-    'D': 0.02,
-    'C': 0.03,
-    'B': 0.04,
-    'A': 0.05,
-    'S': 0.07,
-    'SS': 0.08,
-    'SSS': 0.10,
+// Validates the `x-paystack-signature` header per Paystack's documented
+// HMAC-SHA512 scheme. MUST be called with the raw request body string
+// (not a re-serialized object) — Paystack signs the exact bytes it sent,
+// and re-serializing JSON can differ in key order/whitespace and silently
+// break verification.
+export function verifyWebhookSignature(rawBody: string, signature: string | undefined): boolean {
+  if (!signature || !SECRET_KEY()) return false
+  const expected = crypto.createHmac('sha512', SECRET_KEY()).update(rawBody).digest('hex')
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature))
+  } catch {
+    // Buffers of different length throw rather than returning false
+    return false
   }
-  
-  const rankDiscount = rankDiscounts[userRank] || 0
-  
-  // Trust score bonus (AI-calculated, prevents abuse)
-  const trustBonus = Math.min(trustScore / 1000, 0.03) // Max 3% bonus
-  
-  const commissionRate = Math.max(0.02, baseRate - rankDiscount - trustBonus) // Min 2%
-  const platformFee = Math.round(amount * commissionRate)
-  const creatorAmount = amount - platformFee
-  
-  return {
-    platformFee,
-    creatorAmount,
-    commissionRate,
-  }
-}
-
-/**
- * Detect suspicious payment patterns (AI-powered)
- * Integrates with xAI/Grok for anomaly detection
- */
-export function analyzePaymentRisk(
-  transaction: any,
-  userProfile: any
-): {
-  riskLevel: 'low' | 'medium' | 'high'
-  flags: string[]
-  recommendedAction: 'approve' | 'review' | 'block'
-} {
-  const flags: string[] = []
-  let riskScore = 0
-
-  // Check transaction velocity (multiple payments in short time)
-  if (userProfile.recentTransactions?.length > 5) {
-    flags.push('High transaction velocity')
-    riskScore += 20
-  }
-
-  // Check amount deviation from user's normal range
-  if (userProfile.avgTransactionAmount) {
-    const deviation = Math.abs(transaction.amount - userProfile.avgTransactionAmount) / userProfile.avgTransactionAmount
-    if (deviation > 2) {
-      flags.push('Unusual transaction amount')
-      riskScore += 25
-    }
-  }
-
-  // Check location mismatch
-  if (userProfile.lastLoginCountry && transaction.country && userProfile.lastLoginCountry !== transaction.country) {
-    flags.push('Geographic inconsistency')
-    riskScore += 30
-  }
-
-  // New account + large transaction
-  if (userProfile.accountAgeDays < 7 && transaction.amount > 50000) {
-    flags.push('New account, high value')
-    riskScore += 35
-  }
-
-  let riskLevel: 'low' | 'medium' | 'high' = 'low'
-  let recommendedAction: 'approve' | 'review' | 'block' = 'approve'
-
-  if (riskScore >= 60) {
-    riskLevel = 'high'
-    recommendedAction = 'block'
-  } else if (riskScore >= 30) {
-    riskLevel = 'medium'
-    recommendedAction = 'review'
-  }
-
-  return {
-    riskLevel,
-    flags,
-    recommendedAction,
-  }
-}
-
-/**
- * Webhook signature verification
- * Validates that webhook requests are genuinely from Paystack
- */
-export function verifyWebhookSignature(payload: any, signature: string): boolean {
-  if (!PAYSTACK_SECRET_KEY) return false
-
-  const expectedSignature = crypto
-    .createHmac('sha512', PAYSTACK_SECRET_KEY)
-    .update(JSON.stringify(payload))
-    .digest('hex')
-
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  )
 }

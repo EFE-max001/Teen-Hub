@@ -11,6 +11,10 @@ import PageTransitionParticles from '@/components/ui/PageTransitionParticles'
 
 const SentinelBackground = dynamic(() => import('@/components/ui/SentinelBackground'), { ssr: false })
 const AmbientGlow = dynamic(() => import('@/components/ui/AmbientGlow'), { ssr: false })
+// Global CSS/SVG butterfly overlay — spreads butterflies across every page
+// (not just the hero canvas) and lands some of them on text. Zero WebGL
+// cost, so it's safe to mount app-wide unlike SentinelBackground above.
+const ButterfliesOverlay = dynamic(() => import('@/components/ui/ButterfliesOverlay'), { ssr: false })
 
 // Only the landing page ("/") has the heavy hero scene (portal + butterfly
 // flock + particle network). It used to mount unconditionally in every
@@ -67,6 +71,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
     <SessionProvider session={session}>
       <AppLoadingGate>
         {showSentinel ? <SentinelBackground /> : <AmbientGlow />}
+        {!reducedMotion && <ButterfliesOverlay />}
         {burst !== null && !reducedMotion && <PageTransitionParticles key={burst} />}
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

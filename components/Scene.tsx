@@ -82,22 +82,29 @@ export default function Scene({
   // "The World Evolves" — per the brief, more butterflies inhabit the
   // scene as a member's rank climbs. Base counts stay what they were for
   // guests/rank F (progress = 0).
-  const baseButterflyCount = isMobile ? 6 : 11
-  const maxButterflyBonus = isMobile ? 4 : 6
-  const butterflyCount = Math.min(15, Math.round(baseButterflyCount + progress * maxButterflyBonus))
+  // Bumped from 6/11 base + 4/6 bonus — the flock now needs to feel like it
+  // spans the whole page, not just cluster near the headline.
+  const baseButterflyCount = isMobile ? 10 : 18
+  const maxButterflyBonus = isMobile ? 6 : 6
+  const butterflyCount = Math.min(24, Math.round(baseButterflyCount + progress * maxButterflyBonus))
 
   return (
     <Canvas
       dpr={dpr}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
-      camera={{ fov: 38, near: 0.1, far: 100 }}
+      camera={{ fov: 52, near: 0.1, far: 100 }}
     >
       {/* No opaque background color here on purpose — this Canvas sits
-          inside LivingBackground on top of the CSS FogLayer. */}
+          inside LivingBackground on top of the CSS FogLayer. Wider FOV
+          (52 vs 38) so the flock spans a much larger horizontal area. */}
       <ambientLight intensity={0.6} color={COLORS.violet} />
       <directionalLight position={[2, 4, 3]} intensity={0.8} color={COLORS.cyan} />
       <directionalLight position={[-3, 2, -2]} intensity={0.5} color={COLORS.violet} />
       <pointLight position={[0, 3, -4.5]} intensity={0.6} color={COLORS.gold} distance={14} decay={2} />
+      {/* Fill lights at the horizontal edges so peripheral butterflies,
+          now visible thanks to the wider FOV, aren't left unlit. */}
+      <pointLight position={[-8, 2, 0]} intensity={0.3} color={COLORS.emerald} distance={12} decay={2} />
+      <pointLight position={[8, 2, 0]} intensity={0.3} color={COLORS.cyan} distance={12} decay={2} />
 
       <CameraRig reducedMotion={reducedMotion} />
       <Stars isMobile={isMobile} />
