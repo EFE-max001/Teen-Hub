@@ -1,72 +1,59 @@
-// Teen-Hub/pages/api/founder/payments/[id].ts
+// Teen-Hub/pages/api/founder/payments/[id]/remind.ts
+//
+// This file previously contained the GET-details/PATCH-cancel-edit logic
+// meant for pages/api/founder/payments/[id].ts (now moved there, where its
+// own header comment always said it belonged). Because of the mix-up, this
+// route had no POST handler at all — the "Remind" button in
+// pages/founder/payments/index.tsx has been hitting a 405 this whole time,
+// and lib/paymentEvents.ts's sendPaymentReminderEmail() (fully built,
+// complete with its own reminderCount tracking and email template) was
+// never actually called from anywhere. This is what wires it up for real.
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { canTransition } from '@/lib/paymentLifecycle'
-import { logPaymentEvent } from '@/lib/paymentAudit'
+import { sendPaymentReminderEmail } from '@/lib/paymentEvents'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = await getServerSession(req, res, authOptions)
-  if (!session || session.user.role !== 'FOUNDER') return res.status(403).json({ error: 'Forbidden' })
+  try {
+    const session = await getServerSession(req, res, authOptions)
+    if (!session || session.user.role !== 'FOUNDER') return res.status(403).json({ error: 'Forbidden' })
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const { id } = req.query
-  if (typeof id !== 'string') return res.status(400).json({ error: 'Invalid id' })
+    const { id } = req.query
+    if (typeof id !== 'string') return res.status(400).json({ error: 'Invalid id' })
 
-  if (req.method === 'GET') {
-    const pr = await prisma.paymentRequest.findUnique({
-      where: { id },
-      include: {
-        linkedQuest: { select: { id: true, title: true, status: true } },
-        transactions: { orderBy: { createdAt: 'desc' } },
-        emailLogs: { orderBy: { createdAt: 'desc' } },
-        auditLogs: { orderBy: { createdAt: 'desc' }, take: 50 },
-        createdBy: { select: { id: true, name: true, nickname: true } },
-      },
-    })
-    if (!pr) return res.status(404).json({ error: 'Not found' })
-    const origin = process.env.NEXT_PUBLIC_APP_URL || `https://${req.headers.host}`
-    return res.json({ paymentRequest: pr, payUrl: `${origin}/pay/${pr.publicToken}` })
-  }
-
-  if (req.method === 'PATCH') {
     const pr = await prisma.paymentRequest.findUnique({ where: { id } })
     if (!pr) return res.status(404).json({ error: 'Not found' })
 
-    const { action } = req.body || {}
-
-    if (action === 'cancel') {
-      if (!canTransition(pr.status as any, 'CANCELLED')) {
-        return res.status(409).json({ error: `Cannot cancel a request that is ${pr.status.toLowerCase()}.` })
-      }
-      const updated = await prisma.paymentRequest.update({ where: { id }, data: { status: 'CANCELLED' } })
-      await logPaymentEvent('PAYMENT_REQUEST_CANCELLED', `founder:${session.user.id}`, id)
-      return res.json({ paymentRequest: updated })
+    if (!['ACTIVE', 'PENDING'].includes(pr.status)) {
+      return res.status(409).json({ error: `Cannot remind on a request that is ${pr.status.toLowerCase()}.` })
+    }
+    if (!pr.clientEmail) {
+      return res.status(400).json({ error: 'No client email on file for this request.' })
     }
 
-    if (action === 'edit') {
-      // Only pre-payment fields are editable, and only before the request
-      // has ever been paid — money already collected is never silently
-      // rewritten from here.
-      if (pr.status === 'PAID' || pr.status === 'REFUNDED') {
-        return res.status(409).json({ error: 'Cannot edit a request that has already been paid.' })
-      }
-      const { title, description, founderNote, expiresAt } = req.body || {}
-      const updated = await prisma.paymentRequest.update({
+    const { message } = (req.body || {}) as { message?: string }
+
+    const result = await sendPaymentReminderEmail(
+      pr,
+      message || 'This is a friendly reminder that the payment below is still pending.'
+    )
+
+    if (result.ok) {
+      await prisma.paymentRequest.update({
         where: { id },
-        data: {
-          title: title ?? pr.title,
-          description: description ?? pr.description,
-          founderNote: founderNote ?? pr.founderNote,
-          expiresAt: expiresAt ? new Date(expiresAt) : pr.expiresAt,
-        },
+        data: { reminderCount: { increment: 1 }, lastReminderAt: new Date() },
       })
-      await logPaymentEvent('PAYMENT_REQUEST_UPDATED', `founder:${session.user.id}`, id)
-      return res.json({ paymentRequest: updated })
     }
 
-    return res.status(400).json({ error: 'Unknown action' })
+    return res.json(result)
+  } catch (err: any) {
+    console.error('[founder/payments/[id]/remind] failed:', err)
+    return res.status(500).json({
+      error: err?.message?.includes('Unknown arg') || err?.message?.includes('does not exist')
+        ? `Prisma schema out of sync — run "npx prisma db push" and restart the server. (${err.message})`
+        : (err?.message || 'Unexpected server error'),
+    })
   }
-
-  res.status(405).end()
 }

@@ -71,7 +71,11 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
     <SessionProvider session={session}>
       <AppLoadingGate>
         {showSentinel ? <SentinelBackground /> : <AmbientGlow />}
-        {!reducedMotion && <ButterfliesOverlay />}
+        {/* Landing page already has its own 3D butterfly flock inside
+            SentinelBackground/Scene.tsx — mounting this CSS overlay there
+            too meant two independent butterfly systems on screen at once.
+            Every other route only has this lightweight one. */}
+        {!showSentinel && !reducedMotion && <ButterfliesOverlay />}
         {burst !== null && !reducedMotion && <PageTransitionParticles key={burst} />}
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

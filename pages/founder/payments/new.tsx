@@ -85,6 +85,10 @@ export default function NewPaymentRequest() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, baseAmount }),
       })
+      const contentType = res.headers.get('content-type') || ''
+      if (!contentType.includes('application/json')) {
+        throw new Error("Server didn't return JSON — the /api/founder/payments route may not be deployed, or crashed before it could respond. Check the server logs.")
+      }
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Could not create payment request.')
       setResult({ payUrl: data.payUrl, reference: data.paymentRequest.reference })

@@ -777,6 +777,13 @@ export default function Butterflies({
         : rest.slice(0, n);
     return picked.map((f, i) => ({
       ...f,
+      // Wider horizontal spread — the original box (|x| ≤ ~3.6) reads as
+      // clustered right around the headline in the center column. Scaling
+      // just x (not y/z) pushes the flock further out to the sides without
+      // changing how deep/tall the formation reads, so it frames a wider
+      // "colony passing through" band across the hero instead of huddling
+      // near the text.
+      home: new THREE.Vector3(f.home.x * 1.55, f.home.y, f.home.z),
       color: colors[i % colors.length],
       colorB: colors[(i + 1) % colors.length],
       // only the larger roam/orbit butterflies get a trail — keeps draw
@@ -793,7 +800,11 @@ export default function Butterflies({
       // exactly the kind of motion prefers-reduced-motion asks to avoid
       followCursor: reducedMotion ? false : f.followCursor,
       behavior: reducedMotion ? ("hover" as Behavior) : f.behavior,
-      area: reducedMotion ? f.area.clone().multiplyScalar(0.3) : f.area,
+      // reducedMotion still needs the *smaller* range, so it multiplies
+      // against the already-widened area set above (1.2 × 0.3) rather than
+      // the original f.area — otherwise this would silently overwrite the
+      // widened value and undo it for anyone with reduced motion on.
+      area: reducedMotion ? f.area.clone().multiplyScalar(1.2 * 0.3) : f.area.clone().multiplyScalar(1.2),
       // Alternate between the two real models (see MODELS above) so the
       // flock reads as mixed rather than N clones of one GLB. Indexed off
       // position in the already-trimmed `picked` array (not FLOCK's

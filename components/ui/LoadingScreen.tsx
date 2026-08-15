@@ -108,8 +108,7 @@ export default function LoadingScreen({ progress, onSkip }: { progress: number; 
 
         <div className="flex flex-col items-center gap-1">
           <h1
-            className="text-2xl tracking-[0.3em] text-white glow-text"
-            style={{ fontFamily: 'Orbitron, monospace' }}
+            className="text-2xl tracking-[0.3em] text-white glow-text font-cinzel"
           >
             QUESTHUB
           </h1>
