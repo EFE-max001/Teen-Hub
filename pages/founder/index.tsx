@@ -1388,7 +1388,11 @@ export default function FounderDashboard() {
                               <button onClick={async()=>{await fetch('/api/founder/arena',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:e.id,isDaily:true})});loadAll()}}
                                 className="font-cinzel text-[9px] text-amber-400 border border-amber-500/30 px-2 py-1 hover:bg-amber-900/20">SET DAILY</button>
                             )}
-                            <button onClick={async()=>{await fetch('/api/founder/arena',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:e.id})});loadAll()}}
+                            <button onClick={async()=>{
+                                const r = await fetch('/api/founder/arena',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:e.id})})
+                                if (!r.ok) { const d = await r.json().catch(()=>({})); alert(d.error || 'Failed to delete game'); return }
+                                loadAll()
+                              }}
                               className="ml-auto font-cinzel text-[9px] text-slate-600 border border-slate-700 px-2 py-1 hover:bg-slate-800">DELETE</button>
                           </div>
                         </div>

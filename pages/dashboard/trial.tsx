@@ -12,7 +12,6 @@ export default function TrialPage() {
   const { data: session } = useSession()
   const router = useRouter()
   const [trial, setTrial] = useState<any>(null)
-  const [tasks, setTasks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [submissionUrl, setSubmissionUrl] = useState('')
   const [submissionNote, setSubmissionNote] = useState('')
@@ -27,11 +26,6 @@ export default function TrialPage() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-
-    fetch('/api/trial/tasks')
-      .then(r => r.json())
-      .then(data => setTasks(data.tasks || []))
-      .catch(() => {})
   }, [])
 
   async function submitTask() {
@@ -173,72 +167,81 @@ export default function TrialPage() {
                 </div>
               )}
 
-              {/* Active Trial Tasks */}
-              {tasks.length > 0 && (
-                <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
-                  <h3 className="font-cinzel text-xs text-portal-emerald tracking-widest uppercase mb-4">Assigned Trial Tasks</h3>
-                  <div className="flex flex-col gap-3">
-                    {tasks.map((task: any) => (
-                      <div key={task.id} className="border border-portal-emerald/20 p-4 hover:border-portal-emerald/40 transition-colors">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1">
-                            <div className="font-cinzel text-sm text-white mb-1">{task.title}</div>
-                            <div className="font-cormorant text-slate-400 text-sm leading-relaxed">{task.description}</div>
-                            <div className="flex items-center gap-3 mt-2">
-                              <span className="font-cinzel text-[9px] text-portal-emerald border border-portal-emerald/30 px-2 py-0.5 tracking-widest">{task.category}</span>
-                              <span className="font-cinzel text-[9px] text-slate-500 tracking-widest">{task.difficulty}</span>
-                              <span className="font-cormorant text-xs text-slate-600">⏱ {task.deadlineHours}h deadline</span>
-                            </div>
-                          </div>
+              {/* Assigned Trial Task — previously this mapped over the ENTIRE
+                  task catalog (/api/trial/tasks) and rendered a full,
+                  independently-submittable form under every card, all
+                  sharing one submissionNote/submitError state. Submitting
+                  from any card always checked the real assignedTaskId
+                  server-side, so if that lookup didn't match, the same
+                  "No task has been assigned to you yet" error printed
+                  under every single card. Now: exactly one card, for the
+                  task actually on this trial (trial.assignedTask, joined
+                  in /api/user/me), with a clear message when none exists yet. */}
+              <div className="bg-[#03060A] border border-portal-emerald/20 p-5">
+                <h3 className="font-cinzel text-xs text-portal-emerald tracking-widest uppercase mb-4">Assigned Trial Task</h3>
+                {!trial.assignedTask ? (
+                  <p className="font-cormorant text-slate-400 text-sm">
+                    No task has been assigned to you yet — check back soon, or reach out if this seems like a mistake.
+                  </p>
+                ) : (
+                  <div className="border border-portal-emerald/20 p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="font-cinzel text-sm text-white mb-1">{trial.assignedTask.title}</div>
+                        <div className="font-cormorant text-slate-400 text-sm leading-relaxed">{trial.assignedTask.description}</div>
+                        <div className="flex items-center gap-3 mt-2">
+                          <span className="font-cinzel text-[9px] text-portal-emerald border border-portal-emerald/30 px-2 py-0.5 tracking-widest">{trial.assignedTask.category}</span>
+                          <span className="font-cinzel text-[9px] text-slate-500 tracking-widest">{trial.assignedTask.difficulty}</span>
+                          <span className="font-cormorant text-xs text-slate-600">⏱ {trial.assignedTask.deadlineHours}h deadline</span>
                         </div>
-
-                        {/* Submission — this whole block didn't exist before;
-                            the task card used to just be a static description
-                            with no way to actually turn work in. */}
-                        {trial.taskSubmittedAt ? (
-                          <div className="mt-4 pt-4 border-t border-portal-emerald/10">
-                            <div className="font-cinzel text-[10px] text-portal-emerald tracking-widest uppercase mb-1">
-                              ✓ Submitted {new Date(trial.taskSubmittedAt).toLocaleString()}
-                            </div>
-                            {trial.taskSubmissionNote && (
-                              <p className="font-cormorant text-slate-400 text-sm italic mt-1">"{trial.taskSubmissionNote}"</p>
-                            )}
-                            {trial.taskSubmissionUrl && (
-                              <a href={trial.taskSubmissionUrl} target="_blank" rel="noreferrer" className="font-cormorant text-portal-cyan text-sm underline mt-1 inline-block">
-                                {trial.taskSubmissionUrl}
-                              </a>
-                            )}
-                          </div>
-                        ) : ['PENDING', 'UNDER_REVIEW'].includes(trial.status) ? (
-                          <div className="mt-4 pt-4 border-t border-portal-emerald/10 flex flex-col gap-2">
-                            <input
-                              value={submissionUrl}
-                              onChange={e => setSubmissionUrl(e.target.value)}
-                              placeholder="Link to your work (optional) — https://..."
-                              className="w-full bg-black/40 border border-portal-emerald/20 rounded px-3 py-2 font-cormorant text-sm text-slate-200 focus:outline-none focus:border-portal-emerald/50"
-                            />
-                            <textarea
-                              value={submissionNote}
-                              onChange={e => setSubmissionNote(e.target.value)}
-                              placeholder="Describe what you completed *"
-                              rows={3}
-                              className="w-full bg-black/40 border border-portal-emerald/20 rounded px-3 py-2 font-cormorant text-sm text-slate-200 focus:outline-none focus:border-portal-emerald/50"
-                            />
-                            {submitError && <p className="font-cormorant text-red-400 text-xs">{submitError}</p>}
-                            <button
-                              onClick={submitTask}
-                              disabled={submitting}
-                              className="font-cinzel text-xs rounded-full px-4 py-2 border border-portal-emerald/40 text-portal-emerald hover:bg-portal-emerald/10 transition-all disabled:opacity-50 self-start"
-                            >
-                              {submitting ? 'SUBMITTING…' : 'SUBMIT TASK'}
-                            </button>
-                          </div>
-                        ) : null}
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Submission — this whole block didn't exist before;
+                        the task card used to just be a static description
+                        with no way to actually turn work in. */}
+                    {trial.taskSubmittedAt ? (
+                      <div className="mt-4 pt-4 border-t border-portal-emerald/10">
+                        <div className="font-cinzel text-[10px] text-portal-emerald tracking-widest uppercase mb-1">
+                          ✓ Submitted {new Date(trial.taskSubmittedAt).toLocaleString()}
+                        </div>
+                        {trial.taskSubmissionNote && (
+                          <p className="font-cormorant text-slate-400 text-sm italic mt-1">"{trial.taskSubmissionNote}"</p>
+                        )}
+                        {trial.taskSubmissionUrl && (
+                          <a href={trial.taskSubmissionUrl} target="_blank" rel="noreferrer" className="font-cormorant text-portal-cyan text-sm underline mt-1 inline-block">
+                            {trial.taskSubmissionUrl}
+                          </a>
+                        )}
+                      </div>
+                    ) : ['PENDING', 'UNDER_REVIEW'].includes(trial.status) ? (
+                      <div className="mt-4 pt-4 border-t border-portal-emerald/10 flex flex-col gap-2">
+                        <input
+                          value={submissionUrl}
+                          onChange={e => setSubmissionUrl(e.target.value)}
+                          placeholder="Link to your work (optional) — https://..."
+                          className="w-full bg-black/40 border border-portal-emerald/20 rounded px-3 py-2 font-cormorant text-sm text-slate-200 focus:outline-none focus:border-portal-emerald/50"
+                        />
+                        <textarea
+                          value={submissionNote}
+                          onChange={e => setSubmissionNote(e.target.value)}
+                          placeholder="Describe what you completed *"
+                          rows={3}
+                          className="w-full bg-black/40 border border-portal-emerald/20 rounded px-3 py-2 font-cormorant text-sm text-slate-200 focus:outline-none focus:border-portal-emerald/50"
+                        />
+                        {submitError && <p className="font-cormorant text-red-400 text-xs">{submitError}</p>}
+                        <button
+                          onClick={submitTask}
+                          disabled={submitting}
+                          className="font-cinzel text-xs rounded-full px-4 py-2 border border-portal-emerald/40 text-portal-emerald hover:bg-portal-emerald/10 transition-all disabled:opacity-50 self-start"
+                        >
+                          {submitting ? 'SUBMITTING…' : 'SUBMIT TASK'}
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Rules */}
               <div className="bg-[#03060A] border border-portal-emerald/20 p-5">

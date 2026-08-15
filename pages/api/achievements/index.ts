@@ -35,18 +35,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!name || !description || !condition) {
       return res.status(400).json({ error: 'name, description, and condition required' })
     }
-    const achievement = await prisma.achievement.create({
-      data: {
-        name, description,
-        type: type || 'PERMANENT',
-        icon: icon || '🏆',
-        condition,
-        xpBonus: parseInt(xpBonus) || 0,
-        expiresAt: expiresAt ? new Date(expiresAt) : undefined,
-        createdById: session.user.id,
-      },
-    })
-    return res.status(201).json({ achievement })
+    try {
+      const achievement = await prisma.achievement.create({
+        data: {
+          name, description,
+          type: type || 'PERMANENT',
+          icon: icon || '🏆',
+          condition,
+          xpBonus: parseInt(xpBonus) || 0,
+          expiresAt: expiresAt ? new Date(expiresAt) : undefined,
+          createdById: session.user.id,
+        },
+      })
+      return res.status(201).json({ achievement })
+    } catch (err: any) {
+      // achievement.name is @unique — creating (or re-clicking "+ Create")
+      // with a name that already exists was hitting Prisma's P2002
+      // unhandled, which surfaced to the founder as a bare, meaningless
+      // "Server returned 500". This is what that error actually was.
+      if (err?.code === 'P2002') {
+        return res.status(409).json({ error: `An achievement named "${name}" already exists — try a different name.` })
+      }
+      console.error('[achievements] create failed:', err)
+      return res.status(500).json({ error: err?.message || 'Failed to create achievement' })
+    }
   }
 
   res.status(405).end()

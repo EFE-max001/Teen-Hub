@@ -10,7 +10,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
-      trial: true,
+      // Was `trial: true` — the frontend needs the actual assigned task's
+      // title/description/etc to render, not just the raw assignedTaskId
+      // FK. Without this include, dashboard/trial.tsx had no way to know
+      // which single task was assigned, and fell back to rendering a
+      // submission form under every task in the whole catalog instead —
+      // see pages/dashboard/trial.tsx for the matching frontend fix.
+      trial: { include: { assignedTask: true } },
       xpLogs: { orderBy: { createdAt: 'desc' }, take: 10 },
       activityLogs: { orderBy: { createdAt: 'desc' }, take: 20 },
       questClaims: {

@@ -112,8 +112,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'DELETE') {
     const { id } = req.body
-    await prisma.arenaChallenge.delete({ where: { id } })
-    return res.json({ ok: true })
+    if (!id) return res.status(400).json({ error: 'id required' })
+    try {
+      // ArenaEntry.challenge has no cascade delete configured, so deleting
+      // a challenge that already has entries (every deployed test game
+      // does) previously threw an unhandled foreign-key constraint error
+      // here — a bare 500 with no message, and the frontend didn't check
+      // res.ok, so the button looked like it silently did nothing. Delete
+      // dependents first, in a transaction, so either both go or neither do.
+      await prisma.$transaction([
+        prisma.arenaEntry.deleteMany({ where: { challengeId: id } }),
+        prisma.arenaChallenge.delete({ where: { id } }),
+      ])
+      return res.json({ ok: true })
+    } catch (err: any) {
+      console.error('[founder/arena] delete failed:', err)
+      return res.status(500).json({ error: err?.message || 'Failed to delete game' })
+    }
   }
 
   res.status(405).end()
