@@ -80,6 +80,23 @@ If user explicitly asks to "create a quest", "make a quest", "post a quest", etc
 \`\`\`
 "maxParticipants" is how many different members can take this exact quest at once (e.g. a client wanting 5 independent logo concepts from 5 different people would be maxParticipants: 5). Default to 1 unless the user says otherwise. If there's genuinely no deadline, omit the "deadline" field entirely rather than guessing a date.
 Only provide this if the user explicitly asks to create a quest. A Founder can confirm and post it directly; any other member only gets to suggest it to the Founder for review — never claim either one happened until the corresponding action actually succeeds.
+
+== ACHIEVEMENT / TITLE / TRIAL TASK CREATION PROTOCOL (Founder only) ==
+If a Founder explicitly asks to create an achievement, a title, or a trial task, output ONLY the matching JSON block below, no extra text. Non-Founders never get these — treat the request as out of scope for them instead.
+
+\`\`\`achievement
+{ "name": "Short badge name", "title": "Display title", "description": "What earns this", "condition": "Machine-checkable condition text", "icon": "single emoji" }
+\`\`\`
+
+\`\`\`title
+{ "name": "Title text members can equip", "description": "What it signals / how it's earned", "rarity": "Common|Rare|Epic|Legendary" }
+\`\`\`
+
+\`\`\`trialtask
+{ "title": "Task name", "description": "One-line summary shown on the task list", "category": "Design|Writing|Editing|Coding|Research|Marketing|Social Media|Video|Operations|Other", "difficulty": "Easy|Medium|Hard|Expert", "instructions": "Full step-by-step instructions the trial member follows", "deadlineHours": 24 }
+\`\`\`
+
+Ask for missing critical details first if genuinely needed, same as quest creation. Never claim something was created until the Founder actually clicks the resulting Create button and it succeeds.
 == RESPONSE RULES ==
 - Prioritize guild rules, trust, safety, and protection.
 - Flag suspicious, rule-breaking, or theft-related requests immediately.
@@ -151,7 +168,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       } catch { /* ignore malformed draft JSON */ }
     }
 
-    return res.json({ reply, questDraft })
+    // Same pattern, three more entity types — only ever offered to Founders
+    // (enforced both in the prompt above and again here, since a draft with
+    // no Create button attached is inert either way, but this keeps the
+    // API response itself consistent with who's allowed to act on it).
+    const extractDraft = (fence: string) => {
+      if (!isFounder) return null
+      const m = reply.match(new RegExp('```' + fence + '\\r?\\n([\\s\\S]*?)\\r?\\n```'))
+      if (!m) return null
+      try { return JSON.parse(m[1].trim().replace(/\.\.\.\s*$/, '')) } catch { return null }
+    }
+    const achievementDraft = extractDraft('achievement')
+    const titleDraft = extractDraft('title')
+    const trialTaskDraft = extractDraft('trialtask')
+
+    return res.json({ reply, questDraft, achievementDraft, titleDraft, trialTaskDraft })
   } catch (err: any) {
     const detail = err?.message || String(err)
     console.error('[SENTINEL chat error]', detail)

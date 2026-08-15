@@ -14,6 +14,10 @@ export default function TrialPage() {
   const [trial, setTrial] = useState<any>(null)
   const [tasks, setTasks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [submissionUrl, setSubmissionUrl] = useState('')
+  const [submissionNote, setSubmissionNote] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   useEffect(() => {
     fetch('/api/user/me')
@@ -29,6 +33,21 @@ export default function TrialPage() {
       .then(data => setTasks(data.tasks || []))
       .catch(() => {})
   }, [])
+
+  async function submitTask() {
+    if (!submissionNote.trim()) return setSubmitError('Describe what you completed before submitting.')
+    setSubmitting(true)
+    setSubmitError('')
+    const res = await fetch('/api/trial/submit-task', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ submissionUrl: submissionUrl.trim() || undefined, submissionNote: submissionNote.trim() }),
+    })
+    const data = await res.json().catch(() => ({}))
+    setSubmitting(false)
+    if (!res.ok) return setSubmitError(data.error || 'Failed to submit')
+    setTrial(data.trial)
+  }
 
   const statusConfig: Record<string, { label: string; color: string; bg: string; border: string }> = {
     PENDING:      { label: 'Awaiting Review',   color: 'text-yellow-400', bg: 'bg-yellow-900/15', border: 'border-yellow-500/30' },
@@ -172,6 +191,49 @@ export default function TrialPage() {
                             </div>
                           </div>
                         </div>
+
+                        {/* Submission — this whole block didn't exist before;
+                            the task card used to just be a static description
+                            with no way to actually turn work in. */}
+                        {trial.taskSubmittedAt ? (
+                          <div className="mt-4 pt-4 border-t border-portal-emerald/10">
+                            <div className="font-cinzel text-[10px] text-portal-emerald tracking-widest uppercase mb-1">
+                              ✓ Submitted {new Date(trial.taskSubmittedAt).toLocaleString()}
+                            </div>
+                            {trial.taskSubmissionNote && (
+                              <p className="font-cormorant text-slate-400 text-sm italic mt-1">"{trial.taskSubmissionNote}"</p>
+                            )}
+                            {trial.taskSubmissionUrl && (
+                              <a href={trial.taskSubmissionUrl} target="_blank" rel="noreferrer" className="font-cormorant text-portal-cyan text-sm underline mt-1 inline-block">
+                                {trial.taskSubmissionUrl}
+                              </a>
+                            )}
+                          </div>
+                        ) : ['PENDING', 'UNDER_REVIEW'].includes(trial.status) ? (
+                          <div className="mt-4 pt-4 border-t border-portal-emerald/10 flex flex-col gap-2">
+                            <input
+                              value={submissionUrl}
+                              onChange={e => setSubmissionUrl(e.target.value)}
+                              placeholder="Link to your work (optional) — https://..."
+                              className="w-full bg-black/40 border border-portal-emerald/20 rounded px-3 py-2 font-cormorant text-sm text-slate-200 focus:outline-none focus:border-portal-emerald/50"
+                            />
+                            <textarea
+                              value={submissionNote}
+                              onChange={e => setSubmissionNote(e.target.value)}
+                              placeholder="Describe what you completed *"
+                              rows={3}
+                              className="w-full bg-black/40 border border-portal-emerald/20 rounded px-3 py-2 font-cormorant text-sm text-slate-200 focus:outline-none focus:border-portal-emerald/50"
+                            />
+                            {submitError && <p className="font-cormorant text-red-400 text-xs">{submitError}</p>}
+                            <button
+                              onClick={submitTask}
+                              disabled={submitting}
+                              className="font-cinzel text-xs rounded-full px-4 py-2 border border-portal-emerald/40 text-portal-emerald hover:bg-portal-emerald/10 transition-all disabled:opacity-50 self-start"
+                            >
+                              {submitting ? 'SUBMITTING…' : 'SUBMIT TASK'}
+                            </button>
+                          </div>
+                        ) : null}
                       </div>
                     ))}
                   </div>

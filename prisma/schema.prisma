@@ -247,6 +247,13 @@ model Trial {
   judgeNotes       String?
   assignedTaskId   String?
   assignedTask     TrialTask?  @relation(fields: [assignedTaskId], references: [id])
+  // Previously there was no way to store a trial member's actual submitted
+  // work at all — the dashboard showed the assigned task as a read-only
+  // card with no form, no submit button, and nowhere in the schema to put
+  // the content even if there had been one.
+  taskSubmissionUrl  String?
+  taskSubmissionNote String?
+  taskSubmittedAt    DateTime?
   submittedAt      DateTime    @default(now())
   reviewedAt       DateTime?
 }
@@ -286,6 +293,14 @@ model QuestClaim {
   paidAt         DateTime?
   clientRating   Int?
   clientFeedback String?
+
+  // What the teen is actually owed for this claim — calculated once, when
+  // the linked PaymentRequest clears (see the webhook), as (client payment
+  // − Founder's rank-based commission from GlobalSettings). Previously
+  // there was no field to hold this at all: a quest could be marked FUNDED
+  // by a client payment and the teen's approved work just... sat there,
+  // with no calculated amount and no path into the payout system.
+  payoutAmount   Float?
 
   @@unique([questId, userId])
   @@index([userId])
@@ -595,6 +610,19 @@ model TrialTask {
   isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   assignments   Trial[]
+}
+
+// Singleton settings row (id is always "singleton") — the Founder War Room's
+// "Global Settings" tab used to render these as hardcoded JSX arrays with no
+// save button at all; this is what makes it actually editable and persisted.
+// commissionRates/accessRules are stored as JSON maps rather than one column
+// per rank/page so new ranks or pages don't need a migration to configure.
+model GlobalSettings {
+  id              String   @id @default("singleton")
+  commissionRates Json     // { "F": 40, "E": 35, ..., "SSS": 2 } — Founder cut %, per rank
+  accessRules     Json     // { "Quest Board": "Accepted Member+", ... } — display-only requirement labels
+  updatedAt       DateTime @updatedAt
+  updatedById     String?
 }
 
 model AdminPermission {

@@ -7,6 +7,9 @@ interface Message {
   role: 'user' | 'assistant'
   content: string
   questDraft?: Record<string, unknown> | null
+  achievementDraft?: Record<string, unknown> | null
+  titleDraft?: Record<string, unknown> | null
+  trialTaskDraft?: Record<string, unknown> | null
   debug?: string
   suggestionSent?: boolean
 }
@@ -78,6 +81,9 @@ export default function AIChatWidget() {
         role: 'assistant',
         content: data.reply || 'No response.',
         questDraft: data.questDraft || null,
+        achievementDraft: data.achievementDraft || null,
+        titleDraft: data.titleDraft || null,
+        trialTaskDraft: data.trialTaskDraft || null,
         debug: data.debug,
       }])
     } catch {
@@ -110,6 +116,71 @@ export default function AIChatWidget() {
       ])
     } catch (err: any) {
       setMessages((prev) => [...prev, { role: 'assistant', content: '✗ Failed to create quest.', debug: err?.message || 'Network request failed' }])
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  // Same shape as createQuestFromDraft, one per entity type — SENTINEL used
+  // to just print the JSON in chat with no way to actually act on it (the
+  // "Here's the achievement in the exact JSON format" problem). Each of
+  // these hits the same API route the founder War Room's own create forms
+  // already use, so nothing here bypasses normal validation.
+  async function createAchievementFromDraft(draft: Record<string, unknown>) {
+    if (!session || session.user.role !== 'FOUNDER') return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/achievements', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: '✗ Failed to create achievement.', debug: data.error || `Server returned ${res.status}` }])
+        return
+      }
+      setMessages((prev) => [...prev, { role: 'assistant', content: '✓ Achievement created.' }])
+    } catch (err: any) {
+      setMessages((prev) => [...prev, { role: 'assistant', content: '✗ Failed to create achievement.', debug: err?.message || 'Network request failed' }])
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  async function createTitleFromDraft(draft: Record<string, unknown>) {
+    if (!session || session.user.role !== 'FOUNDER') return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/titles', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: '✗ Failed to create title.', debug: data.error || `Server returned ${res.status}` }])
+        return
+      }
+      setMessages((prev) => [...prev, { role: 'assistant', content: '✓ Title created.' }])
+    } catch (err: any) {
+      setMessages((prev) => [...prev, { role: 'assistant', content: '✗ Failed to create title.', debug: err?.message || 'Network request failed' }])
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  async function createTrialTaskFromDraft(draft: Record<string, unknown>) {
+    if (!session || session.user.role !== 'FOUNDER') return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/founder/trial-tasks', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: '✗ Failed to create trial task.', debug: data.error || `Server returned ${res.status}` }])
+        return
+      }
+      setMessages((prev) => [...prev, { role: 'assistant', content: '✓ Trial task created.' }])
+    } catch (err: any) {
+      setMessages((prev) => [...prev, { role: 'assistant', content: '✗ Failed to create trial task.', debug: err?.message || 'Network request failed' }])
     } finally {
       setCreating(false)
     }
@@ -222,6 +293,60 @@ export default function AIChatWidget() {
                         className="font-cinzel text-[9px] bg-portal-emerald/[0.15] hover:bg-portal-emerald/35 border border-portal-emerald/40 text-white px-3 py-1.5 transition-all disabled:opacity-50"
                       >
                         {creating ? 'CREATING...' : '+ CREATE QUEST'}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Achievement / Title / Trial Task draft buttons — Founder
+                      only, same pattern as the quest draft above. This is
+                      what replaces SENTINEL just printing the JSON in chat
+                      with no way to actually act on it. */}
+                  {m.achievementDraft && isFounder && (
+                    <div className="mt-2 pt-2 border-t border-portal-emerald/20">
+                      <div className="font-cinzel text-[8px] text-portal-emerald mb-1.5 tracking-widest">ACHIEVEMENT DRAFT READY</div>
+                      <div className="font-cormorant text-xs text-slate-400 mb-2">
+                        <strong className="text-white">{String(m.achievementDraft.title || m.achievementDraft.name)}</strong>
+                        {m.achievementDraft.icon ? ` ${String(m.achievementDraft.icon)}` : ''}
+                      </div>
+                      <button
+                        onClick={() => createAchievementFromDraft(m.achievementDraft as Record<string, unknown>)}
+                        disabled={creating}
+                        className="font-cinzel text-[9px] bg-portal-emerald/[0.15] hover:bg-portal-emerald/35 border border-portal-emerald/40 text-white px-3 py-1.5 transition-all disabled:opacity-50"
+                      >
+                        {creating ? 'CREATING...' : '+ CREATE ACHIEVEMENT'}
+                      </button>
+                    </div>
+                  )}
+
+                  {m.titleDraft && isFounder && (
+                    <div className="mt-2 pt-2 border-t border-portal-emerald/20">
+                      <div className="font-cinzel text-[8px] text-portal-emerald mb-1.5 tracking-widest">TITLE DRAFT READY</div>
+                      <div className="font-cormorant text-xs text-slate-400 mb-2">
+                        <strong className="text-white">{String(m.titleDraft.name)}</strong>
+                        {m.titleDraft.rarity ? ` · ${String(m.titleDraft.rarity)}` : ''}
+                      </div>
+                      <button
+                        onClick={() => createTitleFromDraft(m.titleDraft as Record<string, unknown>)}
+                        disabled={creating}
+                        className="font-cinzel text-[9px] bg-portal-emerald/[0.15] hover:bg-portal-emerald/35 border border-portal-emerald/40 text-white px-3 py-1.5 transition-all disabled:opacity-50"
+                      >
+                        {creating ? 'CREATING...' : '+ CREATE TITLE'}
+                      </button>
+                    </div>
+                  )}
+
+                  {m.trialTaskDraft && isFounder && (
+                    <div className="mt-2 pt-2 border-t border-portal-emerald/20">
+                      <div className="font-cinzel text-[8px] text-portal-emerald mb-1.5 tracking-widest">TRIAL TASK DRAFT READY</div>
+                      <div className="font-cormorant text-xs text-slate-400 mb-2">
+                        <strong className="text-white">{String(m.trialTaskDraft.title)}</strong> · {String(m.trialTaskDraft.category)} · {String(m.trialTaskDraft.difficulty)}
+                      </div>
+                      <button
+                        onClick={() => createTrialTaskFromDraft(m.trialTaskDraft as Record<string, unknown>)}
+                        disabled={creating}
+                        className="font-cinzel text-[9px] bg-portal-emerald/[0.15] hover:bg-portal-emerald/35 border border-portal-emerald/40 text-white px-3 py-1.5 transition-all disabled:opacity-50"
+                      >
+                        {creating ? 'CREATING...' : '+ CREATE TRIAL TASK'}
                       </button>
                     </div>
                   )}

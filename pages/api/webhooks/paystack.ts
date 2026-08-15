@@ -16,6 +16,7 @@ import { prisma } from '@/lib/prisma'
 import { verifyWebhookSignature, verifyTransaction } from '@/lib/paystack'
 import { logPaymentEvent } from '@/lib/paymentAudit'
 import { sendPaymentSuccessEmails, sendPaymentFailedEmail } from '@/lib/paymentEvents'
+import { linkQuestPaymentToPayout } from '@/lib/questPayout'
 
 export const config = {
   api: { bodyParser: false }, // Paystack's signature is computed over the raw body
@@ -118,7 +119,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ])
 
     await logPaymentEvent('PAYMENT_SUCCESS', 'webhook', pr.id, { reference, amount: paystackData.amount })
-    if (pr.linkedQuestId) await logPaymentEvent('QUEST_FUNDED', 'webhook', pr.id, { questId: pr.linkedQuestId })
+    if (pr.linkedQuestId) {
+      await logPaymentEvent('QUEST_FUNDED', 'webhook', pr.id, { questId: pr.linkedQuestId })
+      // This is the piece that was entirely missing: turn "client paid for
+      // this quest" into "the teen who did the approved work now has a
+      // calculated payout amount sitting in the Founder's payout queue."
+      try {
+        const { linked } = await linkQuestPaymentToPayout(pr.linkedQuestId, pr.baseAmount)
+        if (linked > 0) {
+          await logPaymentEvent('QUEST_PAYOUT_QUEUED', 'webhook', pr.id, { questId: pr.linkedQuestId, claimsLinked: linked })
+        }
+      } catch (err) {
+        // Never let payout-queueing fail the webhook itself — the payment
+        // still cleared and is recorded either way. Log loudly so it's
+        // caught, since a silent failure here means a teen just doesn't
+        // get paid with no visible error anywhere.
+        console.error('[webhook] linkQuestPaymentToPayout failed:', err)
+        await logPaymentEvent('QUEST_PAYOUT_LINK_FAILED', 'webhook', pr.id, { questId: pr.linkedQuestId, error: (err as Error)?.message })
+      }
+    }
 
     // Look up the Founder's email for the internal notification —
     // never send it to the client.

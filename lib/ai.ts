@@ -49,9 +49,20 @@ const MODELS = {
   // Chain-of-thought reasoning tasks (trial evaluation quality checks, etc.)
   cot:          'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
 
-  // Default general-purpose router model
+  // Default general-purpose router model — reverted back to the free
+  // OpenRouter model. "openrouter/auto" (OpenRouter's own Auto Router) was
+  // a misread of what was actually being asked for — OmniRoute (a
+  // different, self-hosted gateway) is what's wired in below instead.
   router:       'google/gemma-4-31b-it:free',
   routerFallback: 'openai/gpt-oss-20b:free',
+
+  // OmniRoute — a self-hosted, OpenAI-compatible AI gateway (github.com/
+  // diegosouzapw/OmniRoute) run as its own process, exposing an endpoint
+  // like http://<host>:20128/v1. Its own "auto" alias picks the best
+  // free-tier model across 500+ models/290+ providers per request. This is
+  // NOT usable until OMNIROUTE_BASE_URL points at a real running instance
+  // — see callOmniRoute() below and the setup note in the response.
+  omniAuto:     'auto',
 }
 
 // NVIDIA NIM direct models — verified free-tier endpoints
@@ -172,6 +183,35 @@ async function orAttempt(
   return d.choices[0].message.content as string
 }
 
+// ─── OmniRoute — self-hosted AI gateway (github.com/diegosouzapw/OmniRoute) ──
+// Not a cloud API like OpenRouter/NVIDIA/Mistral below — it's a process you
+// run yourself (npm install -g omniroute && omniroute, or Docker) that
+// exposes an OpenAI-compatible endpoint aggregating 500+ models/290+
+// providers with its own "auto" free-tier routing alias. This only works
+// once OMNIROUTE_BASE_URL is set to wherever that instance is actually
+// reachable (e.g. https://your-omniroute-host:20128/v1) — with it unset,
+// callOmniRoute always throws immediately and openRouterChat's existing
+// fallback chain (OpenRouter → NVIDIA → Mistral) takes over exactly as
+// before, so nothing breaks while this is being set up.
+async function callOmniRoute(messages: ChatMsg[], maxTokens: number): Promise<string> {
+  const baseUrl = process.env.OMNIROUTE_BASE_URL
+  if (!baseUrl) throw new Error('OMNIROUTE_BASE_URL is not set')
+
+  const res = await fetch(`${baseUrl.replace(/\/$/, '')}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(process.env.OMNIROUTE_API_KEY ? { Authorization: `Bearer ${process.env.OMNIROUTE_API_KEY}` } : {}),
+    },
+    body: JSON.stringify({ model: MODELS.omniAuto, messages, max_tokens: maxTokens }),
+  })
+  if (!res.ok) throw new Error(`OmniRoute request failed (${res.status})`)
+  const data = await res.json()
+  const content = data?.choices?.[0]?.message?.content
+  if (!content) throw new Error('OmniRoute returned no content')
+  return content
+}
+
 export async function openRouterChat(
   messages: ChatMsg[],
   opts: {
@@ -183,6 +223,17 @@ export async function openRouterChat(
   } = {}
 ): Promise<string> {
   const maxTokens = opts.maxTokens ?? 512
+
+  // OmniRoute first, when configured — it's the "auto"-routed, free-tier
+  // gateway across the widest model pool. Silently falls through to the
+  // existing chain (unchanged below) if it's not set up or errors.
+  try {
+    return await callOmniRoute(messages, maxTokens)
+  } catch {
+    // OMNIROUTE_BASE_URL unset, instance unreachable, or it errored —
+    // continue to OpenRouter/NVIDIA/Mistral exactly as before.
+  }
+
   const models = [opts.model ?? MODELS.router, opts.fallbackModel].filter(Boolean) as string[]
   const keys = OR_KEYS()
 

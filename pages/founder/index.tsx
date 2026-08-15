@@ -27,6 +27,9 @@ const RANK_COLORS: Record<string, string> = {
 
 export default function FounderDashboard() {
   const [tab, setTab] = useState('Overview')
+  const [settings, setSettings] = useState<{ commissionRates: Record<string, number>; accessRules: Record<string, string> } | null>(null)
+  const [settingsSaving, setSettingsSaving] = useState(false)
+  const [settingsSaved, setSettingsSaved] = useState(false)
   const [stats, setStats] = useState<any>(null)
   const [users, setUsers] = useState<any[]>([])
   const [quests, setQuests] = useState<any[]>([])
@@ -121,6 +124,24 @@ export default function FounderDashboard() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => { loadAll() }, [])
+  useEffect(() => {
+    if (tab === 'Settings' && !settings) {
+      fetch('/api/founder/settings').then(r => r.json()).then(d => setSettings(d.settings)).catch(() => {})
+    }
+  }, [tab])
+
+  async function saveSettings() {
+    if (!settings) return
+    setSettingsSaving(true)
+    setSettingsSaved(false)
+    const res = await fetch('/api/founder/settings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings),
+    })
+    setSettingsSaving(false)
+    if (res.ok) { setSettingsSaved(true); setTimeout(() => setSettingsSaved(false), 2000) }
+  }
 
   async function loadAll() {
     setLoading(true)
@@ -2021,10 +2042,11 @@ export default function FounderDashboard() {
                               <div className="font-cormorant text-sm text-slate-200 truncate">{c.quest.title}</div>
                               <div className="font-cinzel text-[9px] text-slate-600 mt-0.5">
                                 {c.user?.nickname || c.user?.name || 'Unknown'} · reviewed {c.reviewedAt ? new Date(c.reviewedAt).toLocaleDateString() : '—'}
+                                {c.payoutSource === 'client_payment' && <span className="text-portal-emerald ml-1.5">· from client payment</span>}
                               </div>
                             </div>
                             <div className="flex items-center gap-3 flex-shrink-0">
-                              <span className="font-cinzel font-black text-amber-300">${(c.quest.cashReward || 0).toFixed(2)}</span>
+                              <span className="font-cinzel font-black text-amber-300">${(c.resolvedPayoutAmount ?? 0).toFixed(2)}</span>
                               {c.payoutStatus === 'PAID' ? (
                                 <button onClick={() => setPayoutStatus(c.id, 'PENDING')}
                                   className="font-cinzel text-[9px] px-3 py-1.5 border border-green-500/40 text-green-400 hover:bg-green-900/20 transition-all whitespace-nowrap">
@@ -2047,36 +2069,56 @@ export default function FounderDashboard() {
 
               {/* ── SETTINGS TAB ── */}
               {tab === 'Settings' && (
-                <div className="bg-[#0d0017] border border-portal-violet-500/20 p-6">
-                  <h3 className="font-cinzel text-xs text-white tracking-widest uppercase mb-5">Global Settings</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <div className="border border-portal-violet-500/15 p-4">
-                      <h4 className="font-cinzel text-xs text-portal-violet-400 tracking-widest mb-3">Commission Rates</h4>
-                      {[['F','40%'],['E','35%'],['D','30%'],['C','25%'],['B','20%'],['A','15%'],['S','10%'],['SS','5%'],['SSS','2%']].map(([rank,cut]) => (
-                        <div key={rank} className="flex justify-between py-1.5 border-b border-portal-violet-500/5 last:border-0">
-                          <span className={`font-cinzel text-xs ${RANK_COLORS[rank] || 'text-slate-400'}`}>{rank}</span>
-                          <span className="font-cormorant text-sm text-slate-400">{cut} Founder cut</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="border border-portal-violet-500/15 p-4">
-                      <h4 className="font-cinzel text-xs text-portal-violet-400 tracking-widest mb-3">Access Rules</h4>
-                      {[
-                        ['Quest Board','Accepted Member+'],
-                        ['Messages','Rank D+'],
-                        ['Guild Chat','Accepted Member+'],
-                        ['Fun Arena','Accepted Member+'],
-                        ['Elite Channel','Rank A+'],
-                        ['Admin Panel','Admin Role+'],
-                        ['Founder Panel','Founder Only'],
-                      ].map(([page,req]) => (
-                        <div key={page} className="flex justify-between py-1.5 border-b border-portal-violet-500/5 last:border-0">
-                          <span className="font-cormorant text-sm text-slate-400">{page}</span>
-                          <span className="font-cinzel text-[10px] text-portal-violet-400/70">{req}</span>
-                        </div>
-                      ))}
-                    </div>
+                <div className="bg-[#0d0017] rounded-xl border border-portal-violet-500/20 p-6">
+                  <div className="flex items-center justify-between mb-5">
+                    <h3 className="font-cinzel text-xs text-white tracking-widest uppercase">Global Settings</h3>
+                    <button onClick={saveSettings} disabled={!settings || settingsSaving}
+                      className="font-cinzel text-[10px] rounded-full px-4 py-1.5 border border-portal-emerald/40 text-portal-emerald hover:bg-portal-emerald/10 transition-all disabled:opacity-40">
+                      {settingsSaving ? 'SAVING…' : settingsSaved ? 'SAVED ✓' : 'SAVE CHANGES'}
+                    </button>
                   </div>
+                  {!settings ? (
+                    <p className="font-cormorant text-slate-600 text-sm">Loading…</p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="border border-portal-violet-500/15 rounded-lg p-4">
+                        <h4 className="font-cinzel text-xs text-portal-violet-400 tracking-widest mb-3">Commission Rates</h4>
+                        {Object.entries(settings.commissionRates).map(([rank, cut]) => (
+                          <div key={rank} className="flex items-center justify-between py-1.5 border-b border-portal-violet-500/5 last:border-0">
+                            <span className={`font-cinzel text-xs ${RANK_COLORS[rank] || 'text-slate-400'}`}>{rank}</span>
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="number" min={0} max={100} value={cut}
+                                onChange={e => setSettings(s => s && ({ ...s, commissionRates: { ...s.commissionRates, [rank]: Number(e.target.value) } }))}
+                                className="w-16 bg-black/40 border border-portal-violet-500/20 rounded px-2 py-1 text-right font-cormorant text-sm text-slate-200 focus:outline-none focus:border-portal-emerald/50"
+                              />
+                              <span className="font-cormorant text-sm text-slate-500">% Founder cut</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="border border-portal-violet-500/15 rounded-lg p-4">
+                        <h4 className="font-cinzel text-xs text-portal-violet-400 tracking-widest mb-3">Access Rules</h4>
+                        {Object.entries(settings.accessRules).map(([page, req]) => (
+                          <div key={page} className="flex items-center justify-between gap-3 py-1.5 border-b border-portal-violet-500/5 last:border-0">
+                            <span className="font-cormorant text-sm text-slate-400 flex-shrink-0">{page}</span>
+                            <select
+                              value={req}
+                              onChange={e => setSettings(s => s && ({ ...s, accessRules: { ...s.accessRules, [page]: e.target.value } }))}
+                              className="bg-black/40 border border-portal-violet-500/20 rounded px-2 py-1 font-cinzel text-[10px] text-portal-violet-400/90 focus:outline-none focus:border-portal-emerald/50"
+                            >
+                              {['Anyone', 'Accepted Member+', 'Rank D+', 'Rank C+', 'Rank B+', 'Rank A+', 'Rank S+', 'Admin Role+', 'Founder Only'].map(opt => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <p className="font-cormorant text-slate-600 text-xs mt-4">
+                    Note: Commission Rates are now saved and visible here, but no payout calculation reads them yet — wire that in before relying on these numbers for real payouts. Access Rules are currently informational (shown here for reference) and don't yet enforce route access on their own.
+                  </p>
                 </div>
               )}
             </>
