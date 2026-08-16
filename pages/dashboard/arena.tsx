@@ -349,6 +349,14 @@ function GamePlayModal({ game, onClose, onSubmitted }: { game: any; onClose: () 
             <div className="flex items-center justify-between mb-2">
               <span className="font-cinzel text-[10px] text-portal-emerald tracking-widest uppercase">
                 Question {quizIndex + 1} of {quizQuestions.length}
+                {currentQuizQuestion.difficulty && (
+                  <span className={`ml-2 normal-case font-cormorant tracking-normal ${
+                    currentQuizQuestion.difficulty === 'hard' ? 'text-red-400' :
+                    currentQuizQuestion.difficulty === 'easy' ? 'text-emerald-400' : 'text-amber-400'
+                  }`}>
+                    · {currentQuizQuestion.difficulty}
+                  </span>
+                )}
               </span>
               <div className="flex gap-1">
                 {quizQuestions.map((_: any, i: number) => (

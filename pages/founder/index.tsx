@@ -106,6 +106,10 @@ export default function FounderDashboard() {
     entryLimit:'1', cooldownMinutes:'1440',
     xpReward:'50', coinReward:'0', cashReward:'', badges:[] as string[],
     endsAt:'', isDaily:false,
+    // Comprehensive mini-game customization — quiz round shape and
+    // puzzle "flavor" for the free-text mechanics, both threaded through
+    // to lib/ai.ts's generators via config.mechanics (see submitArena below).
+    questionCount:'5', difficultyCurve:false, puzzleType:'random',
   })
   // Rendered inline in the Arena form itself — the top-of-page actionMsg toast
   // scrolls out of view on this long form, so validation errors here were
@@ -119,6 +123,18 @@ export default function FounderDashboard() {
     Social:   { icon: '👥', mechanicsOptions: ['social_task'] },
     Time:     { icon: '⏱️', mechanicsOptions: ['tap_speed'] },
   }
+  // Puzzle "flavor" — only meaningful for mechanics that hand the AI a
+  // free-text prompt to author (puzzle/creative). Quiz gets its own
+  // question-count/difficulty-curve controls instead, since it generates
+  // a structured multi-question round rather than one prompt.
+  const PUZZLE_TYPES = [
+    { value: 'random', label: 'Surprise me' },
+    { value: 'riddle', label: 'Riddle' },
+    { value: 'pattern_sequence', label: 'Pattern / Sequence' },
+    { value: 'math', label: 'Math puzzle' },
+    { value: 'wordplay', label: 'Wordplay' },
+    { value: 'lateral_thinking', label: 'Lateral thinking' },
+  ]
   const [achForm, setAchForm] = useState({ name:'',description:'',type:'PERMANENT',icon:'🏆',condition:'',xpBonus:'0' })
   const [titleForm, setTitleForm] = useState({ name:'',description:'',condition:'',icon:'⚔️',canExpire:false })
   const [saving, setSaving] = useState(false)
@@ -418,6 +434,13 @@ export default function FounderDashboard() {
         type: arenaForm.mechanicsType,
         input_required: true,
         validation_type: arenaForm.validationType,
+        ...(arenaForm.mechanicsType === 'quiz' ? {
+          question_count: Math.max(3, Math.min(15, parseInt(arenaForm.questionCount) || 5)),
+          difficulty_curve: arenaForm.difficultyCurve,
+        } : {}),
+        ...(['puzzle', 'creative'].includes(arenaForm.mechanicsType) ? {
+          puzzle_type: arenaForm.puzzleType,
+        } : {}),
       },
       difficulty: arenaForm.difficulty,
       time_limit_seconds: parseInt(arenaForm.timeLimitSeconds) || 0,
@@ -1307,6 +1330,44 @@ export default function FounderDashboard() {
                             className="w-full bg-black/50 border border-portal-violet-500/25 text-slate-200 text-sm font-cormorant px-3 py-2.5 focus:outline-none focus:border-portal-violet-400/70 [color-scheme:dark]" />
                         </div>
                       </div>
+
+                      {/* Quiz-specific: how many questions, and whether the
+                          round should escalate in difficulty. Only meaningful
+                          when mechanics type is "quiz" — generateArenaQuizSet
+                          builds the actual round from these. */}
+                      {arenaForm.mechanicsType === 'quiz' && (
+                        <div className="border border-amber-500/20 bg-amber-900/5 p-3 flex flex-col gap-3">
+                          <div className="font-cinzel text-[9px] text-amber-400/80 tracking-widest uppercase">Quiz Round Setup</div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <GlowInput label="Number of Questions" type="number" placeholder="5" value={arenaForm.questionCount}
+                              onChange={e=>setArenaForm(p=>({...p,questionCount:e.target.value}))} />
+                            <div className="flex items-end pb-2.5">
+                              <label className="flex items-center gap-2 font-cormorant text-sm text-slate-300 cursor-pointer">
+                                <input type="checkbox" checked={arenaForm.difficultyCurve}
+                                  onChange={e=>setArenaForm(p=>({...p,difficultyCurve:e.target.checked}))}
+                                  className="accent-amber-400" />
+                                Escalate difficulty (easy → hard)
+                              </label>
+                            </div>
+                          </div>
+                          <p className="font-cormorant text-xs text-slate-500">3–15 questions. With the escalate option on, the round eases players in and ramps up rather than sitting at one flat difficulty the whole way through.</p>
+                        </div>
+                      )}
+
+                      {/* Puzzle-flavor: only for the free-text mechanics
+                          (Logic's "puzzle" type, Creative) — steers what kind
+                          of puzzle the AI authors when the objective is
+                          left blank / auto-generated. */}
+                      {['puzzle', 'creative'].includes(arenaForm.mechanicsType) && (
+                        <div>
+                          <label className="font-cinzel text-[9px] text-portal-violet-300/70 tracking-widest uppercase block mb-1.5">Puzzle Type</label>
+                          <select value={arenaForm.puzzleType} onChange={e=>setArenaForm(p=>({...p,puzzleType:e.target.value}))}
+                            className="w-full bg-black/50 border border-portal-violet-500/25 text-slate-200 text-sm font-cormorant px-3 py-2.5 focus:outline-none focus:border-portal-violet-400/70">
+                            {PUZZLE_TYPES.map(pt=><option key={pt.value} value={pt.value}>{pt.label}</option>)}
+                          </select>
+                          <p className="font-cormorant text-xs text-slate-500 mt-1">Only applies when Objective/Description is left blank and the prompt is AI-generated — if you write your own objective, this is ignored.</p>
+                        </div>
+                      )}
 
                       <div>
                         <label className="font-cinzel text-[9px] text-portal-violet-300/70 tracking-widest uppercase block mb-1.5">

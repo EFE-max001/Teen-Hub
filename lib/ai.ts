@@ -757,11 +757,17 @@ Reply JSON: { "score": number, "feedback": string, "flagged": boolean }`
   return { score: 50, feedback: 'AI validator unavailable — scored as neutral, admin can override.', flagged: false }
 }
 
-export async function generateArenaPrompt(category: string, difficulty: string): Promise<{
+// puzzleType steers the FLAVOR of a Logic/Creative prompt (riddle, pattern,
+// math, wordplay, lateral-thinking) — 'random'/undefined leaves it to the
+// model's own judgment, same as before this parameter existed.
+export async function generateArenaPrompt(category: string, difficulty: string, puzzleType?: string): Promise<{
   prompt: string
   answer?: string
 }> {
-  const req = `Generate one short, fresh ${difficulty}-difficulty "${category}" mini-game prompt/question for a competitive tech guild's Arena Protocol.
+  const styleHint = puzzleType && puzzleType !== 'random'
+    ? ` The puzzle must specifically be a ${puzzleType.replace(/_/g, ' ')} style challenge.`
+    : ''
+  const req = `Generate one short, fresh ${difficulty}-difficulty "${category}" mini-game prompt/question for a competitive tech guild's Arena Protocol.${styleHint}
 Keep it punchy (max 2 sentences). If it has a single objectively correct answer, include it.
 Reply JSON: { "prompt": string, "answer": string|null }`
 
@@ -791,6 +797,10 @@ export type ArenaQuizQuestion = {
   options: string[]
   correctIndex: number
   explanation?: string
+  // Per-question difficulty label — always present now (defaults to the
+  // round's base difficulty when a curve isn't requested), so the play UI
+  // can show players what they're walking into question-by-question.
+  difficulty?: string
 }
 
 // A varied fallback bank (not a single repeated question) for when the AI
@@ -804,17 +814,33 @@ const QUIZ_FALLBACK_BANK: ArenaQuizQuestion[] = [
   { question: 'What should you do if you\'re unsure of an objective?', options: ['Guess randomly', 'Re-read it carefully before answering', 'Submit blank', 'Skip the game'], correctIndex: 1, explanation: 'Fallback question — AI generation was unavailable.' },
 ]
 
+// Escalating difficulty order used both to build the AI request and to
+// label the fallback bank when a curve is requested but generation fails.
+const DIFFICULTY_CURVE_ORDER = ['easy', 'medium', 'hard']
+
 // Generates a full multi-question quiz set (default 5) in a single AI call —
 // a "Quiz" game used to only ever get one question (generateArenaQuiz,
 // singular), which barely counted as a game. This is what Founders now get
 // when creating a Quiz-type Arena challenge.
+//
+// difficultyCurve: when true, the round escalates roughly evenly through
+// easy -> medium -> hard (centered on `difficulty` as the round's overall
+// level) instead of every question sitting at one flat difficulty.
 export async function generateArenaQuizSet(
   category: string,
   difficulty: string,
-  count: number = 5
+  count: number = 5,
+  difficultyCurve: boolean = false
 ): Promise<ArenaQuizQuestion[]> {
-  const req = `Generate ${count} fresh, DISTINCT ${difficulty}-difficulty multiple choice "${category}" trivia/logic questions for a competitive tech guild's Arena Protocol quiz round. Exactly 4 options each, only one correct per question, no two questions testing the same fact.
-Reply JSON only: { "questions": [ { "question": string, "options": string[4], "correctIndex": number (0-3), "explanation": string }, ... ${count} items ] }`
+  const curveHint = difficultyCurve
+    ? ` Escalate difficulty roughly evenly across the set from easier to harder (spanning easy, medium, and hard), centered around an overall "${difficulty}" level — include a "difficulty" field ("easy"|"medium"|"hard") on every question reflecting where it sits.`
+    : ` Every question should be "${difficulty}" difficulty — include "difficulty": "${difficulty}" on every question.`
+  const req = `Generate ${count} fresh, DISTINCT ${difficulty}-difficulty multiple choice "${category}" trivia/logic questions for a competitive tech guild's Arena Protocol quiz round. Exactly 4 options each, only one correct per question, no two questions testing the same fact.${curveHint}
+Reply JSON only: { "questions": [ { "question": string, "options": string[4], "correctIndex": number (0-3), "explanation": string, "difficulty": string }, ... ${count} items ] }`
+
+  // 3-15 keeps a round meaningful without one call generating an
+  // unbounded (slow, expensive, error-prone) number of questions.
+  count = Math.max(3, Math.min(15, Math.round(count) || 5))
 
   try {
     const raw = await openRouterChat([{ role: 'user', content: req }], {
@@ -831,7 +857,13 @@ Reply JSON only: { "questions": [ { "question": string, "options": string[4], "c
       if (Array.isArray(qs) && qs.length > 0) {
         const valid = qs.filter((q: any) =>
           q?.question && Array.isArray(q.options) && q.options.length === 4 && typeof q.correctIndex === 'number'
-        )
+        ).map((q: any) => ({
+          question: q.question,
+          options: q.options,
+          correctIndex: q.correctIndex,
+          explanation: q.explanation,
+          difficulty: typeof q.difficulty === 'string' ? q.difficulty.toLowerCase() : difficulty,
+        }))
         if (valid.length > 0) return valid.slice(0, count)
       }
       console.error('[generateArenaQuizSet] AI response had no usable questions, using fallback bank. Raw:', raw.slice(0, 300))
@@ -848,7 +880,15 @@ Reply JSON only: { "questions": [ { "question": string, "options": string[4], "c
 
   // AI unavailable or returned something unusable — fall back to a varied
   // bank rather than one question repeated, so it's still a real round.
-  return QUIZ_FALLBACK_BANK.slice(0, count)
+  // Cycle the bank if count exceeds its length, and label difficulty to
+  // match whatever the founder actually asked for (flat or curved).
+  const bank: ArenaQuizQuestion[] = []
+  for (let i = 0; i < count; i++) {
+    const base = QUIZ_FALLBACK_BANK[i % QUIZ_FALLBACK_BANK.length]
+    const curveDifficulty = DIFFICULTY_CURVE_ORDER[Math.floor((i / count) * DIFFICULTY_CURVE_ORDER.length)]
+    bank.push({ ...base, difficulty: difficultyCurve ? curveDifficulty : difficulty })
+  }
+  return bank
 }
 
 /** @deprecated use generateArenaQuizSet — kept only in case anything else still imports the single-question version. */

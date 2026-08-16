@@ -1,153 +1,556 @@
-# Teen-Hub
+# ⚡ QuestHub Guild
 
-A gamified guild platform for teens — quests, ranks, XP, a live guild chat with party-game mechanics, an "Arena Protocol" mini-game engine, and an AI companion called **SENTINEL**.
+<p align="center">
+  <strong>A place where ambitious teens connect, grow, prove their skills, and earn opportunities.</strong>
+</p>
 
-Built with Next.js (Pages Router), React Three Fiber / Three.js for the 3D "Living Digital Forest" hero scene, Prisma + PostgreSQL, and NextAuth for authentication.
-
-> ⚠️ This project is under active development. Some sections below (Design System, Arena Protocol) call out known gaps so contributors know exactly what still needs work.
-
----
-
-## Table of Contents
-
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Database](#database)
-- [Roles & Access](#roles--access)
-- [The Arena Protocol (mini-games)](#the-arena-protocol-mini-games)
-- [Design System](#design-system)
-- [Known Issues / In Progress](#known-issues--in-progress)
-- [Deployment](#deployment)
+<p align="center">
+  What started as Teen-Hub is becoming <strong>QuestHub Guild</strong> — a structured, active guild for ambitious teens.
+</p>
 
 ---
 
-## Features
+## 🌌 What is QuestHub?
 
-- **Quests** — Founder-created quests with multi-slot claiming, XP/coin rewards, and a member-submitted `QuestSuggestion` flow that routes through SENTINEL-mediated Founder DM threads.
-- **Guild Chat** — real-time-feeling channel chat (`#General`, `#Quest Talk`, elite channel, announcements) with a "Ghost Mode" party-game layer (Truth or Dare, Would You Rather, Two Truths, Word Chain, Guild Trivia), AI-monitored for safety.
-- **Arena Protocol** — a founder-configurable mini-game/challenge engine with AI-assisted grading. See [below](#the-arena-protocol-mini-games) for how it actually works today.
-- **SENTINEL** — the platform's AI chat assistant, routed through OpenRouter with model fallbacks.
-- **Profiles, ranks, XP, achievements, titles, trust & safety tooling** (reports, warnings, admin notes, activity log).
-- **Founder War Room** — an internal admin console for managing users, trials, admins, quests, Arena games, community posts, achievements, and trust/safety.
-- **3D hero scene** — a React Three Fiber "Living Digital Forest" (glowing root network, animated butterflies, portal ring) rendered only on the home route to keep other pages fast.
+QuestHub Guild is a gamified guild platform for teens.
 
-## Tech Stack
+It is designed to be more than a group chat or a community that becomes inactive after a few days. QuestHub combines:
 
-| Layer | Tech |
+🎮 **Challenges & events**  
+🤝 **An active teen community**  
+📈 **Skill growth, XP & ranks**  
+🧠 **Creative projects**  
+⚡ **Quests & opportunities**  
+🏆 **Achievements, titles & reputation**  
+🤖 **SENTINEL AI**  
+💳 **Founder-controlled client payments**
+
+The long-term vision is to create a structured environment where talented teens can build useful skills, prove what they can do, and eventually access real opportunities.
+
+> **Talent is common. Proof is rare.**
+
+---
+
+# 🧭 Core Experience
+
+```text
+                   ┌─────────────────────┐
+                   │   QUESTHUB GUILD ⚡  │
+                   └──────────┬──────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+        ▼                     ▼                     ▼
+   🎮 CHALLENGES          📈 PROGRESSION       🤝 COMMUNITY
+   Games & events         XP • Ranks           Guild Chat
+   Arena Protocol         Achievements         Social features
+        │                     │                     │
+        └─────────────────────┼─────────────────────┘
+                              │
+                              ▼
+                         ⚡ QUESTS
+                              │
+                              ▼
+                    Real projects & work
+                              │
+                              ▼
+                       💰 OPPORTUNITIES
+```
+
+QuestHub is built around the idea that **participation should lead somewhere**: members can learn, compete, build experience, earn XP, improve their reputation, and eventually take on quests.
+
+---
+
+# ✨ Core Features
+
+### ⚡ Quests
+
+Founder-created quests with multi-slot claiming, XP / coin rewards, member participation, and a `QuestSuggestion` flow.
+
+QuestHub does **not** use an external marketplace model where outside clients create quests themselves. The Founder controls the quest and project pipeline.
+
+### 🏆 Ranks, XP & Achievements
+
+Members progress through:
+
+**F → E → D → C → B → A → S → SS → SSS**
+
+Ranks are intended to represent earned progression, reputation, and performance.
+
+### 🎮 Arena Protocol
+
+A Founder-configurable challenge / mini-game system with logic, typing, quiz-style, creative, and social challenges, plus AI-assisted grading and XP rewards.
+
+### 💬 Guild Chat & Ghost Protocol
+
+Guild Chat supports community channels, while Ghost Protocol adds party-game mechanics such as Truth or Dare, Would You Rather, Two Truths and a Lie, Word Chain, and Guild Trivia.
+
+### 🤖 SENTINEL AI
+
+SENTINEL is QuestHub's AI layer. It supports areas such as member assistance, Arena validation, community features, quest intelligence, payment-risk signals, operational summaries, and future automations.
+
+AI assists the platform; critical financial state remains server-controlled.
+
+### 💳 Founder-Controlled Payments
+
+The Founder creates a payment request and shares a secure public link.
+
+The external client:
+
+1. Opens the payment link.
+2. Provides contact information.
+3. Reviews the amount and processing fee.
+4. Pays through Paystack.
+5. Receives confirmation through Resend.
+
+The client does **not** need a QuestHub account.
+
+### 📧 Transactional Email
+
+Resend handles transactional messages such as payment receipts, reminders, application notifications, and trial notifications.
+
+---
+
+# 🏗️ Architecture
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│                         BROWSER / USERS                      │
+├──────────────────────┬───────────────────┬───────────────────┤
+│ Public Landing Page  │ Member Dashboard  │ Founder War Room │
+│ 3D / visual system   │ quests / chat     │ operations        │
+│                      │ arena / profile   │ payments / AI     │
+└─────────────┬────────┴─────────┬─────────┴─────────┬─────────┘
+              │                  │                   │
+              └──────────────────┼───────────────────┘
+                                 ▼
+┌──────────────────────────────────────────────────────────────┐
+│                      NEXT.JS API ROUTES                      │
+│ auth • quests • arena • chat • payments • webhooks • AI     │
+└───────────────┬───────────────────┬───────────────────┬──────┘
+                │                   │                   │
+                ▼                   ▼                   ▼
+        ┌──────────────┐    ┌───────────────┐   ┌──────────────┐
+        │ PostgreSQL   │    │   Paystack    │   │    Resend    │
+        │ Prisma ORM   │    │ Hosted / API  │   │ Transactional│
+        └──────────────┘    └───────────────┘   └──────────────┘
+                │
+                ▼
+        ┌───────────────────────────────────────┐
+        │              SENTINEL AI              │
+        │ model routing / grading / assistance  │
+        └───────────────────────────────────────┘
+```
+
+### Payment flow
+
+```text
+Founder
+   │
+   ▼
+Create Payment Request
+   │
+   ▼
+/pay/[token]
+   │
+   ▼
+External Client
+   │
+   ▼
+Paystack Checkout
+   │
+   ▼
+Paystack Webhook
+   │
+   ▼
+Payment Record → QuestHub DB
+   │
+   ├──────────────► Founder notification
+   │
+   └──────────────► Client receipt via Resend
+```
+
+---
+
+# 🧰 Tech Stack
+
+| Layer | Technology |
 |---|---|
-| Framework | [Next.js](https://nextjs.org/) 14 (Pages Router), React 18, TypeScript |
-| 3D / graphics | React Three Fiber, `@react-three/drei`, `@react-three/postprocessing`, Three.js |
-| Styling | Tailwind CSS, Framer Motion |
-| Auth | NextAuth (credentials provider), Prisma Adapter |
-| Database | PostgreSQL via Prisma ORM (Supabase-hosted) |
-| AI | OpenRouter (with Mistral / Hugging Face / NVIDIA NIM fallbacks) — see `lib/ai.ts` |
-| Hosting / dev | Replit (dev), Replit Deployments (production) |
+| Framework | Next.js 14 (Pages Router) |
+| UI | React 18 + TypeScript |
+| 3D / Graphics | React Three Fiber, Drei, Three.js, postprocessing |
+| Styling | Tailwind CSS + Framer Motion |
+| Authentication | NextAuth |
+| Database | PostgreSQL + Prisma |
+| Storage / Assets | Supabase |
+| Payments | Paystack |
+| Email | Resend |
+| AI | SENTINEL AI + configured model providers |
+| Development | Replit |
+| Production | Replit Deployments |
 
-## Project Structure
+---
 
-```
+# 📁 Project Structure
+
+```text
 pages/
-  index.tsx              # Public landing page (3D hero scene lives here)
-  dashboard/              # Member-facing app (quests, chat, arena, profile, trial…)
-  founder/                # Founder War Room (single SPA-style page with tabs)
-  admin/                  # Scoped admin console (permission-gated sub-set of Founder tools)
-  api/                     # Next.js API routes — one per resource/feature
+├── index.tsx
+├── pay/
+│   └── [token].tsx
+├── dashboard/
+├── founder/
+├── admin/
+└── api/
+    ├── payment/
+    ├── webhooks/
+    └── founder/
+
 components/
-  ui/                      # Shared primitives: GlowButton, GlowInput, StatusChip, RankBadge…
-  dashboard/               # DashboardLayout, StatCard, profile widgets
-  layout/                  # Navbar, Footer
+├── ui/
+├── dashboard/
+└── layout/
+
 lib/
-  ai.ts                    # All AI calls: SENTINEL chat, Arena validator, Ghost Protocol games
-  auth.ts                  # NextAuth config + Founder bootstrap logic
-  prisma.ts                # Prisma client singleton
-  middleware.ts            # requireAuth() role/rank gating for getServerSideProps
+├── ai.ts
+├── auth.ts
+├── prisma.ts
+├── middleware.ts
+├── paystack.ts
+├── resend.ts
+├── paymentLifecycle.ts
+├── paymentEvents.ts
+└── paymentAudit.ts
+
 prisma/
-  schema.prisma            # Full data model (35 models — users, quests, arena, trust & safety…)
+└── schema.prisma
 ```
 
-## Getting Started
+---
+
+# 🚀 Run Locally
+
+## 1. Install dependencies
 
 ```bash
-# install dependencies
 npm install
+```
 
-# generate the Prisma client and push the schema to your database
+## 2. Configure environment variables
+
+Use a local `.env` or Replit Secrets.
+
+## 3. Generate Prisma Client
+
+```bash
+npx prisma generate
+```
+
+## 4. Sync the development database
+
+This project currently uses Prisma schema synchronization:
+
+```bash
 npx prisma db push
+```
 
-# run the dev server (Replit runs this via the Run button)
+> ⚠️ Keep database environments synchronized carefully when changing `schema.prisma`.
+
+## 5. Start development
+
+```bash
 npm run dev
 ```
 
-The dev server binds to `0.0.0.0:5000` (see `package.json` scripts) so it works inside Replit's proxy.
+---
 
-## Environment Variables
+# 🔐 Environment Variables
 
-Set these as Replit Secrets (or a local `.env`) — there is currently no committed `.env.example`, so treat this table as the source of truth:
+Never commit secrets to GitHub.
 
 | Variable | Purpose |
 |---|---|
-| `DATABASE_URL` | Postgres connection string (Prisma) |
-| `NEXTAUTH_URL` | Full deployed URL — **must** be set correctly in production or auth (e.g. logout) breaks on some browsers |
-| `NEXTAUTH_SECRET` | NextAuth session/JWT signing secret |
-| `FOUNDER_BOOTSTRAP_EMAIL` / `FOUNDER_BOOTSTRAP_PASSWORD` | Seeds/authenticates the initial Founder account |
-| `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase client (used for storage/asset handling) |
-| `OpenRouter_Api_Key` / `OpenRouter_Api_Key_2` | Primary + fallback OpenRouter keys for all SENTINEL / Arena AI / Ghost Protocol calls |
-| `Mistral_Api_Key` | Fallback model when OpenRouter is unavailable |
-| `HuggingFace_Api_Key` | Additional model fallback |
-| `NVIDIA_Api_Key` | NVIDIA NIM model fallback |
+| `DATABASE_URL` | PostgreSQL connection |
+| `NEXTAUTH_URL` | Public application URL |
+| `NEXTAUTH_SECRET` | NextAuth signing secret |
+| `FOUNDER_BOOTSTRAP_EMAIL` | Initial Founder account |
+| `FOUNDER_BOOTSTRAP_PASSWORD` | Initial Founder bootstrap credential |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase public client key |
+| `PAYSTACK_SECRET_KEY` | **Server-only** Paystack secret |
+| `RESEND_API_KEY` | **Server-only** Resend key |
+| `RESEND_FROM` | Verified Resend sender |
+| `NEXT_PUBLIC_APP_URL` | Public QuestHub URL |
+| AI provider keys | Required by the current `lib/ai.ts` configuration |
 
-> Note the inconsistent casing on the AI keys (`OpenRouter_Api_Key` rather than `OPENROUTER_API_KEY`) — this matches what `lib/ai.ts` actually reads today. Worth normalizing in a future cleanup pass.
+> **Security:** never expose `PAYSTACK_SECRET_KEY`, `RESEND_API_KEY`, database credentials, or model-provider secrets in browser code.
+
+---
+
+# 💳 Payments
+
+QuestHub uses a **Founder → Client → Payment Link** model.
+
+### Founder flow
+
+```text
+Founder creates request
+        ↓
+QuestHub generates secure payment link
+        ↓
+Founder copies / shares link
+        ↓
+Client opens public payment page
+        ↓
+Client enters:
+name • email • phone • optional business
+        ↓
+Client sees:
+amount • processing fee • total
+        ↓
+Paystack checkout
+        ↓
+Webhook confirms payment
+        ↓
+QuestHub records payment
+        ↓
+Resend sends confirmation
+```
+
+### Fee modes
+
+The payment system supports:
+
+- `CLIENT_PAYS`
+- `FOUNDER_PAYS`
+- `SPLIT_50_50`
+
+The project amount must remain separate from the processing fee.
+
+### Payment truth
+
+The browser redirect is **not** proof of payment.
+
+Payment state must be confirmed server-side through Paystack verification / webhook processing.
+
+Webhook handling should be idempotent so duplicate events do not create duplicate transactions, quest funding, or email receipts.
+
+---
+
+# 🤖 AI & Automation
+
+QuestHub uses AI where it adds real value.
+
+### Good AI use cases
+
+- SENTINEL assistant
+- Arena grading
+- Payment-risk signals
+- Payment-request drafting
+- Founder operational summaries
+- Smart reminders
+- Quest intelligence
+- Future recommendations
+
+### Deterministic responsibilities
+
+Money-related truth remains server-controlled:
+
+- payment amount
+- payment status
+- transaction references
+- webhook verification
+- database updates
+- payout eligibility
+- audit records
+
+AI can assist with these workflows; it should not silently become the financial authority.
+
+---
+
+# 👥 Roles & Access
+
+### Founder
+
+Full control through the Founder War Room.
+
+### Admin
+
+Permission-scoped Founder tools.
+
+### Member
+
+The normal QuestHub experience: dashboard, quests, chat, Arena, profile, progression, and achievements.
+
+### External Client
+
+No account required. The client interacts only through the public payment page provided by the Founder.
+
+---
+
+# 🎨 Design System
+
+QuestHub's current design direction is a **dark, cinematic Living Digital Forest** aesthetic.
+
+### Palette
+
+- 🌌 Near-black / midnight backgrounds
+- 🟢 Emerald
+- 🔵 Cyan / teal
+- 🟣 Violet
+- 🟡 Gold
+
+### Visual language
+
+- 🦋 Animated butterflies
+- ✨ Ambient particles
+- 🌐 Flowing energy-network background
+- 🏛️ Guild / fantasy-tech typography
+- 🎬 Cinematic depth and glow
+
+### Typography
+
+The current direction favors:
+
+- **Cinzel**
+- **Cormorant Garamond**
+
+Some older HUD-style Orbitron / Rajdhani components remain and are being migrated gradually.
+
+> **Design principle:** the interface should feel like entering a living guild — not opening a generic SaaS dashboard.
+
+---
+
+# 🧪 Development Checklist
+
+Before committing a major change:
+
+```bash
+npm run lint
+npm run build
+```
+
+For schema changes:
+
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+For payment changes, test:
+
+- successful payment
+- failed payment
+- pending payment
+- duplicate webhook
+- expired payment link
+- wrong amount
+- client information validation
+- email failure after successful payment
+
+---
+
+# 🟡 Project Status
+
+**QuestHub Guild is an active pre-launch project.**
+
+Current work spans:
+
+- 🎨 design migration
+- 🎮 Arena expansion
+- 💳 payment operations
+- 📧 production Resend configuration
+- 🤖 SENTINEL improvements
+- 🛡️ trust & safety
+- 📱 responsive/mobile refinement
+- 🚢 production readiness
+
+---
+
+# 🚢 First Launch Checklist
+
+## Application
+
+- [ ] Production build succeeds
+- [ ] Authentication works
+- [ ] Founder access is protected
+- [ ] Member dashboard works
+- [ ] Mobile layouts checked
+- [ ] Error pages checked
 
 ## Database
 
-Schema lives in `prisma/schema.prisma` (35 models, covering users/auth, quests, chat, the Arena Protocol, achievements/titles, and trust & safety). This project uses **`prisma db push` only** — there is no `prisma/migrations` folder, so schema changes are pushed directly rather than tracked as migrations. Keep this in mind when working across environments.
+- [ ] Production database configured
+- [ ] Prisma Client generated
+- [ ] Schema synchronized
+- [ ] Backup / recovery plan considered
 
-## Roles & Access
+## Payments
 
-- **Founder** — full control via `/founder` (Users, Trials, Admins, Quests, Suggestions, Arena, Posts, Achievements, Titles, Trust, AI Alerts, Feedback, Feature Unlocks…). **All application-user info (roster, roles, ranks, status) lives under `/founder` → People → Users tab.**
-- **Admin** — a permission-scoped subset of Founder tools at `/admin`, gated per-admin by `AdminPermission`.
-- **Member** — the standard dashboard experience at `/dashboard/*`, gated by `requireAuth()` (role/rank-based, see `lib/middleware.ts`).
+- [ ] Paystack production credentials configured
+- [ ] Public payment links tested
+- [ ] Client information validation tested
+- [ ] Fee calculation verified
+- [ ] Webhook registered and reachable
+- [ ] Duplicate webhook behavior tested
+- [ ] Successful test transaction completed
+- [ ] Payment receipt confirmed
 
-## The Arena Protocol (mini-games)
+## Email
 
-This is the mini-game system exposed to members at `/dashboard/arena`, built by Founders at `/founder` → Arena.
+- [ ] Resend API key configured
+- [ ] Sender domain verified
+- [ ] Payment receipt tested
+- [ ] Founder notification tested
+- [ ] Reminder tested
+- [ ] Duplicate-email protection tested
 
-**How it currently works:**
+## Security
 
-1. A Founder fills out a form (title, mechanics type, difficulty, validation type, time limit, entry/cooldown rules, rewards) **including an "Objective / Description" field**. That field is the *only* place the actual task/question text comes from — it is shown to players in the play modal and is also the context the AI grader uses to score submissions.
-2. A member opens a game card, reads the objective + any custom rules, and types a free-text response into a textarea.
-3. On submit, unless `validationType` is `manual`, the response is sent to an AI validator (`validateArenaEntry` in `lib/ai.ts`) which scores it 0–100 for relevance/effort/creativity and can flag it as spam/low-effort.
-4. XP is awarded automatically only for `auto`-validated, non-flagged entries.
+- [ ] Secrets are not committed
+- [ ] Public payment tokens are high entropy
+- [ ] Server validates all payment amounts
+- [ ] Founder routes require authorization
+- [ ] Webhook authenticity is verified
+- [ ] Client information is not publicly exposed
 
-**Important — this is not currently AI-generated trivia.** The Arena engine does **not** pull questions from a hardcoded list, but it also does **not** use AI to generate the prompt. The AI is only used for *grading*, not *authoring*. There is an unused helper, `generateArenaPrompt()` in `lib/ai.ts`, that was scaffolded to have AI generate a fresh prompt/question per category+difficulty — but it is currently **dead code**, never called from any page or API route. Wiring that function into the Founder's Arena creation flow (e.g. an "Auto-generate objective" button) is the natural next step if that's the intended feature.
+---
 
-**Why deployed games can feel like "no specification":** the Objective/Description field is labeled required (`*`) in the UI but isn't actually enforced server-side (`pages/api/founder/arena.ts` only requires `title` and `endsAt`). If a Founder submits a game with that field blank, the game deploys successfully but players see no real instructions — only generic boilerplate — and the AI grader has nothing to score against (this is exactly what happened with the "Test 1" game: the AI flagged the single-word entry "Bello" as ungradable because the objective field was empty). To fix this at the root, either enforce `objective`/`description` as required server-side, or default it to the AI-generated prompt from `generateArenaPrompt()` when left blank.
+# 🌱 Vision
 
-## Design System
+QuestHub is starting small.
 
-The project is mid-migration from an early **Orbitron/Rajdhani + purple holographic HUD** aesthetic to a newer **Cinzel/Cormorant Garamond serif + emerald/gold/cyan/violet "Living Digital Forest"** aesthetic (see `tailwind.config.js`, which explicitly comments that `cinzel`/`cormorant` should be preferred for new work).
+The goal is not simply to build another teen social platform.
 
-**Fully migrated:** `components/layout/Navbar.tsx`, `components/ui/GlowButton.tsx`, the landing page (`pages/index.tsx`).
+It is to build a place where:
 
-**Still on the old font/aesthetic (`font-orbitron` / `font-rajdhani`)** — these are the pages/components that will look "old" until updated:
-- `components/dashboard/DashboardLayout.tsx` — the shared shell wrapping *every* dashboard page (chat, arena, quests, profile, trial, messages, posts, achievements, feedback), which is why the old HUD look shows up almost everywhere inside `/dashboard`.
-- `components/dashboard/StatCard.tsx`, `components/dashboard/index.tsx`, `components/dashboard/profile.tsx`
-- `components/layout/Footer.tsx`
-- `components/ui/AIChatWidget.tsx`, `components/ui/GhostModePanel.tsx`, `components/ui/GlowInput.tsx`, `components/ui/RankBadge.tsx`, `components/ui/StatusChip.tsx`, `components/ui/XPBar.tsx`
-- Most individual dashboard pages (`arena.tsx`, `chat.tsx`, `achievements.tsx`, `feedback.tsx`, `messages.tsx`, `posts.tsx`, `quest/[id].tsx`, `quests.tsx`, `trial.tsx`) and `founder/index.tsx`, `admin/index.tsx`, `auth/login.tsx`, `auth/register.tsx`, `apply.tsx`, `admin-login.tsx`, `404.tsx`, `_error.tsx`
+```text
+CONNECT
+   ↓
+PARTICIPATE
+   ↓
+LEARN
+   ↓
+PROVE
+   ↓
+RANK UP
+   ↓
+BUILD EXPERIENCE
+   ↓
+TAKE ON QUESTS
+   ↓
+CREATE REAL OPPORTUNITIES
+```
 
-Because `DashboardLayout` and most of the shared `components/ui/*` primitives haven't been migrated, updating those handful of files (rather than every page individually) will cascade the new look across nearly the whole app.
+A guild that stays active.
 
-## Known Issues / In Progress
+A place where effort matters.
 
-- Arena's Objective/Description field isn't enforced server-side, allowing effectively-blank games to deploy (see above).
-- `generateArenaPrompt()` exists but is unused — decide whether Arena should support AI-generated prompts or remove the dead code.
-- Design migration to the Cinzel/Cormorant + emerald palette is incomplete (see [Design System](#design-system)).
-- No `prisma/migrations` history — schema changes are applied via `prisma db push`, so keep environments in sync manually.
+A place where talented teens can build something bigger together.
 
-## Deployment
+---
 
-Deployed via **Replit Deployments** from this Repl. Production build: `npm run build` then `npm run start` (both bind to `0.0.0.0:5000`). Make sure `NEXTAUTH_URL` matches the deployed domain exactly — a mismatch here has previously caused logout crashes on Safari/iOS.
+<p align="center">
+  <strong>QuestHub Guild ⚡</strong><br/>
+  <em>Connect. Grow. Prove yourself. Build what comes next.</em>
+</p>
