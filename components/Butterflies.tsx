@@ -57,7 +57,7 @@ const GLOBAL_SCALE = 1.20;
 
 const BASE_YAW = Math.PI * 0.15;
 
-type Behavior = "hover" | "orbit" | "roam";
+type Behavior = "hover" | "orbit" | "roam" | "traverse";
 
 type FlightConfig = {
   home: THREE.Vector3;
@@ -80,6 +80,16 @@ type FlightConfig = {
   // procedural wander entirely and tracks the cursor instead. See the
   // followCursor branch in Butterfly()'s useFrame below.
   followCursor?: boolean;
+  // "traverse" behavior only: a genuine point-A-to-point-B journey across
+  // the visible scene (not a wander around `home`) — from traverseFrom to
+  // traverseTo and back, repeating every traverseDuration seconds, with a
+  // fade in/out near each end. This is the "arrives, crosses the screen,
+  // leaves" flight the CSS/SVG dashboard butterflies (ButterfliesOverlay)
+  // have that hover/roam/orbit never did — those all anchor to a fixed
+  // `home` and never actually leave the scene or fade.
+  traverseFrom?: THREE.Vector3;
+  traverseTo?: THREE.Vector3;
+  traverseDuration?: number;
 };
 
 // Hand-placed so the flock reads as a loose, asymmetric cluster that
@@ -307,6 +317,40 @@ const FLOCK: Array<
     behavior: "hover",
     orbitDir: -1,
   },
+  // ── Traverse — genuine point-to-point crossings ─────────────────────
+  // Everything above wanders around a fixed `home` no matter how wide the
+  // sweep; these two actually arrive from one side, cross the scene, fade
+  // out the other side, pause, then do it again — the "arrives, crosses,
+  // leaves" flight the 2D ButterfliesOverlay butterflies on every other
+  // page already had (see components/ui/ButterfliesOverlay.tsx) and the
+  // 3D flock never did. Endpoints are placed beyond the visible frustum
+  // (camera fov 38 / distance 8.4 puts the visible half-width at roughly
+  // ±2.9) so they're already off-scene — and faded to 0 opacity by
+  // traverseFadeFactor — before they'd otherwise pop at a hard edge.
+  {
+    home: new THREE.Vector3(0, 2.6, 0.3),
+    traverseFrom: new THREE.Vector3(-5.2, 3.1, 0.4),
+    traverseTo: new THREE.Vector3(5.2, 2.2, -0.3),
+    traverseDuration: 21,
+    area: new THREE.Vector3(0.35, 0.2, 0.25),
+    speed: 0.6,
+    seed: 38.6,
+    scale: 0.13,
+    behavior: "traverse",
+    orbitDir: 1,
+  },
+  {
+    home: new THREE.Vector3(0, 1.8, 0.2),
+    traverseFrom: new THREE.Vector3(5.4, 1.6, -0.4),
+    traverseTo: new THREE.Vector3(-5.4, 2.5, 0.3),
+    traverseDuration: 27,
+    area: new THREE.Vector3(0.3, 0.18, 0.22),
+    speed: 0.55,
+    seed: 41.9,
+    scale: 0.12,
+    behavior: "traverse",
+    orbitDir: -1,
+  },
 ];
 
 // Smooth, deterministic, non-repeating-looking wander per axis — a cheap
@@ -388,6 +432,29 @@ function farthestCorner(mesh: THREE.Mesh): THREE.Vector3 {
 // lets us finite-difference it below to get a real heading to bank into.
 function flightPosition(cfg: FlightConfig, t: number, out: THREE.Vector3) {
   const tt = t * cfg.speed;
+  if (cfg.behavior === "traverse") {
+    // Real elapsed seconds drive the cycle (not tt) — traverseDuration is
+    // an actual "how many seconds does one crossing take" value, not a
+    // wander-pacing knob like cfg.speed is for the other behaviors. The
+    // seed-based offset staggers multiple traverse instances so they don't
+    // all launch/pause in lockstep.
+    const duration = cfg.traverseDuration ?? 22;
+    const pause = duration * 0.35; // brief gap off-scene before the next crossing
+    const cycle = duration + pause;
+    const phase = (((t + cfg.seed * 3.7) % cycle) + cycle) % cycle;
+    const progress = THREE.MathUtils.clamp(phase / duration, 0, 1);
+    const from = cfg.traverseFrom ?? cfg.home;
+    const to = cfg.traverseTo ?? cfg.home;
+    // Smoothstep ease — accelerates away from the start edge, settles into
+    // the end edge, instead of constant-velocity sliding across the scene.
+    const eased = progress * progress * (3 - 2 * progress);
+    out.lerpVectors(from, to, eased);
+    // Same organic wobble every other behavior gets, layered on top of the
+    // straight-line path rather than replacing it.
+    wanderOffset(t * cfg.speed * 0.6, cfg.seed, cfg.area, _tmp);
+    out.add(_tmp);
+    return out; // absolute position already — skip the cfg.home add below
+  }
   if (cfg.behavior === "hover") {
     wanderOffset(tt * 0.6, cfg.seed, cfg.area, out);
   } else if (cfg.behavior === "roam") {
@@ -407,6 +474,26 @@ function flightPosition(cfg: FlightConfig, t: number, out: THREE.Vector3) {
   }
   out.add(cfg.home);
   return out;
+}
+
+// 0 while comfortably mid-flight, ramping to 1 right at the two ends of a
+// traverse crossing — drives opacity so the butterfly visibly fades in as
+// it enters the scene and fades out as it leaves, rather than popping in
+// solid at whatever an off-screen edge happens to be. Exported as its own
+// function (not folded into flightPosition) since Butterfly()'s useFrame
+// needs this value independently of position, to drive material opacity.
+function traverseFadeFactor(cfg: FlightConfig, t: number): number {
+  if (cfg.behavior !== "traverse") return 1;
+  const duration = cfg.traverseDuration ?? 22;
+  const pause = duration * 0.35;
+  const cycle = duration + pause;
+  const phase = (((t + cfg.seed * 3.7) % cycle) + cycle) % cycle;
+  if (phase >= duration) return 0; // in the pause gap, fully invisible
+  const progress = phase / duration;
+  const EDGE = 0.08; // fraction of the crossing spent fading at each end
+  if (progress < EDGE) return progress / EDGE;
+  if (progress > 1 - EDGE) return (1 - progress) / EDGE;
+  return 1;
 }
 
 function Butterfly({ config }: { config: FlightConfig }) {
@@ -497,8 +584,15 @@ function Butterfly({ config }: { config: FlightConfig }) {
   const upTipRef = useRef<THREE.Object3D>(new THREE.Object3D());
   const [tipsReady, setTipsReady] = useState(false);
   const { gl } = useThree();
+  // Collected during the material-setup effect below, used by the
+  // traverse-behavior fade in useFrame. Only populated with `transparent`
+  // enabled for traverse instances — every other behavior never fades, so
+  // leaving them opaque avoids paying transparency's sort/blend cost for
+  // butterflies that don't need it.
+  const materialsRef = useRef<THREE.MeshStandardMaterial[]>([]);
 
   useEffect(() => {
+    materialsRef.current = [];
     // Neither butterfly.glb nor the original butterfly-loop.glb shipped
     // with emissiveFactor set (both were [0,0,0]), unlike the scene's
     // deliberately dim lighting — a model relying only on that lighting
@@ -571,6 +665,14 @@ function Butterfly({ config }: { config: FlightConfig }) {
         std.emissive = new THREE.Color(0xffffff);
         std.emissiveMap = std.map;
         std.emissiveIntensity = 0.32;
+
+        materialsRef.current.push(std);
+        if (config.behavior === "traverse") {
+          // Only traverse instances ever have their opacity animated
+          // (see the fade in useFrame below) — everyone else stays at
+          // their authored opacity/transparent state untouched.
+          std.transparent = true;
+        }
       }
     });
 
@@ -659,6 +761,16 @@ function Butterfly({ config }: { config: FlightConfig }) {
     } else {
       flightPosition(config, t, _pos);
       g.position.copy(_pos);
+    }
+
+    if (config.behavior === "traverse" && materialsRef.current.length > 0) {
+      const fade = traverseFadeFactor(config, t);
+      for (const mat of materialsRef.current) mat.opacity = fade;
+      // Skip rendering entirely during the invisible pause between
+      // crossings — cheaper than drawing a fully-transparent butterfly
+      // every frame, and avoids any faint transparency-sorting artifact
+      // at opacity 0.
+      g.visible = fade > 0.001;
     }
 
     if (config.followCursor) {
