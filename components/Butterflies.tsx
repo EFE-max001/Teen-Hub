@@ -90,6 +90,20 @@ type FlightConfig = {
   traverseFrom?: THREE.Vector3;
   traverseTo?: THREE.Vector3;
   traverseDuration?: number;
+  // Optional midpoint control point for a quadratic-bezier arc instead of
+  // a straight lerp between traverseFrom/traverseTo. Real cross-scene
+  // flight isn't a ruler-straight line — it bows up or down as the
+  // butterfly rides drift/thermals over the crossing. Purely cosmetic:
+  // omit it and the path falls back to a straight line.
+  traverseVia?: THREE.Vector3;
+  // Explicit stagger, in seconds, added to this instance's cycle phase.
+  // With several traverse butterflies now sharing the scene, relying on
+  // `seed * 3.7` alone (as a single earlier version did) risked landing
+  // two instances on close-enough phases that they visually launched or
+  // paused together, reading as a clump rather than a steady trickle of
+  // individual crossings. Setting this explicitly, spaced out by hand
+  // across each instance's own cycle length, guarantees an even spread.
+  traverseStartOffset?: number;
 };
 
 // Hand-placed so the flock reads as a loose, asymmetric cluster that
@@ -319,19 +333,45 @@ const FLOCK: Array<
   },
   // ── Traverse — genuine point-to-point crossings ─────────────────────
   // Everything above wanders around a fixed `home` no matter how wide the
-  // sweep; these two actually arrive from one side, cross the scene, fade
-  // out the other side, pause, then do it again — the "arrives, crosses,
+  // sweep; these actually arrive from one side, cross the scene, fade out
+  // the other side, pause, then do it again — the "arrives, crosses,
   // leaves" flight the 2D ButterfliesOverlay butterflies on every other
   // page already had (see components/ui/ButterfliesOverlay.tsx) and the
   // 3D flock never did. Endpoints are placed beyond the visible frustum
   // (camera fov 38 / distance 8.4 puts the visible half-width at roughly
   // ±2.9) so they're already off-scene — and faded to 0 opacity by
   // traverseFadeFactor — before they'd otherwise pop at a hard edge.
+  //
+  // Went from 4 instances to 8, and gave each its own `traverseVia`
+  // control point so the crossing bows gently up or down instead of
+  // sliding in a ruler-straight line — that straight-line version read
+  // fine for one or two, but with more of them on screen a dead-straight
+  // path is the thing that made them look mechanical next to the organic
+  // hover/orbit/roam flock. The bow amplitude is deliberately small
+  // (0.3–0.7 units) so it reads as natural drift, not a swoop that would
+  // clash with the resident butterflies' own wander.
+  //
+  // Altitude bands (the traverseFrom/To y values) are interleaved with,
+  // but offset from, the y-bands the hover/orbit/roam flock actually
+  // clusters at (roughly 1.3–4.6, densest around 1.7–4.0) so a crossing
+  // butterfly reads as "passing through" rather than flying through the
+  // exact same spot as a resident one at the same moment — it avoids the
+  // visual confusion of two different behaviors overlapping in place.
+  //
+  // Timing: durations spread 8.5–14s so crossings don't all take the same
+  // time, and `traverseStartOffset` is spaced by hand across the group so
+  // launches interleave into a steady trickle (roughly one crossing
+  // starting every 1.5–2s) rather than the whole group crossing in a
+  // single visible wave. Pause fraction stays low (0.16–0.2) so each
+  // butterfly reappears again reasonably soon rather than vanishing for
+  // a long, dead stretch.
   {
     home: new THREE.Vector3(0, 2.6, 0.3),
     traverseFrom: new THREE.Vector3(-5.2, 3.1, 0.4),
     traverseTo: new THREE.Vector3(5.2, 2.2, -0.3),
-    traverseDuration: 21,
+    traverseVia: new THREE.Vector3(0, 2.95, 0.5),
+    traverseDuration: 11,
+    traverseStartOffset: 0,
     area: new THREE.Vector3(0.35, 0.2, 0.25),
     speed: 0.6,
     seed: 38.6,
@@ -343,10 +383,96 @@ const FLOCK: Array<
     home: new THREE.Vector3(0, 1.8, 0.2),
     traverseFrom: new THREE.Vector3(5.4, 1.6, -0.4),
     traverseTo: new THREE.Vector3(-5.4, 2.5, 0.3),
-    traverseDuration: 27,
+    traverseVia: new THREE.Vector3(0, 1.4, -0.5),
+    traverseDuration: 13,
+    traverseStartOffset: 1.8,
     area: new THREE.Vector3(0.3, 0.18, 0.22),
     speed: 0.55,
     seed: 41.9,
+    scale: 0.12,
+    behavior: "traverse",
+    orbitDir: -1,
+  },
+  {
+    home: new THREE.Vector3(0, 3.8, -0.2),
+    traverseFrom: new THREE.Vector3(-5.3, 4.2, 0.2),
+    traverseTo: new THREE.Vector3(5.3, 3.4, -0.4),
+    traverseVia: new THREE.Vector3(0, 4.5, 0.4),
+    traverseDuration: 9.5,
+    traverseStartOffset: 3.4,
+    area: new THREE.Vector3(0.3, 0.16, 0.2),
+    speed: 0.62,
+    seed: 45.1,
+    scale: 0.1,
+    behavior: "traverse",
+    orbitDir: 1,
+  },
+  {
+    home: new THREE.Vector3(0, 0.9, 0.15),
+    traverseFrom: new THREE.Vector3(5.6, 1.1, 0.3),
+    traverseTo: new THREE.Vector3(-5.6, 0.5, -0.3),
+    traverseVia: new THREE.Vector3(0, 0.55, -0.5),
+    traverseDuration: 12,
+    traverseStartOffset: 5.1,
+    area: new THREE.Vector3(0.32, 0.17, 0.22),
+    speed: 0.58,
+    seed: 48.3,
+    scale: 0.14,
+    behavior: "traverse",
+    orbitDir: -1,
+  },
+  {
+    home: new THREE.Vector3(0, 2.35, 0.35),
+    traverseFrom: new THREE.Vector3(-5.5, 2.1, -0.35),
+    traverseTo: new THREE.Vector3(5.5, 2.7, 0.3),
+    traverseVia: new THREE.Vector3(0, 1.85, 0.55),
+    traverseDuration: 10.5,
+    traverseStartOffset: 6.7,
+    area: new THREE.Vector3(0.28, 0.16, 0.2),
+    speed: 0.57,
+    seed: 51.6,
+    scale: 0.11,
+    behavior: "traverse",
+    orbitDir: 1,
+  },
+  {
+    home: new THREE.Vector3(0, 3.3, -0.35),
+    traverseFrom: new THREE.Vector3(5.5, 3.6, 0.3),
+    traverseTo: new THREE.Vector3(-5.5, 2.9, -0.35),
+    traverseVia: new THREE.Vector3(0, 3.95, -0.55),
+    traverseDuration: 14,
+    traverseStartOffset: 8.3,
+    area: new THREE.Vector3(0.3, 0.18, 0.22),
+    speed: 0.52,
+    seed: 54.8,
+    scale: 0.12,
+    behavior: "traverse",
+    orbitDir: -1,
+  },
+  {
+    home: new THREE.Vector3(0, 1.15, -0.1),
+    traverseFrom: new THREE.Vector3(-5.4, 0.85, 0.4),
+    traverseTo: new THREE.Vector3(5.4, 1.45, -0.3),
+    traverseVia: new THREE.Vector3(0, 0.65, 0.4),
+    traverseDuration: 8.5,
+    traverseStartOffset: 10,
+    area: new THREE.Vector3(0.26, 0.15, 0.18),
+    speed: 0.65,
+    seed: 58.2,
+    scale: 0.1,
+    behavior: "traverse",
+    orbitDir: 1,
+  },
+  {
+    home: new THREE.Vector3(0, 4.55, 0.25),
+    traverseFrom: new THREE.Vector3(5.7, 4.85, -0.3),
+    traverseTo: new THREE.Vector3(-5.7, 4.15, 0.4),
+    traverseVia: new THREE.Vector3(0, 5.1, -0.4),
+    traverseDuration: 12.5,
+    traverseStartOffset: 11.6,
+    area: new THREE.Vector3(0.3, 0.16, 0.2),
+    speed: 0.5,
+    seed: 61.4,
     scale: 0.12,
     behavior: "traverse",
     orbitDir: -1,
@@ -435,22 +561,49 @@ function flightPosition(cfg: FlightConfig, t: number, out: THREE.Vector3) {
   if (cfg.behavior === "traverse") {
     // Real elapsed seconds drive the cycle (not tt) — traverseDuration is
     // an actual "how many seconds does one crossing take" value, not a
-    // wander-pacing knob like cfg.speed is for the other behaviors. The
-    // seed-based offset staggers multiple traverse instances so they don't
-    // all launch/pause in lockstep.
+    // wander-pacing knob like cfg.speed is for the other behaviors.
+    // `traverseStartOffset` (falling back to the old seed-based spread if
+    // an instance doesn't set one) staggers multiple traverse instances so
+    // they don't all launch/pause in lockstep.
     const duration = cfg.traverseDuration ?? 22;
-    const pause = duration * 0.35; // brief gap off-scene before the next crossing
+    // Was 0.35 — combined with the longer durations these entries used to
+    // have, a full cycle could run 28-36s, meaning a crossing might not
+    // even start within a typical short clip. 0.16-0.2 keeps a believable
+    // "it actually left the scene for a moment" gap without making
+    // crossings rare, now that there are more instances to keep the sky
+    // from ever reading as empty.
+    const pause = duration * 0.18;
     const cycle = duration + pause;
-    const phase = (((t + cfg.seed * 3.7) % cycle) + cycle) % cycle;
+    const startOffset = cfg.traverseStartOffset ?? cfg.seed * 3.7;
+    const phase = (((t + startOffset) % cycle) + cycle) % cycle;
     const progress = THREE.MathUtils.clamp(phase / duration, 0, 1);
     const from = cfg.traverseFrom ?? cfg.home;
     const to = cfg.traverseTo ?? cfg.home;
     // Smoothstep ease — accelerates away from the start edge, settles into
     // the end edge, instead of constant-velocity sliding across the scene.
     const eased = progress * progress * (3 - 2 * progress);
-    out.lerpVectors(from, to, eased);
+    if (cfg.traverseVia) {
+      // Quadratic-bezier arc through the via control point rather than a
+      // straight lerp. A real crossing bows — it isn't a ruler-straight
+      // slide — and with several traverse butterflies now sharing the
+      // scene, a dead-straight path was the thing that made them look
+      // mechanical next to the hover/orbit/roam flock's organic drift.
+      const oneMinus = 1 - eased;
+      const a = oneMinus * oneMinus;
+      const b = 2 * oneMinus * eased;
+      const c = eased * eased;
+      out.set(
+        a * from.x + b * cfg.traverseVia.x + c * to.x,
+        a * from.y + b * cfg.traverseVia.y + c * to.y,
+        a * from.z + b * cfg.traverseVia.z + c * to.z,
+      );
+    } else {
+      out.lerpVectors(from, to, eased);
+    }
     // Same organic wobble every other behavior gets, layered on top of the
-    // straight-line path rather than replacing it.
+    // arced path rather than replacing it — kept at a reduced strength
+    // (see the *0.6 below, unchanged) so it reads as flutter riding a
+    // real trajectory rather than competing with the bow itself.
     wanderOffset(t * cfg.speed * 0.6, cfg.seed, cfg.area, _tmp);
     out.add(_tmp);
     return out; // absolute position already — skip the cfg.home add below
@@ -485,12 +638,17 @@ function flightPosition(cfg: FlightConfig, t: number, out: THREE.Vector3) {
 function traverseFadeFactor(cfg: FlightConfig, t: number): number {
   if (cfg.behavior !== "traverse") return 1;
   const duration = cfg.traverseDuration ?? 22;
-  const pause = duration * 0.35;
+  const pause = duration * 0.18; // matches the pause fraction in flightPosition above
   const cycle = duration + pause;
-  const phase = (((t + cfg.seed * 3.7) % cycle) + cycle) % cycle;
+  const startOffset = cfg.traverseStartOffset ?? cfg.seed * 3.7; // matches flightPosition above
+  const phase = (((t + startOffset) % cycle) + cycle) % cycle;
   if (phase >= duration) return 0; // in the pause gap, fully invisible
   const progress = phase / duration;
-  const EDGE = 0.08; // fraction of the crossing spent fading at each end
+  // Was 0.08 — with the arced path now bowing the flight rather than
+  // sliding it in a straight line, a slightly wider fade window (0.1)
+  // reads more like the butterfly genuinely emerging out of/receding into
+  // the distance rather than an abrupt near-edge pop.
+  const EDGE = 0.1; // fraction of the crossing spent fading at each end
   if (progress < EDGE) return progress / EDGE;
   if (progress > 1 - EDGE) return (1 - progress) / EDGE;
   return 1;
@@ -690,13 +848,21 @@ function Butterfly({ config }: { config: FlightConfig }) {
       action.reset().play();
       action.time = Math.random() * (action.getClip().duration || 1);
     });
-    // Wing-flap animation playback speed. Was 1.6 + random*0.6 (1.6x-2.2x
-    // the clip's authored speed) — too fast, especially on larger/closer
-    // butterflies where the same flap rate reads as more frantic simply
-    // because it covers more screen space. 1.0 = the clip's natural
-    // authored speed. Steadier now: 0.85x-1.05x, much less variance
-    // between individual butterflies too.
-    mixer.timeScale = 0.85 + Math.random() * 0.2;
+    // Wing-flap animation playback speed. History on this value:
+    //   - originally 1.6-2.2x — reasoned to be "too frantic"
+    //   - dropped to 0.85-1.05x (the clip's near-natural speed) to fix that
+    // But comparing actual footage of this page against the 2D
+    // ButterfliesOverlay flock used on every other page (dashboard, login,
+    // etc — see components/ui/ButterfliesOverlay.tsx) side by side,
+    // frame-by-frame: the 2D ones snap between a fully-open and a
+    // fully-pinched wing silhouette every single frame at 8fps, which
+    // reads as a sharp, energetic flutter. These 3D ones, at 0.85-1.05x,
+    // visibly change shape far more gradually over the same real time —
+    // more of a glide than a flap. 1.05x was too conservative a walk-back
+    // from the "too frantic" 1.6-2.2x range. Splitting the difference,
+    // biased toward the faster side since the frame evidence is fairly
+    // unambiguous: 1.3x-1.65x.
+    mixer.timeScale = 1.3 + Math.random() * 0.35;
 
     // Wing-tip trail anchors only exist for models that expose nodes named
     // "wing_down"/"wing_up" — neither of the two new GLBs does, so trails
@@ -882,11 +1048,24 @@ export default function Butterflies({
     // otherwise almost always get cut by the sort above — guarantee it
     // survives the trim instead of leaving it to chance.
     const follower = FLOCK.find((f) => f.followCursor);
-    const rest = sorted.filter((f) => !f.followCursor);
-    const picked =
-      follower && !reducedMotion
-        ? [follower, ...rest.slice(0, Math.max(n - 1, 0))]
-        : rest.slice(0, n);
+    // Traverse instances also have a small-|x| `home` (their real path is
+    // traverseFrom/To, home is just a nominal center) and would get cut by
+    // the same |x| sort for the same reason the follower would — carve
+    // them out and guarantee they survive a trim too, otherwise a reduced
+    // `count` would silently drop the crossing behavior entirely instead
+    // of shrinking it gracefully.
+    const traversers = FLOCK.filter((f) => f.behavior === "traverse");
+    const rest = sorted.filter(
+      (f) => !f.followCursor && f.behavior !== "traverse",
+    );
+    const reserved = [
+      ...(follower && !reducedMotion ? [follower] : []),
+      ...(reducedMotion ? [] : traversers),
+    ];
+    const picked = [
+      ...reserved,
+      ...rest.slice(0, Math.max(n - reserved.length, 0)),
+    ];
     return picked.map((f, i) => ({
       ...f,
       // Wider horizontal spread — the original box (|x| ≤ ~3.6) reads as
@@ -894,14 +1073,15 @@ export default function Butterflies({
       // just x (not y/z) pushes the flock further out to the sides without
       // changing how deep/tall the formation reads, so it frames a wider
       // "colony passing through" band across the hero instead of huddling
-      // near the text.
-      home: new THREE.Vector3(f.home.x * 1.55, f.home.y, f.home.z),
+      // near the text. Traverse instances are left untouched — their
+      // horizontal placement is already defined by traverseFrom/To out
+      // past the frustum, not by `home`.
+      home:
+        f.behavior === "traverse"
+          ? f.home.clone()
+          : new THREE.Vector3(f.home.x * 1.55, f.home.y, f.home.z),
       color: colors[i % colors.length],
       colorB: colors[(i + 1) % colors.length],
-      // only the larger roam/orbit butterflies get a trail — keeps draw
-      // calls sane with a large flock and reads better anyway, since a
-      // trail on a tiny hovering butterfly just looks like noise
-      //
       // only the larger roam/orbit butterflies get a trail — keeps draw
       // calls sane with a large flock and reads better anyway, since a
       // trail on a tiny hovering butterfly just looks like noise
@@ -909,7 +1089,9 @@ export default function Butterflies({
       // reduced motion keeps things alive (wings still flap via the baked
       // clip, gentle hover stays on) but drops long-distance travel — and
       // disables cursor-following entirely, since chasing the mouse is
-      // exactly the kind of motion prefers-reduced-motion asks to avoid
+      // exactly the kind of motion prefers-reduced-motion asks to avoid.
+      // Traversal is long-distance travel too, so it's folded into the
+      // same reducedMotion fallback as followCursor/roam/orbit below.
       followCursor: reducedMotion ? false : f.followCursor,
       behavior: reducedMotion ? ("hover" as Behavior) : f.behavior,
       // reducedMotion still needs the *smaller* range, so it multiplies
