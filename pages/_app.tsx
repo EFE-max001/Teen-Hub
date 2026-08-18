@@ -9,22 +9,11 @@ import dynamic from 'next/dynamic'
 import AppLoadingGate from '@/components/ui/AppLoadingGate'
 import PageTransitionParticles from '@/components/ui/PageTransitionParticles'
 
-const SentinelBackground = dynamic(() => import('@/components/ui/SentinelBackground'), { ssr: false })
 const AmbientGlow = dynamic(() => import('@/components/ui/AmbientGlow'), { ssr: false })
 // Global CSS/SVG butterfly overlay — spreads butterflies across every page
 // (not just the hero canvas) and lands some of them on text. Zero WebGL
-// cost, so it's safe to mount app-wide unlike SentinelBackground above.
+// cost, so it's safe to keep on the supporting routes.
 const ButterfliesOverlay = dynamic(() => import('@/components/ui/ButterfliesOverlay'), { ssr: false })
-
-// Only the landing page ("/") has the heavy hero scene (portal + butterfly
-// flock + particle network). It used to mount unconditionally in every
-// route via this file, which meant the WebGL render loop and ~1.4MB of
-// glb models kept running underneath the dashboard, login, and every
-// other page — competing with React for the main thread and making
-// buttons/nav links feel sluggish everywhere, not just on "/". Gating the
-// mount itself (not just its visibility, which AppLoadingGate already
-// did) fixes that: the scene now only exists on the one route that shows it.
-const SENTINEL_ROUTES = new Set(['/'])
 
 // "Don't switch pages, grow them" — per the brief. AnimatePresence keyed by
 // pathname holds the outgoing page on-screen just long enough to play its
@@ -63,19 +52,18 @@ function usePageTransitionBurst() {
 
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter()
-  const showSentinel = SENTINEL_ROUTES.has(router.pathname)
+  const isLanding = router.pathname === '/'
   const burst = usePageTransitionBurst()
   const reducedMotion = useReducedMotion()
 
   return (
     <SessionProvider session={session}>
       <AppLoadingGate>
-        {showSentinel ? <SentinelBackground /> : <AmbientGlow />}
-        {/* Landing page already has its own 3D butterfly flock inside
-            SentinelBackground/Scene.tsx — mounting this CSS overlay there
-            too meant two independent butterfly systems on screen at once.
-            Every other route only has this lightweight one. */}
-        {!showSentinel && !reducedMotion && <ButterfliesOverlay />}
+        {/* The landing page owns its lightweight 2D quest constellation.
+            Other routes keep the existing ambient glow and butterfly overlay
+            exactly as before. */}
+        {!isLanding && <AmbientGlow />}
+        {!isLanding && !reducedMotion && <ButterfliesOverlay />}
         {burst !== null && !reducedMotion && <PageTransitionParticles key={burst} />}
         <AnimatePresence mode="wait" initial={false}>
           <motion.div

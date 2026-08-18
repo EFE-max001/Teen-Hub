@@ -44,6 +44,89 @@ const AI_FEATURES = [
   { title: 'Milestone Engine',desc: 'Progress is recognized as you hit meaningful milestones, from your first challenge to your first paid quest.' },
 ]
 
+function LandingQuestConstellation() {
+  return (
+    <div className="quest-constellation" aria-hidden="true">
+      <div className="quest-constellation__wash" />
+      <svg className="quest-constellation__svg" viewBox="0 0 1200 760" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="questPathEmerald" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#00FFA3" stopOpacity="0" />
+            <stop offset="42%" stopColor="#00FFA3" stopOpacity=".72" />
+            <stop offset="100%" stopColor="#00E5FF" stopOpacity=".12" />
+          </linearGradient>
+          <linearGradient id="questPathGold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFC65C" stopOpacity="0" />
+            <stop offset="50%" stopColor="#FFC65C" stopOpacity=".72" />
+            <stop offset="100%" stopColor="#E879F9" stopOpacity=".08" />
+          </linearGradient>
+          <filter id="questGlow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="8" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <g className="quest-constellation__grid">
+          <path d="M0 620 C210 500 280 650 470 540 S760 320 1200 420" />
+          <path d="M0 170 C230 250 340 150 530 250 S850 520 1200 180" />
+          <path d="M70 760 C260 580 330 470 560 410 S900 430 1150 0" />
+          <path d="M0 390 C180 340 310 360 470 440 S820 620 1200 560" />
+        </g>
+
+        <g className="quest-constellation__routes">
+          <path className="quest-route quest-route--emerald" d="M86 604 C250 560 280 390 476 430 S720 510 834 340" />
+          <path className="quest-route quest-route--gold" d="M270 110 C380 212 414 320 548 344 S748 310 834 340" />
+          <path className="quest-route quest-route--cyan" d="M834 340 C950 300 1014 214 1130 184" />
+          <path className="quest-route quest-route--violet" d="M834 340 C922 418 1004 520 1090 616" />
+        </g>
+
+        <g className="quest-constellation__nodes">
+          <g className="quest-node quest-node--community">
+            <circle className="quest-node__halo" cx="86" cy="604" r="24" />
+            <circle className="quest-node__ring" cx="86" cy="604" r="12" />
+            <circle className="quest-node__dot" cx="86" cy="604" r="4" />
+          </g>
+          <g className="quest-node quest-node--build">
+            <circle className="quest-node__halo" cx="270" cy="110" r="22" />
+            <circle className="quest-node__ring" cx="270" cy="110" r="11" />
+            <circle className="quest-node__dot" cx="270" cy="110" r="3.5" />
+          </g>
+          <g className="quest-node quest-node--core">
+            <circle className="quest-node__halo" cx="834" cy="340" r="55" />
+            <ellipse className="quest-core__orbit quest-core__orbit--one" cx="834" cy="340" rx="78" ry="28" />
+            <ellipse className="quest-core__orbit quest-core__orbit--two" cx="834" cy="340" rx="58" ry="92" />
+            <polygon className="quest-core__hex" points="834,307 864,324 864,358 834,375 804,358 804,324" />
+            <circle className="quest-node__dot" cx="834" cy="340" r="6" />
+          </g>
+          <g className="quest-node quest-node--earn">
+            <circle className="quest-node__halo" cx="1130" cy="184" r="25" />
+            <circle className="quest-node__ring" cx="1130" cy="184" r="13" />
+            <circle className="quest-node__dot" cx="1130" cy="184" r="4" />
+          </g>
+          <g className="quest-node quest-node--quest">
+            <circle className="quest-node__halo" cx="1090" cy="616" r="20" />
+            <circle className="quest-node__ring" cx="1090" cy="616" r="10" />
+            <circle className="quest-node__dot" cx="1090" cy="616" r="3.5" />
+          </g>
+        </g>
+      </svg>
+
+      <div className="quest-signal quest-signal--community">
+        <span>01</span><b>COMMUNITY</b>
+      </div>
+      <div className="quest-signal quest-signal--build">
+        <span>02</span><b>BUILD PROOF</b>
+      </div>
+      <div className="quest-signal quest-signal--earn">
+        <span>03</span><b>TAKE THE QUEST</b>
+      </div>
+    </div>
+  )
+}
+
 export default function LandingPage() {
   return (
     <>
@@ -58,16 +141,7 @@ export default function LandingPage() {
 
           {/* ── HERO ──────────────────────────────────────────── */}
           <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4 py-20">
-            {/* The atmosphere is mounted globally so this hero can focus on
-                the message, proof, and first action instead of competing
-                with a second local scene. */}
-
-            {/* No local background mount here anymore — the Living Digital
-                Forest (fog + roots + particles + portal/butterflies/branch)
-                is mounted once, globally, via SentinelBackground in
-                _app.tsx, so it's consistent across every page instead of
-                just this hero, and so there's only ever one WebGL canvas
-                running instead of two stacked on top of each other. */}
+            <LandingQuestConstellation />
 
             {/* Text-legibility vignette — sits between the background and
                 the copy (not touching either), so the headline/body text
