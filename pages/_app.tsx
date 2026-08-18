@@ -4,7 +4,7 @@ import type { AppProps } from 'next/app'
 import { SessionProvider } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import AppLoadingGate from '@/components/ui/AppLoadingGate'
 import PageTransitionParticles from '@/components/ui/PageTransitionParticles'
@@ -21,7 +21,13 @@ const ButterfliesOverlay = dynamic(() => import('@/components/ui/ButterfliesOver
 // dissolving into the next rather than an instant hard cut. Kept deliberately
 // cheap (opacity/scale/blur, no 3D) so it can't reintroduce the per-route
 // perf cost the SentinelBackground fix above just removed.
-const pageVariants = {
+// Explicitly typed as Variants — framer-motion 12's stricter types infer a
+// bare `ease: [0.16, 1, 0.3, 1]` array literal as `number[]`, which isn't
+// assignable to its `Easing | Easing[]` type. Annotating the object gives
+// TS the expected type up front so the tuple is checked against it
+// correctly instead of being widened. This was the actual build failure
+// on Vercel ("Type 'number[]' is not assignable to type 'Easing | Easing[]'").
+const pageVariants: Variants = {
   initial: { opacity: 0, scale: 0.985, filter: 'blur(6px)' },
   animate: { opacity: 1, scale: 1, filter: 'blur(0px)', transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
   exit: { opacity: 0, scale: 1.01, filter: 'blur(4px)', transition: { duration: 0.25, ease: 'easeIn' } },
