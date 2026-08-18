@@ -218,7 +218,14 @@ export function verifyWebhookSignature(rawBody: string, signature: string | unde
   if (!signature || !SECRET_KEY()) return false
   const expected = crypto.createHmac('sha512', SECRET_KEY()).update(rawBody).digest('hex')
   try {
-    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature))
+    // Buffer IS a Uint8Array at runtime — this cast only works around a
+    // @types/node version where Buffer's generic ArrayBufferLike parameter
+    // stopped structurally matching crypto.timingSafeEqual's declared
+    // Uint8Array<ArrayBufferLike> parameter type. No behavior change.
+    const expectedBuf = Buffer.from(expected) as unknown as Uint8Array
+    const signatureBuf = Buffer.from(signature) as unknown as Uint8Array
+    if (expectedBuf.length !== signatureBuf.length) return false
+    return crypto.timingSafeEqual(expectedBuf, signatureBuf)
   } catch {
     // Buffers of different length throw rather than returning false
     return false
