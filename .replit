@@ -5,7 +5,7 @@ hidden = [".config", "package-lock.json", ".next", ".swc"]
 
 [nix]
 channel = "stable-23_05"
-packages = ["psmisc"]
+packages = ["psmisc", "qtile"]
 
 [env]
 NEXT_TELEMETRY_DISABLED = "1"

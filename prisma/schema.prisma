@@ -7,6 +7,635 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id                     String                @id @default(cuid())
+  email                  String                @unique
+  name                   String?
+  nickname               String?               @unique
+  passwordHash           String?
+  image                  String?
+  role                   Role                  @default(GUEST)
+  rank                   Rank                  @default(F)
+  xp                     Int                   @default(0)
+  status                 MemberStatus          @default(ACTIVE)
+  skills                 String[]
+  bio                    String?
+  portfolioUrl           String?
+  socialLinks            Json?
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  activeTitle            String?
+  availabilityText       String?
+  country                String?
+  emailVerified          DateTime?
+  experience             String?
+  faceVerified           Boolean               @default(false)
+  identityVerified       Boolean               @default(false)
+  locationVerified       Boolean               @default(false)
+  portfolioVault         Json?
+  preferredTaskType      String?
+  profilePicUrl          String?
+  socialVerified         Boolean               @default(false)
+  timezone               String?
+  trustLevel             String                @default("NEW")
+  trustScore             Int                   @default(50)
+  workStyle              String?
+  lastNicknameChange     DateTime?
+  accounts               Account[]
+  activityLogs           ActivityLog[]
+  adminNotes             AdminNote[]           @relation("NotesAbout")
+  notesWritten           AdminNote[]           @relation("NotesByAdmin")
+  adminPermission        AdminPermission?
+  arenaEntries           ArenaEntry[]
+  arenaVotes             ArenaVote[]
+  chatGameSessions       ChatGameSession[]
+  chatMessages           ChatMessage[]
+  postsAuthored          CommunityPost[]
+  feedbacks              Feedback[]
+  feedbackReplies        FeedbackReply[]
+  ghostIdentity          FounderGhostIdentity?
+  friendRequestsSent     FriendRequest[]       @relation("FriendRequestFrom")
+  friendRequestsReceived FriendRequest[]       @relation("FriendRequestTo")
+  messagesFrom           Message[]             @relation("MessageFrom")
+  messagesTo             Message[]             @relation("MessageTo")
+  notifications          Notification[]
+  paymentRequestsCreated PaymentRequest[]      @relation("PaymentRequestCreatedBy")
+  verifications          ProfileVerification[]
+  questClaims            QuestClaim[]          @relation("QuestClaimUser")
+  questSuggestions       QuestSuggestion[]
+  reportsAbout           Report[]              @relation("ReportsAbout")
+  reportsFrom            Report[]              @relation("ReportsBy")
+  sessions               Session[]
+  trial                  Trial?
+  trustEvents            TrustEvent[]
+  achievements           UserAchievement[]
+  blocksReceived         UserBlock[]           @relation("BlockedBy")
+  blocksGiven            UserBlock[]           @relation("BlocksBy")
+  featureUnlocks         UserFeatureUnlock[]
+  titles                 UserTitle[]
+  warnings               Warning[]
+  xpLogs                 XpLog[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Trial {
+  id                 String      @id @default(cuid())
+  userId             String      @unique
+  age                Int
+  skills             String[]
+  strengths          String
+  whyJoin            String
+  availability       String
+  contactInfo        String
+  portfolioUrl       String?
+  status             TrialStatus @default(PENDING)
+  score              Int?
+  judgeNotes         String?
+  submittedAt        DateTime    @default(now())
+  reviewedAt         DateTime?
+  aiRecommendation   String?
+  aiScore            Int?
+  aiSummary          String?
+  assignedTaskId     String?
+  taskSubmissionNote String?
+  taskSubmissionUrl  String?
+  taskSubmittedAt    DateTime?
+  assignedTask       TrialTask?  @relation(fields: [assignedTaskId], references: [id])
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Quest {
+  id              String           @id @default(cuid())
+  title           String
+  category        String
+  difficulty      String
+  rankRequired    Rank             @default(F)
+  deadline        DateTime?
+  rewardXp        Int              @default(50)
+  instructions    String
+  status          QuestStatus      @default(OPEN)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  cashReward      Float?
+  maxParticipants Int              @default(1)
+  paymentRequests PaymentRequest[]
+  claims          QuestClaim[]
+}
+
+model QuestClaim {
+  id             String       @id @default(cuid())
+  questId        String
+  userId         String
+  status         ClaimStatus  @default(CLAIMED)
+  claimedAt      DateTime     @default(now())
+  submittedAt    DateTime?
+  submissionUrl  String?
+  submissionNote String?
+  reviewedAt     DateTime?
+  reviewNote     String?
+  payoutStatus   PayoutStatus @default(NOT_APPLICABLE)
+  paidAt         DateTime?
+  clientRating   Int?
+  clientFeedback String?
+  payoutAmount   Float?
+  quest          Quest        @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user           User         @relation("QuestClaimUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([questId, userId])
+  @@index([userId])
+  @@index([questId])
+}
+
+model PaymentRequest {
+  id                    String               @id @default(cuid())
+  publicToken           String               @unique
+  reference             String               @unique
+  status                PaymentRequestStatus @default(DRAFT)
+  title                 String
+  description           String
+  baseAmount            Float
+  currency              String               @default("NGN")
+  feeMode               FeeMode              @default(CLIENT_PAYS)
+  processingFee         Float                @default(0)
+  founderFeeShare       Float                @default(0)
+  customerTotal         Float
+  clientName            String?
+  clientEmail           String?
+  clientPhone           String?
+  clientCompany         String?
+  clientNote            String?
+  createdById           String
+  linkedQuestId         String?
+  founderNote           String?
+  expiresAt             DateTime?
+  paidAt                DateTime?
+  paystackReference     String?              @unique
+  paystackTransactionId String?
+  paymentChannel        String?
+  riskLevel             PaymentRiskLevel?
+  riskReason            String?
+  reminderCount         Int                  @default(0)
+  lastReminderAt        DateTime?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  auditLogs             PaymentAuditLog[]
+  emailLogs             PaymentEmailLog[]
+  createdBy             User                 @relation("PaymentRequestCreatedBy", fields: [createdById], references: [id])
+  linkedQuest           Quest?               @relation(fields: [linkedQuestId], references: [id])
+  transactions          PaymentTransaction[]
+
+  @@index([status])
+  @@index([createdById])
+  @@index([clientEmail])
+}
+
+model PaymentTransaction {
+  id                String         @id @default(cuid())
+  paymentRequestId  String
+  paystackReference String         @unique
+  status            String         @default("PENDING")
+  amount            Float
+  channel           String?
+  paidAt            DateTime?
+  rawEvent          Json?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  paymentRequest    PaymentRequest @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
+
+  @@index([paymentRequestId])
+}
+
+model PaymentEmailLog {
+  id               String         @id @default(cuid())
+  paymentRequestId String
+  template         String
+  recipient        String
+  status           String         @default("SENT")
+  error            String?
+  createdAt        DateTime       @default(now())
+  paymentRequest   PaymentRequest @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
+
+  @@unique([paymentRequestId, template, recipient])
+}
+
+model PaymentAuditLog {
+  id               String          @id @default(cuid())
+  paymentRequestId String?
+  action           String
+  actor            String
+  metadata         Json?
+  createdAt        DateTime        @default(now())
+  paymentRequest   PaymentRequest? @relation(fields: [paymentRequestId], references: [id])
+
+  @@index([paymentRequestId])
+  @@index([action])
+}
+
+model QuestSuggestion {
+  id               String           @id @default(cuid())
+  suggestedById    String
+  title            String
+  category         String
+  difficulty       String
+  rankRequired     Rank             @default(F)
+  rewardXp         Int              @default(50)
+  cashReward       Float?
+  instructions     String
+  deadline         DateTime?
+  maxParticipants  Int              @default(1)
+  status           SuggestionStatus @default(PENDING)
+  founderNote      String?
+  resultingQuestId String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  suggestedBy      User             @relation(fields: [suggestedById], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String?
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
+
+model Message {
+  id               String   @id @default(cuid())
+  fromId           String
+  toId             String
+  content          String
+  read             Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  flagReason       String?
+  flagged          Boolean  @default(false)
+  ghostDisplayName String?
+  isGhost          Boolean  @default(false)
+  from             User     @relation("MessageFrom", fields: [fromId], references: [id])
+  to               User     @relation("MessageTo", fields: [toId], references: [id])
+}
+
+model ChatMessage {
+  id               String   @id @default(cuid())
+  userId           String
+  channel          String   @default("general")
+  content          String
+  createdAt        DateTime @default(now())
+  flagReason       String?
+  flagged          Boolean  @default(false)
+  ghostDisplayName String?
+  ghostRank        String?
+  isGhost          Boolean  @default(false)
+  user             User     @relation(fields: [userId], references: [id])
+}
+
+model XpLog {
+  id        String   @id @default(cuid())
+  userId    String
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model AdminNote {
+  id        String   @id @default(cuid())
+  aboutId   String
+  byId      String
+  note      String
+  createdAt DateTime @default(now())
+  about     User     @relation("NotesAbout", fields: [aboutId], references: [id])
+  by        User     @relation("NotesByAdmin", fields: [byId], references: [id])
+}
+
+model Report {
+  id              String   @id @default(cuid())
+  reportedById    String
+  reportedAboutId String
+  reason          String
+  details         String?
+  resolved        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  reportedAbout   User     @relation("ReportsAbout", fields: [reportedAboutId], references: [id])
+  reportedBy      User     @relation("ReportsBy", fields: [reportedById], references: [id])
+}
+
+model Warning {
+  id        String   @id @default(cuid())
+  userId    String
+  reason    String
+  issuedBy  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model ArenaChallenge {
+  id          String       @id @default(cuid())
+  title       String
+  description String
+  type        String
+  endsAt      DateTime
+  createdAt   DateTime     @default(now())
+  cashReward  Float?
+  xpReward    Int          @default(50)
+  category    String?
+  config      Json?
+  icon        String?
+  isDaily     Boolean      @default(false)
+  status      String       @default("ACTIVE")
+  updatedAt   DateTime     @updatedAt
+  entries     ArenaEntry[]
+}
+
+model ArenaEntry {
+  id          String         @id @default(cuid())
+  userId      String
+  challengeId String
+  response    String?
+  createdAt   DateTime       @default(now())
+  score       Int?
+  aiFeedback  String?
+  aiFlagged   Boolean        @default(false)
+  aiScore     Int?
+  votes       Int            @default(0)
+  startedAt   DateTime?
+  challenge   ArenaChallenge @relation(fields: [challengeId], references: [id])
+  user        User           @relation(fields: [userId], references: [id])
+  voteRecords ArenaVote[]
+
+  @@unique([challengeId, userId])
+}
+
+model ArenaVote {
+  id        String     @id @default(cuid())
+  entryId   String
+  voterId   String
+  createdAt DateTime   @default(now())
+  entry     ArenaEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  voter     User       @relation(fields: [voterId], references: [id])
+
+  @@unique([entryId, voterId])
+}
+
+model ChatGameSession {
+  id          String   @id @default(cuid())
+  channel     String
+  gameType    String
+  state       Json
+  status      String   @default("IN_PROGRESS")
+  startedById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  startedBy   User     @relation(fields: [startedById], references: [id])
+}
+
+model TrialTask {
+  id            String   @id @default(cuid())
+  title         String
+  description   String
+  category      String
+  difficulty    String
+  instructions  String
+  deadlineHours Int      @default(24)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  assignments   Trial[]
+}
+
+model GlobalSettings {
+  id              String   @id @default("singleton")
+  commissionRates Json
+  accessRules     Json
+  updatedAt       DateTime @updatedAt
+  updatedById     String?
+}
+
+model AdminPermission {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  role       String
+  canTrials  Boolean  @default(false)
+  canQuests  Boolean  @default(false)
+  canUsers   Boolean  @default(false)
+  canPayouts Boolean  @default(false)
+  canReports Boolean  @default(false)
+  canArena   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Achievement {
+  id          String            @id @default(cuid())
+  name        String            @unique
+  description String
+  type        AchievementType   @default(PERMANENT)
+  icon        String            @default("🏆")
+  condition   String
+  xpBonus     Int               @default(0)
+  isActive    Boolean           @default(true)
+  createdById String?
+  expiresAt   DateTime?
+  createdAt   DateTime          @default(now())
+  awardedTo   UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  awardedById   String?
+  awardedByAI   Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+}
+
+model Title {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String
+  condition   String
+  icon        String      @default("⚔️")
+  canExpire   Boolean     @default(false)
+  isActive    Boolean     @default(true)
+  createdById String?
+  createdAt   DateTime    @default(now())
+  awardedTo   UserTitle[]
+}
+
+model UserTitle {
+  id          String    @id @default(cuid())
+  userId      String
+  titleId     String
+  active      Boolean   @default(false)
+  awardedById String?
+  awardedByAI Boolean   @default(false)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  title       Title     @relation(fields: [titleId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, titleId])
+}
+
+model TrustEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  delta     Int
+  reason    String
+  source    String   @default("SYSTEM")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CommunityPost {
+  id          String         @id @default(cuid())
+  authorId    String
+  content     String
+  title       String?
+  isAnonymous Boolean        @default(false)
+  isPinned    Boolean        @default(false)
+  visibility  PostVisibility @default(MEMBERS_ONLY)
+  flagged     Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Feedback {
+  id        String          @id @default(cuid())
+  userId    String?
+  email     String?
+  type      String          @default("GENERAL")
+  content   String
+  status    String          @default("OPEN")
+  isRead    Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  user      User?           @relation(fields: [userId], references: [id])
+  replies   FeedbackReply[]
+}
+
+model FeedbackReply {
+  id         String   @id @default(cuid())
+  feedbackId String
+  authorId   String
+  content    String
+  createdAt  DateTime @default(now())
+  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  feedback   Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+}
+
+model UserFeatureUnlock {
+  id           String   @id @default(cuid())
+  userId       String
+  feature      String
+  unlockedById String
+  note         String?
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, feature])
+}
+
+model ProfileVerification {
+  id          String    @id @default(cuid())
+  userId      String
+  type        String
+  status      String    @default("PENDING")
+  evidence    String?
+  reviewedBy  String?
+  submittedAt DateTime  @default(now())
+  reviewedAt  DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model FriendRequest {
+  id        String   @id @default(cuid())
+  fromId    String
+  toId      String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  from      User     @relation("FriendRequestFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  to        User     @relation("FriendRequestTo", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@unique([fromId, toId])
+  @@index([toId, status])
+}
+
+model UserBlock {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+  blocked   User     @relation("BlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+  blocker   User     @relation("BlocksBy", fields: [blockerId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+}
+
+model FounderGhostIdentity {
+  id        String   @id @default(cuid())
+  founderId String   @unique
+  ghostName String   @unique
+  ghostRank Rank     @default(B)
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  founder   User     @relation(fields: [founderId], references: [id], onDelete: Cascade)
+}
+
 enum Role {
   GUEST
   TRIAL_MEMBER
@@ -37,7 +666,6 @@ enum QuestStatus {
   FUNDED
 }
 
-// ── Payment Center (Founder-controlled client payments) ──────────────────
 enum PaymentRequestStatus {
   DRAFT
   ACTIVE
@@ -106,715 +734,4 @@ enum PayoutStatus {
   NOT_APPLICABLE
   PENDING
   PAID
-}
-
-model User {
-  id                 String       @id @default(cuid())
-  email              String       @unique
-  name               String?
-  nickname           String?      @unique
-  passwordHash       String?
-  image              String?
-  profilePicUrl      String?
-  role               Role         @default(GUEST)
-  rank               Rank         @default(F)
-  xp                 Int          @default(0)
-  status             MemberStatus @default(ACTIVE)
-  skills             String[]
-  bio                String?
-  portfolioUrl       String?
-  socialLinks        Json?
-
-  // Extended profile
-  timezone           String?
-  country            String?
-  workStyle          String?
-  preferredTaskType  String?
-  experience         String?
-  availabilityText   String?
-  portfolioVault     Json?
-
-  // Trust system
-  trustScore         Int          @default(50)
-  trustLevel         String       @default("NEW")
-
-  // Identity / verification flags
-  emailVerified      DateTime?
-  socialVerified     Boolean      @default(false)
-  locationVerified   Boolean      @default(false)
-  faceVerified       Boolean      @default(false)
-  identityVerified   Boolean      @default(false)
-
-  // Active title
-  activeTitle        String?
-
-  // Nickname cooldown
-  lastNicknameChange DateTime?
-
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
-
-  accounts           Account[]
-  sessions           Session[]
-  trial              Trial?
-  questClaims        QuestClaim[] @relation("QuestClaimUser")
-  questSuggestions   QuestSuggestion[]
-  messagesFrom       Message[]    @relation("MessageFrom")
-  messagesTo         Message[]    @relation("MessageTo")
-  chatMessages       ChatMessage[]
-  xpLogs             XpLog[]
-  adminNotes         AdminNote[]  @relation("NotesAbout")
-  notesWritten       AdminNote[]  @relation("NotesByAdmin")
-  reportsFrom        Report[]     @relation("ReportsBy")
-  reportsAbout       Report[]     @relation("ReportsAbout")
-  warnings           Warning[]
-  activityLogs       ActivityLog[]
-  arenaEntries       ArenaEntry[]
-  arenaVotes         ArenaVote[]
-  chatGameSessions   ChatGameSession[]
-  adminPermission    AdminPermission?
-  achievements       UserAchievement[]
-  titles             UserTitle[]
-  notifications      Notification[]
-  trustEvents        TrustEvent[]
-  postsAuthored      CommunityPost[]
-  verifications      ProfileVerification[]
-  feedbacks          Feedback[]
-  feedbackReplies    FeedbackReply[]
-  featureUnlocks     UserFeatureUnlock[]
-
-  // Friend system
-  friendRequestsSent     FriendRequest[] @relation("FriendRequestFrom")
-  friendRequestsReceived FriendRequest[] @relation("FriendRequestTo")
-  blocksGiven            UserBlock[]     @relation("BlocksBy")
-  blocksReceived         UserBlock[]     @relation("BlockedBy")
-
-  // Founder ghost identity
-  ghostIdentity      FounderGhostIdentity?
-
-  // Payment Center — payment requests this user (Founder) created
-  paymentRequestsCreated PaymentRequest[] @relation("PaymentRequestCreatedBy")
-}
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-  @@unique([identifier, token])
-}
-
-model Trial {
-  id               String      @id @default(cuid())
-  userId           String      @unique
-  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  age              Int
-  skills           String[]
-  strengths        String
-  whyJoin          String
-  availability     String
-  contactInfo      String
-  portfolioUrl     String?
-  status           TrialStatus @default(PENDING)
-  score            Int?
-  aiScore          Int?
-  aiSummary        String?
-  aiRecommendation String?
-  judgeNotes       String?
-  assignedTaskId   String?
-  assignedTask     TrialTask?  @relation(fields: [assignedTaskId], references: [id])
-  // Previously there was no way to store a trial member's actual submitted
-  // work at all — the dashboard showed the assigned task as a read-only
-  // card with no form, no submit button, and nowhere in the schema to put
-  // the content even if there had been one.
-  taskSubmissionUrl  String?
-  taskSubmissionNote String?
-  taskSubmittedAt    DateTime?
-  submittedAt      DateTime    @default(now())
-  reviewedAt       DateTime?
-}
-
-model Quest {
-  id              String      @id @default(cuid())
-  title           String
-  category        String
-  difficulty      String
-  rankRequired    Rank        @default(F)
-  deadline        DateTime?
-  rewardXp        Int         @default(50)
-  cashReward      Float?
-  instructions    String
-  status          QuestStatus @default(OPEN)
-  maxParticipants Int         @default(1)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  claims          QuestClaim[]
-  paymentRequests PaymentRequest[]
-}
-
-model QuestClaim {
-  id             String       @id @default(cuid())
-  questId        String
-  quest          Quest        @relation(fields: [questId], references: [id], onDelete: Cascade)
-  userId         String
-  user           User         @relation("QuestClaimUser", fields: [userId], references: [id], onDelete: Cascade)
-  status         ClaimStatus  @default(CLAIMED)
-  claimedAt      DateTime     @default(now())
-  submittedAt    DateTime?
-  submissionUrl  String?
-  submissionNote String?
-  reviewedAt     DateTime?
-  reviewNote     String?
-  payoutStatus   PayoutStatus @default(NOT_APPLICABLE)
-  paidAt         DateTime?
-  clientRating   Int?
-  clientFeedback String?
-
-  // What the teen is actually owed for this claim — calculated once, when
-  // the linked PaymentRequest clears (see the webhook), as (client payment
-  // − Founder's rank-based commission from GlobalSettings). Previously
-  // there was no field to hold this at all: a quest could be marked FUNDED
-  // by a client payment and the teen's approved work just... sat there,
-  // with no calculated amount and no path into the payout system.
-  payoutAmount   Float?
-
-  @@unique([questId, userId])
-  @@index([userId])
-  @@index([questId])
-}
-
-// ── Payment Center ─────────────────────────────────────────────────────
-// The Founder creates a PaymentRequest, shares its public link, and an
-// external client (no Teen Hub account required) pays through Paystack.
-// This is deliberately its own model — it is NOT the internal
-// Quest/QuestClaim payout system (member earnings), which stays governed
-// by QuestClaim.payoutStatus exactly as before.
-model PaymentRequest {
-  id            String                @id @default(cuid())
-  publicToken   String                @unique // high-entropy — used in /pay/[token], never a raw db id
-  reference     String                @unique // human-facing reference, e.g. QH-8F7X2A9K
-  status        PaymentRequestStatus  @default(DRAFT)
-
-  title         String
-  description   String
-
-  baseAmount      Float               // service amount in the smallest display unit (Naira), authoritative
-  currency        String              @default("NGN")
-  feeMode         FeeMode             @default(CLIENT_PAYS)
-  processingFee   Float               @default(0)   // fee portion charged to the client (0 if FOUNDER_PAYS)
-  founderFeeShare Float               @default(0)   // fee portion absorbed by the founder (SPLIT_50_50 / FOUNDER_PAYS)
-  customerTotal   Float               // what the client is actually charged = baseAmount + processingFee (client share)
-
-  clientName    String?
-  clientEmail   String?
-  clientPhone   String?
-  clientCompany String?
-  clientNote    String?
-
-  createdById   String
-  createdBy     User                  @relation("PaymentRequestCreatedBy", fields: [createdById], references: [id])
-
-  linkedQuestId String?
-  linkedQuest   Quest?                @relation(fields: [linkedQuestId], references: [id])
-
-  founderNote   String?
-
-  expiresAt     DateTime?
-  paidAt        DateTime?
-
-  paystackReference     String?      @unique
-  paystackTransactionId String?
-  paymentChannel        String?
-
-  riskLevel     PaymentRiskLevel?
-  riskReason    String?
-
-  reminderCount  Int      @default(0)
-  lastReminderAt DateTime?
-
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
-
-  transactions  PaymentTransaction[]
-  emailLogs     PaymentEmailLog[]
-  auditLogs     PaymentAuditLog[]
-
-  @@index([status])
-  @@index([createdById])
-  @@index([clientEmail])
-}
-
-// One PaymentRequest can have multiple transaction attempts (retries after
-// a failed/abandoned checkout). Only one should ever end SUCCESS.
-model PaymentTransaction {
-  id               String         @id @default(cuid())
-  paymentRequestId String
-  paymentRequest   PaymentRequest @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
-
-  paystackReference String        @unique
-  status            String        @default("PENDING") // PENDING | SUCCESS | FAILED | ABANDONED
-  amount            Float
-  channel           String?
-  paidAt            DateTime?
-
-  rawEvent          Json?         // last known Paystack event payload, for audit/debugging
-
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-
-  @@index([paymentRequestId])
-}
-
-// Idempotency guard for transactional emails — never send the same
-// payment-success email twice because of a duplicate webhook delivery.
-model PaymentEmailLog {
-  id               String         @id @default(cuid())
-  paymentRequestId String
-  paymentRequest   PaymentRequest @relation(fields: [paymentRequestId], references: [id], onDelete: Cascade)
-  template         String         // payment-created | payment-success-client | ...
-  recipient        String
-  status           String         @default("SENT") // SENT | FAILED
-  error            String?
-  createdAt        DateTime       @default(now())
-
-  @@unique([paymentRequestId, template, recipient])
-}
-
-// Durable financial audit trail — decoupled from ActivityLog (which
-// requires an authenticated User) since public clients and the Paystack
-// webhook also generate events here.
-model PaymentAuditLog {
-  id               String         @id @default(cuid())
-  paymentRequestId String?
-  paymentRequest   PaymentRequest? @relation(fields: [paymentRequestId], references: [id], onDelete: SetNull)
-  action           String         // PAYMENT_REQUEST_CREATED | PAYMENT_SUCCESS | ...
-  actor            String         // "founder:<userId>" | "client" | "webhook" | "system"
-  metadata         Json?
-  createdAt        DateTime       @default(now())
-
-  @@index([paymentRequestId])
-  @@index([action])
-}
-
-model QuestSuggestion {
-  id              String           @id @default(cuid())
-  suggestedById   String
-  suggestedBy     User             @relation(fields: [suggestedById], references: [id], onDelete: Cascade)
-  title           String
-  category        String
-  difficulty      String
-  rankRequired    Rank             @default(F)
-  rewardXp        Int              @default(50)
-  cashReward      Float?
-  instructions    String
-  deadline        DateTime?
-  maxParticipants Int              @default(1)
-  status          SuggestionStatus @default(PENDING)
-  founderNote     String?
-  resultingQuestId String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-}
-
-model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String
-  title     String
-  body      String?
-  link      String?
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  @@index([userId, read])
-}
-
-model Message {
-  id               String   @id @default(cuid())
-  fromId           String
-  toId             String
-  content          String
-  read             Boolean  @default(false)
-  flagged          Boolean  @default(false)
-  flagReason       String?
-  isGhost          Boolean  @default(false)
-  ghostDisplayName String?
-  createdAt        DateTime @default(now())
-  from             User     @relation("MessageFrom", fields: [fromId], references: [id])
-  to               User     @relation("MessageTo", fields: [toId], references: [id])
-}
-
-model ChatMessage {
-  id               String   @id @default(cuid())
-  userId           String
-  channel          String   @default("general")
-  content          String
-  flagged          Boolean  @default(false)
-  flagReason       String?
-  isGhost          Boolean  @default(false)
-  ghostDisplayName String?
-  ghostRank        String?
-  createdAt        DateTime @default(now())
-  user             User     @relation(fields: [userId], references: [id])
-}
-
-model XpLog {
-  id        String   @id @default(cuid())
-  userId    String
-  amount    Int
-  reason    String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-}
-
-model AdminNote {
-  id        String   @id @default(cuid())
-  aboutId   String
-  byId      String
-  note      String
-  createdAt DateTime @default(now())
-  about     User     @relation("NotesAbout", fields: [aboutId], references: [id])
-  by        User     @relation("NotesByAdmin", fields: [byId], references: [id])
-}
-
-model Report {
-  id              String   @id @default(cuid())
-  reportedById    String
-  reportedAboutId String
-  reason          String
-  details         String?
-  resolved        Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  reportedBy      User     @relation("ReportsBy", fields: [reportedById], references: [id])
-  reportedAbout   User     @relation("ReportsAbout", fields: [reportedAboutId], references: [id])
-}
-
-model Warning {
-  id        String   @id @default(cuid())
-  userId    String
-  reason    String
-  issuedBy  String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-}
-
-model ActivityLog {
-  id        String   @id @default(cuid())
-  userId    String
-  action    String
-  details   String?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-}
-
-model ArenaChallenge {
-  id          String       @id @default(cuid())
-  title       String
-  description String
-  type        String
-  xpReward    Int          @default(50)
-  cashReward  Float?
-  endsAt      DateTime
-  createdAt   DateTime     @default(now())
-  entries     ArenaEntry[]
-
-  // ── ARENA PROTOCOL rule-engine fields ──
-  category        String?  // Logic | Typing | Quiz | Creative | Social | Time
-  icon            String?  // emoji/icon key rendered on the card
-  status          String   @default("ACTIVE") // ACTIVE, CLOSED, DRAFT
-  isDaily         Boolean  @default(false)
-  config          Json?    // full rule-engine JSON: mechanics/attempt_rules/rewards/anti_cheat/ranking
-  updatedAt       DateTime @updatedAt
-}
-
-model ArenaEntry {
-  id          String         @id @default(cuid())
-  userId      String
-  challengeId String
-  response    String?
-  score       Int?
-  createdAt   DateTime       @default(now())
-  // Set once, the first time a player opens a timed game (POST /api/arena/[id]/start).
-  // Never overwritten afterwards — this is what lets submit.ts actually enforce
-  // config.time_limit_seconds instead of just displaying it and doing nothing.
-  startedAt   DateTime?
-  user        User           @relation(fields: [userId], references: [id])
-  challenge   ArenaChallenge @relation(fields: [challengeId], references: [id])
-
-  // ── AI validator layer ──
-  aiScore    Int?
-  aiFeedback String?
-  aiFlagged  Boolean  @default(false)
-  votes      Int      @default(0)
-  voteRecords ArenaVote[]
-
-  @@unique([challengeId, userId])
-}
-
-model ArenaVote {
-  id        String     @id @default(cuid())
-  entryId   String
-  voterId   String
-  createdAt DateTime   @default(now())
-  entry     ArenaEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  voter     User       @relation(fields: [voterId], references: [id])
-
-  @@unique([entryId, voterId])
-}
-
-model ChatGameSession {
-  id          String   @id @default(cuid())
-  channel     String
-  gameType    String   // TRUTH_DARE, WOULD_RATHER, TWO_TRUTHS, WORD_CHAIN, GUILD_TRIVIA
-  state       Json
-  status      String   @default("IN_PROGRESS") // IN_PROGRESS, FINISHED
-  startedById String
-  startedBy   User     @relation(fields: [startedById], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model TrialTask {
-  id            String   @id @default(cuid())
-  title         String
-  description   String
-  category      String
-  difficulty    String
-  instructions  String
-  deadlineHours Int      @default(24)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  assignments   Trial[]
-}
-
-// Singleton settings row (id is always "singleton") — the Founder War Room's
-// "Global Settings" tab used to render these as hardcoded JSX arrays with no
-// save button at all; this is what makes it actually editable and persisted.
-// commissionRates/accessRules are stored as JSON maps rather than one column
-// per rank/page so new ranks or pages don't need a migration to configure.
-model GlobalSettings {
-  id              String   @id @default("singleton")
-  commissionRates Json     // { "F": 40, "E": 35, ..., "SSS": 2 } — Founder cut %, per rank
-  accessRules     Json     // { "Quest Board": "Accepted Member+", ... } — display-only requirement labels
-  updatedAt       DateTime @updatedAt
-  updatedById     String?
-}
-
-model AdminPermission {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  role        String
-  canTrials   Boolean  @default(false)
-  canQuests   Boolean  @default(false)
-  canUsers    Boolean  @default(false)
-  canPayouts  Boolean  @default(false)
-  canReports  Boolean  @default(false)
-  canArena    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-// ─── Achievement Engine ────────────────────────────────────────────────────
-
-model Achievement {
-  id          String          @id @default(cuid())
-  name        String          @unique
-  description String
-  type        AchievementType @default(PERMANENT)
-  icon        String          @default("🏆")
-  condition   String
-  xpBonus     Int             @default(0)
-  isActive    Boolean         @default(true)
-  createdById String?
-  expiresAt   DateTime?
-  createdAt   DateTime        @default(now())
-  awardedTo   UserAchievement[]
-}
-
-model UserAchievement {
-  id            String      @id @default(cuid())
-  userId        String
-  achievementId String
-  awardedById   String?
-  awardedByAI   Boolean     @default(false)
-  createdAt     DateTime    @default(now())
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
-  @@unique([userId, achievementId])
-}
-
-// ─── Titles Engine ─────────────────────────────────────────────────────────
-
-model Title {
-  id          String    @id @default(cuid())
-  name        String    @unique
-  description String
-  condition   String
-  icon        String    @default("⚔️")
-  canExpire   Boolean   @default(false)
-  isActive    Boolean   @default(true)
-  createdById String?
-  createdAt   DateTime  @default(now())
-  awardedTo   UserTitle[]
-}
-
-model UserTitle {
-  id          String    @id @default(cuid())
-  userId      String
-  titleId     String
-  active      Boolean   @default(false)
-  awardedById String?
-  awardedByAI Boolean   @default(false)
-  expiresAt   DateTime?
-  createdAt   DateTime  @default(now())
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title       Title     @relation(fields: [titleId], references: [id], onDelete: Cascade)
-  @@unique([userId, titleId])
-}
-
-// ─── Trust Engine ──────────────────────────────────────────────────────────
-
-model TrustEvent {
-  id        String   @id @default(cuid())
-  userId    String
-  action    String
-  delta     Int
-  reason    String
-  source    String   @default("SYSTEM")
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-// ─── Community Posts ───────────────────────────────────────────────────────
-
-model CommunityPost {
-  id          String         @id @default(cuid())
-  authorId    String
-  content     String
-  title       String?
-  isAnonymous Boolean        @default(false)
-  isPinned    Boolean        @default(false)
-  visibility  PostVisibility @default(MEMBERS_ONLY)
-  flagged     Boolean        @default(false)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  author      User           @relation(fields: [authorId], references: [id], onDelete: Cascade)
-}
-
-// ─── Feedback System ───────────────────────────────────────────────────────
-
-model Feedback {
-  id        String          @id @default(cuid())
-  userId    String?
-  email     String?
-  type      String          @default("GENERAL")
-  content   String
-  status    String          @default("OPEN")
-  isRead    Boolean         @default(false)
-  createdAt DateTime        @default(now())
-  user      User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  replies   FeedbackReply[]
-}
-
-model FeedbackReply {
-  id         String   @id @default(cuid())
-  feedbackId String
-  authorId   String
-  content    String
-  createdAt  DateTime @default(now())
-  feedback   Feedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
-  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-}
-
-// ─── Feature Unlock ────────────────────────────────────────────────────────
-
-model UserFeatureUnlock {
-  id           String   @id @default(cuid())
-  userId       String
-  feature      String
-  unlockedById String
-  note         String?
-  createdAt    DateTime @default(now())
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@unique([userId, feature])
-}
-
-// ─── Profile Verification ──────────────────────────────────────────────────
-
-model ProfileVerification {
-  id          String   @id @default(cuid())
-  userId      String
-  type        String
-  status      String   @default("PENDING")
-  evidence    String?
-  reviewedBy  String?
-  submittedAt DateTime @default(now())
-  reviewedAt  DateTime?
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-// ─── Friend System ─────────────────────────────────────────────────────────
-
-model FriendRequest {
-  id        String   @id @default(cuid())
-  fromId    String
-  toId      String
-  status    String   @default("PENDING") // PENDING | ACCEPTED | DECLINED
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  from      User     @relation("FriendRequestFrom", fields: [fromId], references: [id], onDelete: Cascade)
-  to        User     @relation("FriendRequestTo", fields: [toId], references: [id], onDelete: Cascade)
-
-  @@unique([fromId, toId])
-  @@index([toId, status])
-}
-
-model UserBlock {
-  id        String   @id @default(cuid())
-  blockerId String
-  blockedId String
-  createdAt DateTime @default(now())
-  blocker   User     @relation("BlocksBy", fields: [blockerId], references: [id], onDelete: Cascade)
-  blocked   User     @relation("BlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
-
-  @@unique([blockerId, blockedId])
-}
-
-// ─── Founder Ghost Identity ────────────────────────────────────────────────
-
-model FounderGhostIdentity {
-  id        String   @id @default(cuid())
-  founderId String   @unique
-  ghostName String   @unique
-  ghostRank Rank     @default(B)
-  isActive  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  founder   User     @relation(fields: [founderId], references: [id], onDelete: Cascade)
 }
