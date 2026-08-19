@@ -5,6 +5,7 @@
 
 'use client'
 import { useEffect, useRef } from 'react'
+import { useDeviceCapability } from '@/hooks/useDeviceCapability'
 
 // SVG butterfly path — a simple top-down wing silhouette
 const WING_PATH = `M 0,-6 C -3,-10 -14,-8 -12,-2 C -10,4 -4,5 0,2 C 4,5 10,4 12,-2 C 14,-8 3,-10 0,-6 Z`
@@ -37,10 +38,10 @@ function seededRand(seed: number) {
   }
 }
 
-function buildFlock(): ButterflyConfig[] {
+function buildFlock(roamCount: number, landCount: number): ButterflyConfig[] {
   const configs: ButterflyConfig[] = []
   // Roaming butterflies — cross the full viewport
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < roamCount; i++) {
     const r = seededRand(i * 37 + 11)
     const fromLeft = r() > 0.5
     configs.push({
@@ -65,7 +66,7 @@ function buildFlock(): ButterflyConfig[] {
     '.quest-land-target',
     '.cta-land-target',
   ]
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < landCount; i++) {
     const r = seededRand(i * 53 + 77)
     const fromLeft = r() > 0.5
     configs.push({
@@ -86,18 +87,26 @@ function buildFlock(): ButterflyConfig[] {
   return configs
 }
 
-const FLOCK = buildFlock()
+// FLOCK is no longer a single fixed module-level constant — see
+// ButterfliesOverlay below, which now builds a full-size flock (18 roam + 5
+// land, the original counts, unchanged for anyone on capable hardware) or a
+// reduced one (8 roam + 2 land) on low-end/slow-network devices, instead of
+// running all 23 independent requestAnimationFrame loops unconditionally on
+// every non-landing page for every visitor.
 
 export default function ButterfliesOverlay() {
   const containerRef = useRef<HTMLDivElement>(null)
+  const { isLowEnd } = useDeviceCapability()
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     const el = containerRef.current
     if (!el) return
 
+    const flock = isLowEnd ? buildFlock(8, 2) : buildFlock(18, 5)
+
     // Create SVG butterfly elements
-    FLOCK.forEach((cfg) => {
+    flock.forEach((cfg) => {
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
       svg.setAttribute('viewBox', '-16 -16 32 32')
       svg.setAttribute('width', `${cfg.size}`)
@@ -276,7 +285,7 @@ export default function ButterfliesOverlay() {
         el.removeChild(svg)
       }
     })
-  }, [])
+  }, [isLowEnd])
 
   return (
     <div
