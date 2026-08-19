@@ -35,16 +35,22 @@ export function useDeviceCapability() {
 
 function detectLowEnd(): boolean {
   if (typeof navigator === 'undefined') return false
-  let lowEnd = false
 
+  // A single so-so signal (e.g. Chrome capping deviceMemory at 4, or a
+  // perfectly normal 4-core/4-thread laptop CPU) used to be enough to flag
+  // a machine as "low-end" on its own. That's why real desktops were
+  // landing in the reduced flock. Now: memory and cores both have to look
+  // weak — not just below a mid-range bar — before we call it low-end.
+  // Slow network is still judged on its own, since a fast machine on a
+  // bad connection genuinely benefits from the lighter flock.
   const memory = (navigator as any).deviceMemory as number | undefined
-  if (typeof memory === 'number' && memory <= 4) lowEnd = true
-
   const cores = navigator.hardwareConcurrency
-  if (typeof cores === 'number' && cores <= 4) lowEnd = true
+  const memoryWeak = typeof memory === 'number' && memory <= 2
+  const coresWeak = typeof cores === 'number' && cores <= 2
+  const hardwareWeak = memoryWeak && coresWeak
 
   const conn = (navigator as any).connection
-  if (conn && ['slow-2g', '2g', '3g'].includes(conn.effectiveType)) lowEnd = true
+  const networkWeak = !!conn && ['slow-2g', '2g', '3g'].includes(conn.effectiveType)
 
-  return lowEnd
+  return hardwareWeak || networkWeak
 }
