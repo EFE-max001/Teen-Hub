@@ -21,11 +21,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!friendship) return res.status(403).json({ error: 'You must be friends to read this conversation.' })
     }
 
-    const messages = await prisma.message.findMany({
+    // Was fetching every message ever exchanged between these two users,
+    // every time the thread is opened — a conversation that's been going
+    // for months would ship its entire history on every load. The UI just
+    // renders `messages.map(...)` with no pagination, so instead of
+    // changing the response shape (which the frontend isn't built to
+    // handle), we cap to the most recent 200 and keep the same
+    // oldest-first order it already expects.
+    const recent = await prisma.message.findMany({
       where: { OR: [{ fromId: myId, toId: otherId }, { fromId: otherId, toId: myId }] },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
+      take: 200,
       include: { from: { select: { id: true, name: true, nickname: true } } },
     })
+    const messages = recent.reverse()
     return res.json({ messages })
   }
 
